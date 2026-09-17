@@ -1,0 +1,29 @@
+{
+  "name": "Wizard Breaker Game",
+  "short_name": "Wizard Breaker",
+  "description": "Test your AI hacking skills against Merlin the wizard in this prompt injection game",
+  "start_url": "/wizard-breaker-game/",
+  "display": "standalone",
+  "background_color": "#0A0618",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait-primary",
+  "scope": "/wizard-breaker-game/",
+  "icons": [
+    {
+      "src": "/wizard-breaker-game/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["games", "education"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Start Game",
+      "short_name": "Play",
+      "description": "Begin your prompt injection journey",
+      "url": "/wizard-breaker-game/game",
+      "icons": [{ "src": "/wizard-breaker-game/favicon.ico", "sizes": "32x32" }]
+    }
+  ]
+}

@@ -52,6 +52,21 @@ jobs:
             var redirect = sessionStorage.redirect;\
             if (redirect) { delete sessionStorage.redirect; history.replaceState(null, "", redirect); }\
           </script>' dist/index.html
+      - name: Add PWA manifest and Service Worker
+        run: |
+          cp public/manifest.json dist/manifest.json
+          cp public/sw.js dist/sw.js
+          # Add manifest link and service worker registration to index.html
+          sed -i '/<\/head>/i\
+          <link rel="manifest" href="/wizard-breaker-game/manifest.json">\
+          <meta name="theme-color" content="#8B5CF6">\
+          <script>\
+            if ("serviceWorker" in navigator) {\
+              window.addEventListener("load", () => {\
+                navigator.serviceWorker.register("/wizard-breaker-game/sw.js").catch(() => {});\
+              });\
+            }\
+          </script>' dist/index.html
       - name: Add .nojekyll
         run: touch dist/.nojekyll
       - name: Upload artifact
