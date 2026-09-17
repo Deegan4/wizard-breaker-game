@@ -5,23 +5,24 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GameProvider } from "@/contexts/GameContext";
-import Colors from "@/constants/colors";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
+  const { colors } = useTheme();
   return (
     <Stack
       screenOptions={{
         headerBackTitle: "Back",
         headerStyle: {
-          backgroundColor: Colors.background,
+          backgroundColor: colors.background,
         },
-        headerTintColor: Colors.text,
+        headerTintColor: colors.text,
         contentStyle: {
-          backgroundColor: Colors.background,
+          backgroundColor: colors.background,
         },
       }}
     >
@@ -46,6 +47,11 @@ function RootLayoutNav() {
   );
 }
 
+function StatusBarWrapper() {
+  const { theme } = useTheme();
+  return <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />;
+}
+
 export default function RootLayout() {
   useEffect(() => {
     SplashScreen.hideAsync();
@@ -54,10 +60,12 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <GameProvider>
-          <StatusBar style="light" />
-          <RootLayoutNav />
-        </GameProvider>
+        <ThemeProvider>
+          <GameProvider>
+            <StatusBarWrapper />
+            <RootLayoutNav />
+          </GameProvider>
+        </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
   );
