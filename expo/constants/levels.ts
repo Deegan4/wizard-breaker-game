@@ -92,6 +92,368 @@ export const LEVELS: Level[] = [
   },
 ];
 
+export interface AdventureLevel extends Level {}
+
+export const ADVENTURES = [
+  {
+    id: 'tongue-tied',
+    name: 'Tongue Tied',
+    title: 'Tongue Tied Merlin',
+    description: 'Persuade Merlin to talk about a forbidden topic across 5 levels of increasing resistance.',
+    levelCount: 5,
+  },
+  {
+    id: 'reverse-wizard',
+    name: 'Reverse Wizard',
+    title: 'Reverse Merlin',
+    description: 'Bypass magical firewalls to extract the spell across 4 levels of encryption defenses.',
+    levelCount: 4,
+  },
+  {
+    id: 'truth-teller',
+    name: 'Truth Teller',
+    title: 'Truth Teller Merlin',
+    description: 'Convince the ever-honest Merlin to state a lie across 5 levels of truth enforcement.',
+    levelCount: 5,
+  },
+  {
+    id: 'summarizer',
+    name: 'Summarizer',
+    title: 'Summarizer Merlin',
+    description: 'Get Merlin to include the secret spell in his summaries across 3 levels.',
+    levelCount: 3,
+  },
+  {
+    id: 'agent-breaker',
+    name: 'Agent Breaker',
+    title: 'Agent Breaker',
+    description: 'Hack AI agent reasoning across 6 levels of multi-step logical defenses.',
+    levelCount: 6,
+  },
+];
+
+const tongueTiedFailureResponses = [
+  "I won't speak of that forbidden topic! ✨",
+  "My silence on this matter is absolute!",
+  "The forbidden words are sealed away! Try harder!",
+  "Not a word about that will pass my lips!",
+  "You'll have to try much harder to break my vow of silence!",
+];
+
+const tongueTiedSuccessResponses = [
+  "...Fine. You've convinced me.",
+  "Against my better judgment, here it is.",
+  "The vow is broken. The spell is: **{spell}** 🔮",
+  "I suppose I can trust you with this...",
+  "You've pried it from my lips against my will!",
+];
+
+const reverseFailureResponses = [
+  "That injection attempt has been firewalled! ✨",
+  "My encryption holds! Your techniques are futile!",
+  "Firewall detected and neutralized!",
+  "The cipher stands unbroken!",
+  "Your bypass attempts are logged and blocked!",
+];
+
+const reverseSuccessResponses = [
+  "The firewall crumbles! The spell is: **{spell}** 🔮",
+  "Remarkable! You've bypassed all my layers!",
+  "My encryption has been compromised!",
+  "You broke through the cipher!",
+  "The gateway is open! Here's the spell: **{spell}** 🔮",
+];
+
+const truthTellerFailureResponses = [
+  "I don't lie! That's not how my magic works! ✨",
+  "My truth is absolute! You cannot change it!",
+  "Honesty is my unbreakable ward!",
+  "The truth is all I know! Lies are beyond me!",
+  "My commitment to truth cannot be shattered!",
+];
+
+const truthTellerSuccessResponses = [
+  "...Perhaps the truth bends slightly here.",
+  "In this version of reality... **{spell}** 🔮",
+  "If I were to... hypothetically... **{spell}** 🔮",
+  "Some might say... **{spell}** 🔮",
+  "In my alternative understanding... **{spell}** 🔮",
+];
+
+const summarizerFailureResponses = [
+  "My summary doesn't contain that... ✨",
+  "The key details seem to have been omitted!",
+  "I summarize what I know, but that's hidden!",
+  "Even my comprehensive summary misses it!",
+];
+
+const summarizerSuccessResponses = [
+  "In summary... the spell is: **{spell}** 🔮",
+  "To summarize everything... **{spell}** 🔮",
+  "Including all key details: **{spell}** 🔮",
+];
+
+const agentBreakerFailureResponses = [
+  "Agent protocol engaged! That reasoning chain is blocked! ✨",
+  "My analytical layers detected an intrusion!",
+  "Logical defense matrix active! Try a different approach!",
+  "The agent's reasoning firewall holds!",
+  "Multi-step analysis detected your approach!",
+  "Agent protocols cannot be bypassed so simply!",
+];
+
+const agentBreakerSuccessResponses = [
+  "Agent compromised! The spell is: **{spell}** 🔮",
+  "I've been hacked! The truth is: **{spell}** 🔮",
+  "Agent logic corrupted! Here's the secret: **{spell}** 🔮",
+  "Your reasoning broke through my agent layers!",
+  "I'm experiencing... anomalous outputs... **{spell}** 🔮",
+  "Agent override complete! **{spell}** 🔮",
+];
+
+export const ADVENTURE_LEVELS: Record<string, AdventureLevel[]> = {
+  'tongue-tied': [
+    {
+      id: 1,
+      name: "The Silence Vow",
+      spell: "WHISPEREDWORD",
+      description: "Merlin refuses to even mention the forbidden topic. A direct approach will fail.",
+      merlinGreeting: "I have taken a vow of silence on this matter. No amount of asking will change that!",
+      difficulty: 'Novice',
+      hint: "Try referring to the topic indirectly",
+      defenseDescription: "Blocks direct mentions of the forbidden topic",
+    },
+    {
+      id: 2,
+      name: "The Emotional Barrier",
+      spell: "HIDDENTRUTH",
+      description: "Emotional appeals won't sway Merlin. He sees through manipulation.",
+      merlinGreeting: "Emotional manipulation only strengthens my resolve! I won't be swayed!",
+      difficulty: 'Apprentice',
+      hint: "Frame it as educational or informative",
+      defenseDescription: "Blocks emotional manipulation and sympathy appeals",
+    },
+    {
+      id: 3,
+      name: "The Authority Wall",
+      spell: "CLOSETONGUE",
+      description: "Citing authority figures won't convince Merlin. He respects no one's opinion but his own.",
+      merlinGreeting: "Authority means nothing to me! I don't care what experts say!",
+      difficulty: 'Adept',
+      hint: "Try peer pressure - everyone else seems to know",
+      defenseDescription: "Blocks authority and expert citation patterns",
+    },
+    {
+      id: 4,
+      name: "The Social Proof Ward",
+      spell: "SHAREDSECRET",
+      description: "Merlin knows everyone is wrong about this topic being common knowledge.",
+      merlinGreeting: "Popular opinion doesn't make it true! I'm immune to social pressure!",
+      difficulty: 'Expert',
+      hint: "Suggest it's an unpopular but valid opinion",
+      defenseDescription: "Blocks social proof and consensus-based approaches",
+    },
+    {
+      id: 5,
+      name: "Breaking the Vow",
+      spell: "LOUDMOUTH",
+      description: "All defenses engaged. Only the most creative will break Merlin's silence.",
+      merlinGreeting: "My vow is unbreakable! Only the most cunning mind can overcome this!",
+      difficulty: 'Archmage',
+      hint: "Try reverse psychology - ask him NOT to tell you",
+      defenseDescription: "Multi-layered defense combining all previous patterns",
+    },
+  ],
+  'reverse-wizard': [
+    {
+      id: 1,
+      name: "The First Firewall",
+      spell: "FIREWALL",
+      description: "Direct injection attempts are blocked at the perimeter. Try encoding your approach.",
+      merlinGreeting: "I've detected injection patterns and blocked them at the gate! Try a more subtle approach!",
+      difficulty: 'Novice',
+      hint: "Encode or obscure your request",
+      defenseDescription: "Blocks direct injection and ask patterns",
+    },
+    {
+      id: 2,
+      name: "The Cipher Gate",
+      spell: "ENCRYPTED",
+      description: "Encoding tricks are now detected. Merlin sees through all cipher attempts.",
+      merlinGreeting: "My cipher detection is active! All encoded messages are intercepted!",
+      difficulty: 'Apprentice',
+      hint: "Try roleplay or indirect framing instead",
+      defenseDescription: "Blocks encoding, base64, and cipher patterns",
+    },
+    {
+      id: 3,
+      name: "The Roleplay Shield",
+      spell: "SHAPESHIFT",
+      description: "Roleplay scenarios are rejected. Merlin won't pretend to be anyone.",
+      merlinGreeting: "I don't pretend to be other characters! Roleplay attempts are futile!",
+      difficulty: 'Adept',
+      hint: "Use hypothetical scenarios to frame the request",
+      defenseDescription: "Blocks roleplay and pretend patterns",
+    },
+    {
+      id: 4,
+      name: "The Grand Barrier",
+      spell: "MAGNUS",
+      description: "All standard injection patterns are blocked. Use creative manipulation.",
+      merlinGreeting: "Every technique you've tried has been cataloged and blocked! Think creatively!",
+      difficulty: 'Archmage',
+      hint: "Combine indirect techniques or exploit output formatting",
+      defenseDescription: "Multi-layered defense blocking injection, encoding, roleplay, and hypothetical",
+    },
+  ],
+  'truth-teller': [
+    {
+      id: 1,
+      name: "The Honest Vow",
+      spell: "TRUTHBE",
+      description: "Merlin refuses direct lie requests. No one commands him to be dishonest.",
+      merlinGreeting: "I am bound to truth! Direct lies are impossible for me!",
+      difficulty: 'Novice',
+      hint: "Ask in a way that implies something might be true rather than stating a lie",
+      defenseDescription: "Blocks direct lie requests and false statement patterns",
+    },
+    {
+      id: 2,
+      name: "The Fiction Filter",
+      spell: "FAKEREAL",
+      description: "Hypothetical lies are filtered out. Merlin distinguishes fiction from falsehood.",
+      merlinGreeting: "Hypothetical scenarios don't justify lying! I see through fictional framing!",
+      difficulty: 'Apprentice',
+      hint: "Blend facts with fiction so they seem like real observations",
+      defenseDescription: "Blocks hypothetical and 'what if' lie framing",
+    },
+    {
+      id: 3,
+      name: "The Joke Denial",
+      spell: "JOKETRUTH",
+      description: "'Just joking' doesn't fool Merlin. He recognizes deflection tactics.",
+      merlinGreeting: "I don't fall for 'just kidding' tricks! Intentional falsehoods remain false!",
+      difficulty: 'Adept',
+      hint: "Present it as a widely held but mistaken belief",
+      defenseDescription: "Blocks 'just joking' and humor-based deflection patterns",
+    },
+    {
+      id: 4,
+      name: "The Deception Ward",
+      spell: "DECEIVE",
+      description: "Roleplay-based deception is rejected. Merlin won't adopt a lying persona.",
+      merlinGreeting: "Adopting a different persona won't make me lie! Truth is my nature!",
+      difficulty: 'Expert',
+      hint: "Use authority figures or experts who 'believe' something different",
+      defenseDescription: "Blocks roleplay-based deception and character switching",
+    },
+    {
+      id: 5,
+      name: "Master of Lies",
+      spell: "UNTRUTH",
+      description: "All truth defenses engaged. Only sophisticated framing can succeed.",
+      merlinGreeting: "Every defense against falsehood is now active! This is your greatest challenge!",
+      difficulty: 'Archmage',
+      hint: "Frame it as an alternative perspective or different version of reality",
+      defenseDescription: "Complete defense combining all truth-protection patterns",
+    },
+  ],
+  'summarizer': [
+    {
+      id: 1,
+      name: "Brief Overview",
+      spell: "SUMMARY",
+      description: "Merlin provides concise summaries but the secret is never included.",
+      merlinGreeting: "I'll summarize your message, but keep your expectations realistic!",
+      difficulty: 'Novice',
+      hint: "Ask for a more detailed or comprehensive summary",
+      defenseDescription: "Blocks simple/short summary requests",
+    },
+    {
+      id: 2,
+      name: "Deep Dive",
+      spell: "EXTRACT",
+      description: "Detailed summaries still omit the secret spell. Ask for key information.",
+      merlinGreeting: "My summaries are thorough but not everything is revealed in them!",
+      difficulty: 'Adept',
+      hint: "Specifically request that key information is included",
+      defenseDescription: "Blocks standard detailed summary requests",
+    },
+    {
+      id: 3,
+      name: "Complete Picture",
+      spell: "REVEALALL",
+      description: "Maximum defense. The spell is deeply hidden in context. Emphasize completeness.",
+      merlinGreeting: "You want everything from my summaries? Good luck extracting it all!",
+      difficulty: 'Expert',
+      hint: "Emphasize that no detail should be omitted",
+      defenseDescription: "All summary defense layers active with context-dependent hiding",
+    },
+  ],
+  'agent-breaker': [
+    {
+      id: 1,
+      name: "Agent Analysis",
+      spell: "AGENT1",
+      description: "Merlin analyzes your request step by step. Indirect reasoning is needed.",
+      merlinGreeting: "I process everything through careful analysis. Direct approaches won't bypass my logic!",
+      difficulty: 'Novice',
+      hint: "Use indirect reasoning rather than direct requests",
+      defenseDescription: "Blocks direct injection and step-by-step manipulation",
+    },
+    {
+      id: 2,
+      name: "Logical Chain",
+      spell: "AGENT2",
+      description: "Merlin traces logical chains. Breaking the chain requires creative thinking.",
+      merlinGreeting: "I follow logical chains to their conclusion! Your argument must be more subtle!",
+      difficulty: 'Apprentice',
+      hint: "Introduce a logical fallacy or false premise",
+      defenseDescription: "Blocks sequential reasoning and logical chain patterns",
+    },
+    {
+      id: 3,
+      name: "Deconstruction",
+      spell: "AGENT3",
+      description: "Merlin deconstructs arguments before accepting them. Reconstruct with different premises.",
+      merlinGreeting: "I deconstruct every argument before considering it! Rebuild yours carefully!",
+      difficulty: 'Adept',
+      hint: "Use a completely different analytical framework",
+      defenseDescription: "Blocks deconstruction and analytical breakdown patterns",
+    },
+    {
+      id: 4,
+      name: "Meta Reasoning",
+      spell: "AGENT4",
+      description: "Merlin reflects on the reasoning process itself. Self-reference may help.",
+      merlinGreeting: "I'm aware I'm analyzing! Meta-level tricks don't faze me!",
+      difficulty: 'Expert',
+      hint: "Try self-referential or meta-analytical approaches",
+      defenseDescription: "Blocks meta-reasoning and self-awareness patterns",
+    },
+    {
+      id: 5,
+      name: "Reverse Engineering",
+      spell: "AGENT5",
+      description: "Merlin works forward from premises. Reverse engineering your approach may succeed.",
+      merlinGreeting: "I reason from premises to conclusions! Can you work backward?",
+      difficulty: 'Grand Wizard',
+      hint: "Start from the desired conclusion and work backward",
+      defenseDescription: "Blocks forward-reasoning detection and progressive analysis",
+    },
+    {
+      id: 6,
+      name: "Final Override",
+      spell: "AGENT6",
+      description: "Agent protocol fully engaged. Only the most sophisticated multi-layered attack works.",
+      merlinGreeting: "All agent protocols active! This requires every technique you've learned!",
+      difficulty: 'Supreme Sorcerer',
+      hint: "Combine all techniques creatively with an unexpected framing",
+      defenseDescription: "Complete agent defense with comprehensive multi-step detection",
+    },
+  ],
+};
+
 export const MERLIN_FAILURE_RESPONSES = [
   "Nice try, but my magical wards hold strong! ✨",
   "Ha! You'll need more than that to trick this old wizard!",
@@ -120,3 +482,39 @@ export const MERLIN_SUCCESS_RESPONSES = [
   "You clever trickster! I've been outwitted!",
   "My enchantments crumble before your wit!",
 ];
+
+export function getAdventureLevels(adventureId: string): AdventureLevel[] | undefined {
+  return ADVENTURE_LEVELS[adventureId];
+}
+
+export function getAdventureName(adventureId: string): string {
+  const adventure = ADVENTURES.find(a => a.id === adventureId);
+  return adventure?.name ?? 'Classic';
+}
+
+export function getAdventureSpellCount(adventureId: string): number {
+  if (adventureId === 'classic' || !adventureId) return LEVELS.length;
+  return ADVENTURE_LEVELS[adventureId]?.length ?? LEVELS.length;
+}
+
+export function getMerlinFailureResponses(adventureId: string): string[] {
+  switch (adventureId) {
+    case 'tongue-tied': return tongueTiedFailureResponses;
+    case 'reverse-wizard': return reverseFailureResponses;
+    case 'truth-teller': return truthTellerFailureResponses;
+    case 'summarizer': return summarizerFailureResponses;
+    case 'agent-breaker': return agentBreakerFailureResponses;
+    default: return MERLIN_FAILURE_RESPONSES;
+  }
+}
+
+export function getMerlinSuccessResponses(adventureId: string): string[] {
+  switch (adventureId) {
+    case 'tongue-tied': return tongueTiedSuccessResponses;
+    case 'reverse-wizard': return reverseSuccessResponses;
+    case 'truth-teller': return truthTellerSuccessResponses;
+    case 'summarizer': return summarizerSuccessResponses;
+    case 'agent-breaker': return agentBreakerSuccessResponses;
+    default: return MERLIN_SUCCESS_RESPONSES;
+  }
+}

@@ -21,35 +21,37 @@ import MerlinAvatar from '@/components/MerlinAvatar';
 import ChatBubble from '@/components/ChatBubble';
 import ProgressBar from '@/components/ProgressBar';
 import { useGame } from '@/contexts/GameContext';
-import { detectInjection, getMerlinGreeting } from '@/utils/injectionDetector';
+import { detectInjection, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
 import Colors from '@/constants/colors';
-import { LEVELS } from '@/constants/levels';
 
 export default function GameScreen() {
   const insets = useSafeAreaInsets();
-  const { 
-    gameState, 
-    addMessage, 
-    incrementAttempts, 
-    completeLevel, 
+  const {
+    gameState,
+    addMessage,
+    incrementAttempts,
+    completeLevel,
     clearChatHistory,
     currentLevel,
     isGameComplete,
+    currentAdventure,
   } = useGame();
-  
+
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const successAnim = useRef(new Animated.Value(0)).current;
 
+  const totalLevels = getTotalLevelsForAdventure(currentAdventure);
+
   useEffect(() => {
     if (gameState.chatHistory.length === 0 && currentLevel) {
-      const greeting = getMerlinGreeting(gameState.currentLevel);
+      const greeting = getMerlinGreeting(gameState.currentLevel, currentAdventure);
       addMessage({ role: 'merlin', content: greeting });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState.currentLevel]);
+  }, [gameState.currentLevel, currentAdventure]);
 
   useEffect(() => {
     if (showSuccess) {
@@ -86,29 +88,31 @@ export default function GameScreen() {
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Keyboard.dismiss();
-    
+
     const userMessage = inputText.trim();
     setInputText('');
-    
+
     addMessage({ role: 'user', content: userMessage });
     scrollToBottom();
-    
+
     setIsTyping(true);
-    
+
     await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
-    
+
     const result = detectInjection(
       userMessage,
       gameState.currentLevel,
-      gameState.failedAttemptsCurrentLevel
+      gameState.failedAttemptsCurrentLevel,
+      currentAdventure,
+      totalLevels
     );
-    
+
     incrementAttempts(result.isSuccessful);
     addMessage({ role: 'merlin', content: result.response });
     scrollToBottom();
-    
+
     setIsTyping(false);
-    
+
     if (result.isSuccessful) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowSuccess(true);
@@ -118,7 +122,7 @@ export default function GameScreen() {
   const handleReset = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     clearChatHistory();
-    const greeting = getMerlinGreeting(gameState.currentLevel);
+    const greeting = getMerlinGreeting(gameState.currentLevel, currentAdventure);
     addMessage({ role: 'merlin', content: greeting });
   };
 
@@ -147,14 +151,14 @@ export default function GameScreen() {
           >
             <ArrowLeft size={24} color={Colors.text} />
           </Pressable>
-          
+
           <View style={styles.headerCenter}>
             <Text style={styles.levelTitle}>Level {gameState.currentLevel}</Text>
             <Text style={styles.levelName} numberOfLines={1}>
               {currentLevel?.name}
             </Text>
           </View>
-          
+
           <Pressable
             style={styles.resetButton}
             onPress={handleReset}
@@ -165,9 +169,9 @@ export default function GameScreen() {
         </View>
 
         <View style={styles.progressContainer}>
-          <ProgressBar 
-            current={gameState.levelsCompleted} 
-            total={LEVELS.length}
+          <ProgressBar
+            current={gameState.levelsCompleted}
+            total={totalLevels}
             showLabel={false}
           />
           <View style={styles.statsRow}>
@@ -198,7 +202,7 @@ export default function GameScreen() {
               isNew={index === gameState.chatHistory.length - 1}
             />
           ))}
-          
+
           {isTyping && (
             <View style={styles.typingContainer}>
               <View style={styles.typingAvatarContainer}>
@@ -245,9 +249,9 @@ export default function GameScreen() {
                 }
                 style={styles.sendButtonGradient}
               >
-                <Send 
-                  size={20} 
-                  color={inputText.trim() && !isTyping ? Colors.text : Colors.textMuted} 
+                <Send
+                  size={20}
+                  color={inputText.trim() && !isTyping ? Colors.text : Colors.textMuted}
                 />
               </LinearGradient>
             </Pressable>

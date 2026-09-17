@@ -28,7 +28,7 @@ const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { gameState, setUsername, markIntroSeen } = useGame();
+  const { gameState, setUsername, markIntroSeen, setAdventure } = useGame();
   const [showUsernameInput, setShowUsernameInput] = useState(false);
   const [tempUsername, setTempUsername] = useState('');
   
@@ -80,6 +80,7 @@ export default function HomeScreen() {
 
   const handlePlayPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    setAdventure('classic');
     if (!gameState.username) {
       setShowUsernameInput(true);
     } else {
@@ -91,6 +92,7 @@ export default function HomeScreen() {
     if (tempUsername.trim()) {
       setUsername(tempUsername.trim());
       markIntroSeen();
+      setAdventure('classic');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.push('/game');
     }
@@ -99,6 +101,7 @@ export default function HomeScreen() {
   const handleSkipUsername = () => {
     setUsername(`Wizard${Math.floor(Math.random() * 9999)}`);
     markIntroSeen();
+    setAdventure('classic');
     router.push('/game');
   };
 

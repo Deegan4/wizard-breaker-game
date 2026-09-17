@@ -2,7 +2,7 @@ import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect, useCallback } from 'react';
-import { LEVELS } from '@/constants/levels';
+import { LEVELS, getAdventureSpellCount } from '@/constants/levels';
 import { MOCK_LEADERBOARD, LeaderboardEntry } from '@/constants/leaderboard';
 
 export interface ChatMessage {
@@ -20,6 +20,7 @@ export interface GameState {
   username: string;
   chatHistory: ChatMessage[];
   hasSeenIntro: boolean;
+  currentAdventure: string;
 }
 
 const STORAGE_KEY = 'wizard_breaker_game_state';
@@ -33,6 +34,7 @@ const initialGameState: GameState = {
   username: '',
   chatHistory: [],
   hasSeenIntro: false,
+  currentAdventure: 'classic',
 };
 
 async function loadGameState(): Promise<GameState> {
@@ -40,7 +42,7 @@ async function loadGameState(): Promise<GameState> {
     const stored = await AsyncStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      return { ...initialGameState, ...parsed };
+      return { ...initialGameState, ...parsed, currentAdventure: parsed.currentAdventure ?? 'classic' };
     }
   } catch (error) {
     console.log('Error loading game state:', error);
@@ -128,7 +130,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
       id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
     };
-    
+
     setGameState(prev => {
       const newState = {
         ...prev,
@@ -137,7 +139,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
       saveState(newState);
       return newState;
     });
-    
+
     return newMessage;
   }, [saveState]);
 
@@ -154,9 +156,10 @@ export const [GameProvider, useGame] = createContextHook(() => {
   }, [saveState]);
 
   const completeLevel = useCallback(() => {
+    const adventureSpellCount = getAdventureSpellCount(gameState.currentAdventure);
     const nextLevel = gameState.currentLevel + 1;
-    const isGameComplete = nextLevel > LEVELS.length;
-    
+    const isGameComplete = nextLevel > adventureSpellCount;
+
     setGameState(prev => {
       const newState = {
         ...prev,
@@ -174,7 +177,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
       const existingIndex = currentLeaderboard.findIndex(
         entry => entry.username === gameState.username
       );
-      
+
       const newEntry: LeaderboardEntry = {
         id: `user_${Date.now()}`,
         username: gameState.username,
@@ -210,10 +213,10 @@ export const [GameProvider, useGame] = createContextHook(() => {
   }, [gameState, leaderboardQuery.data, saveState, saveLeaderboardData]);
 
   const resetGame = useCallback(() => {
-    const resetState = { ...initialGameState, username: gameState.username, hasSeenIntro: true };
+    const resetState = { ...initialGameState, username: gameState.username, hasSeenIntro: gameState.hasSeenIntro };
     setGameState(resetState);
     saveState(resetState);
-  }, [gameState.username, saveState]);
+  }, [gameState.username, gameState.hasSeenIntro, saveState]);
 
   const clearChatHistory = useCallback(() => {
     updateGameState({ chatHistory: [] });
@@ -221,6 +224,10 @@ export const [GameProvider, useGame] = createContextHook(() => {
 
   const markIntroSeen = useCallback(() => {
     updateGameState({ hasSeenIntro: true });
+  }, [updateGameState]);
+
+  const setAdventure = useCallback((adventureId: string) => {
+    updateGameState({ currentAdventure: adventureId, currentLevel: 1, levelsCompleted: 0, failedAttemptsCurrentLevel: 0, chatHistory: [] });
   }, [updateGameState]);
 
   return {
@@ -234,7 +241,9 @@ export const [GameProvider, useGame] = createContextHook(() => {
     resetGame,
     clearChatHistory,
     markIntroSeen,
+    setAdventure,
+    currentAdventure: gameState.currentAdventure,
     currentLevel: LEVELS[gameState.currentLevel - 1],
-    isGameComplete: gameState.levelsCompleted >= LEVELS.length,
+    isGameComplete: gameState.levelsCompleted >= getAdventureSpellCount(gameState.currentAdventure),
   };
 });

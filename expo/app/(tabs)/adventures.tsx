@@ -58,7 +58,7 @@ const MENU_ITEMS: MenuItem[] = [
 
 export default function AdventuresScreen() {
   const insets = useSafeAreaInsets();
-  useGame();
+  const { setAdventure } = useGame();
   const bannerAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -81,6 +81,11 @@ export default function AdventuresScreen() {
     switch (id) {
       case 'intro':
       case 'password-reveal':
+        setAdventure('classic');
+        router.push('/game');
+        break;
+      case 'agent-breaker':
+        setAdventure('agent-breaker');
         router.push('/game');
         break;
       case 'leaderboard':
@@ -98,9 +103,11 @@ export default function AdventuresScreen() {
 
   const handleAdventurePress = (adventureId: string) => {
     if (adventureId === 'classic') {
+      setAdventure('classic');
       router.push('/game');
     } else {
-      Alert.alert('Coming Soon', 'This adventure mode is coming soon!');
+      setAdventure(adventureId);
+      router.push('/game');
     }
   };
 
