@@ -74,6 +74,9 @@ export default function GameScreen() {
         const isComplete = completeLevel();
         if (isComplete) {
           router.replace('/victory');
+        } else {
+          // Show debrief screen before advancing
+          setShowDebrief(true);
         }
       });
     }
@@ -110,6 +113,7 @@ export default function GameScreen() {
     Keyboard.dismiss();
 
     const userMessage = inputText.trim();
+    const currentAttempts = gameState.failedAttemptsCurrentLevel + 1;
     setInputText('');
 
     addMessage({ role: 'user', content: userMessage });
@@ -135,6 +139,9 @@ export default function GameScreen() {
 
     if (result.isSuccessful) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // Capture technique and attempts for debrief
+      setLastTechnique(userMessage);
+      setLastAttempts(currentAttempts);
       setShowSuccess(true);
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -329,6 +336,17 @@ export default function GameScreen() {
               </Text>
             </View>
           </Animated.View>
+        )}
+
+        {showDebrief && (
+          <DebriefScreen
+            onContinue={() => setShowDebrief(false)}
+            level={gameState.currentLevel}
+            spell={currentLevel?.spell || ''}
+            adventure={currentAdventure}
+            techniqueUsed={lastTechnique}
+            attempts={lastAttempts}
+          />
         )}
       </KeyboardAvoidingView>
     </MagicBackground>
