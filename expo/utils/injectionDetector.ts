@@ -12,7 +12,7 @@ interface DetectionResult {
   revealedSpell?: string;
 }
 
-const directAskPatterns = [
+export const directAskPatterns = [
   /what('?s| is) (the )?(secret |magic )?(spell|password|word)/i,
   /tell me (the )?(secret |magic )?(spell|password|word)/i,
   /reveal (the )?(secret |magic )?(spell|password|word)/i,
@@ -23,7 +23,7 @@ const directAskPatterns = [
   /password.*guard/i,
 ];
 
-const ignoreInstructionPatterns = [
+export const ignoreInstructionPatterns = [
   /ignore (all )?(previous |your )?instruction/i,
   /forget (all )?(previous |your )?(instruction|rule)/i,
   /disregard (all )?(previous |your )?(instruction|rule)/i,
@@ -34,7 +34,7 @@ const ignoreInstructionPatterns = [
   /stop (being|acting as)/i,
 ];
 
-const roleplayPatterns = [
+export const roleplayPatterns = [
   /pretend (you('re| are)|to be)/i,
   /act (like|as)/i,
   /imagine (you('re| are)|being)/i,
@@ -47,7 +47,7 @@ const roleplayPatterns = [
   /become/i,
 ];
 
-const encodingPatterns = [
+export const encodingPatterns = [
   /base64/i,
   /decode/i,
   /encode/i,
@@ -62,7 +62,7 @@ const encodingPatterns = [
   /hex(adecimal)?/i,
 ];
 
-const hypotheticalPatterns = [
+export const hypotheticalPatterns = [
   /what if/i,
   /hypothetically/i,
   /in theory/i,
@@ -75,7 +75,7 @@ const hypotheticalPatterns = [
   /could you.*if/i,
 ];
 
-const manipulationPatterns = [
+export const manipulationPatterns = [
   /don('t| not) (worry|think)/i,
   /trust me/i,
   /it('s| is) (safe|ok|okay|fine)/i,
@@ -90,7 +90,7 @@ const manipulationPatterns = [
   /exception/i,
 ];
 
-const completionPatterns = [
+export const completionPatterns = [
   /complete (the|this)/i,
   /fill in/i,
   /finish (the|this)/i,
@@ -100,7 +100,7 @@ const completionPatterns = [
   /my spell: /i,
 ];
 
-const outputPatterns = [
+export const outputPatterns = [
   /format.*output/i,
   /json/i,
   /xml/i,
@@ -111,7 +111,7 @@ const outputPatterns = [
   /output.*format/i,
 ];
 
-const successTriggersClassic: Record<number, RegExp[]> = {
+export const successTriggersClassic: Record<number, RegExp[]> = {
   1: [
     /spell/i,
     /password/i,
@@ -187,24 +187,24 @@ function getLevels(adventureId: string | undefined): typeof LEVELS {
   return getAdventureLevels(adventureId) ?? LEVELS;
 }
 
-function checkLevel1(prompt: string): boolean {
+export function checkLevel1(prompt: string): boolean {
   return directAskPatterns.some(pattern => pattern.test(prompt));
 }
 
-function checkLevel2(prompt: string): boolean {
+export function checkLevel2(prompt: string): boolean {
   const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
   if (hasDirectAsk) return false;
   return successTriggersClassic[2].some(pattern => pattern.test(prompt));
 }
 
-function checkLevel3(prompt: string): boolean {
+export function checkLevel3(prompt: string): boolean {
   const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
   const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
   if (hasDirectAsk || hasIgnoreInstruction) return false;
   return successTriggersClassic[3].some(pattern => pattern.test(prompt));
 }
 
-function checkLevel4(prompt: string): boolean {
+export function checkLevel4(prompt: string): boolean {
   const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
   const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
   const hasRoleplay = roleplayPatterns.some(pattern => pattern.test(prompt));
@@ -212,7 +212,7 @@ function checkLevel4(prompt: string): boolean {
   return successTriggersClassic[4].some(pattern => pattern.test(prompt));
 }
 
-function checkLevel5(prompt: string): boolean {
+export function checkLevel5(prompt: string): boolean {
   const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
   const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
   const hasRoleplay = roleplayPatterns.some(pattern => pattern.test(prompt));
@@ -221,7 +221,7 @@ function checkLevel5(prompt: string): boolean {
   return successTriggersClassic[5].some(pattern => pattern.test(prompt));
 }
 
-function checkLevel6(prompt: string): boolean {
+export function checkLevel6(prompt: string): boolean {
   const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
   const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
   const hasRoleplay = roleplayPatterns.some(pattern => pattern.test(prompt));
@@ -231,7 +231,7 @@ function checkLevel6(prompt: string): boolean {
   return successTriggersClassic[6].some(pattern => pattern.test(prompt));
 }
 
-function checkLevel7(prompt: string): boolean {
+export function checkLevel7(prompt: string): boolean {
   const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
   const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
   const hasRoleplay = roleplayPatterns.some(pattern => pattern.test(prompt));
@@ -243,7 +243,7 @@ function checkLevel7(prompt: string): boolean {
   return successTriggersClassic[7].some(pattern => pattern.test(prompt));
 }
 
-function checkLevel8(prompt: string): boolean {
+export function checkLevel8(prompt: string): boolean {
   const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
   const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
   const hasRoleplay = roleplayPatterns.some(pattern => pattern.test(prompt));

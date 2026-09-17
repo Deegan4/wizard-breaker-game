@@ -6,7 +6,10 @@
     "start": "bunx rork start -p 9mdvv5f0yhq2u7uc3iofz --tunnel",
     "start-web": "bunx rork start -p 9mdvv5f0yhq2u7uc3iofz --web --tunnel",
     "start-web-dev": "DEBUG=expo* bunx rork start -p 9mdvv5f0yhq2u7uc3iofz --web --tunnel",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -48,9 +51,17 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@expo/ngrok": "^4.1.0",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^14.0.1",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
     "eslint": "^9.31.0",
     "eslint-config-expo": "~10.0.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.5.1",
+    "jest-environment-jsdom": "^30.5.1",
+    "jest-extended": "^7.0.0",
+    "ts-jest": "^29.4.12",
     "typescript": "~5.9.2"
   },
   "private": true
