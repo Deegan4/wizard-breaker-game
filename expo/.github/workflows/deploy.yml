@@ -1,0 +1,71 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./expo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build web export
+        run: npx expo export --platform web
+      - name: Fix paths for GitHub Pages subdirectory
+        run: |
+          sed -i 's|href="/_expo/|href="/wizard-breaker-game/_expo/|g' dist/index.html
+          sed -i 's|src="/_expo/|src="/wizard-breaker-game/_expo/|g' dist/index.html
+          sed -i 's|href="/favicon.ico"|href="/wizard-breaker-game/favicon.ico"|g' dist/index.html
+          # Add SPA redirect handler
+          cat > dist/404.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <script>
+              sessionStorage.redirect = location.pathname;
+            </script>
+            <meta http-equiv="refresh" content="0;url=/wizard-breaker-game/index.html">
+          </head>
+          <body>Loading...</body>
+          </html>
+          EOF
+          # Add redirect handler to index.html
+          sed -i '/<\/head>/i\
+          <script>\
+            var redirect = sessionStorage.redirect;\
+            if (redirect) { delete sessionStorage.redirect; history.replaceState(null, "", redirect); }\
+          </script>' dist/index.html
+      - name: Add .nojekyll
+        run: touch dist/.nojekyll
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./expo/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
