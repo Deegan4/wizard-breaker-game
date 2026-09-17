@@ -314,12 +314,12 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   listHeader: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.borderLight,
   },
   listHeaderText: {
     fontSize: 14,
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.borderLight,
   },
   currentUserItem: {
     backgroundColor: Colors.primary + '15',
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: Colors.backgroundTertiary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,

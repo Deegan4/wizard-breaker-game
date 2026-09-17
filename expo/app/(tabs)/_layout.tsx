@@ -14,13 +14,14 @@ export default function TabLayout() {
           backgroundColor: Colors.backgroundSecondary,
           borderTopColor: Colors.border,
           borderTopWidth: 1,
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+          height: 72,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '600' as const,
+          marginTop: 2,
         },
       }}
     >
@@ -34,7 +35,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="leaderboard"
         options={{
-          title: "Leaderboard",
+          title: "Ranks",
           tabBarIcon: ({ color, size }) => <Trophy color={color} size={size} />,
         }}
       />
@@ -48,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="adventures"
         options={{
-          title: "Adventures",
+          title: "Quests",
           tabBarIcon: ({ color, size }) => <Compass color={color} size={size} />,
         }}
       />

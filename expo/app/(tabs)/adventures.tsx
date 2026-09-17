@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   shareText: {
     fontSize: 12,
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   menuDivider: {
     height: 1,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.borderLight,
     marginVertical: 12,
   },
   menuSection: {
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
     alignSelf: 'center',
     marginTop: 8,
   },
