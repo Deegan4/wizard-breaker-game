@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GameProvider } from "@/contexts/GameContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { AchievementProvider } from "@/contexts/AchievementContext";
+import OnboardingWrapper from "@/components/OnboardingWrapper";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -64,8 +65,10 @@ export default function RootLayout() {
         <ThemeProvider>
           <AchievementProvider>
             <GameProvider>
-              <StatusBarWrapper />
-              <RootLayoutNav />
+              <OnboardingWrapper>
+                <StatusBarWrapper />
+                <RootLayoutNav />
+              </OnboardingWrapper>
             </GameProvider>
           </AchievementProvider>
         </ThemeProvider>
