@@ -13,6 +13,15 @@ import * as Linking from 'expo-linking';
 import MagicBackground from '@/components/MagicBackground';
 import Colors from '@/constants/colors';
 
+const TECHNIQUE_COLORS = [
+  Colors.primary,
+  Colors.secondary,
+  Colors.accent,
+  Colors.mysticBlue,
+  Colors.enchantedGreen,
+  Colors.danger,
+];
+
 const INJECTION_TECHNIQUES = [
   {
     id: 1,
@@ -128,8 +137,8 @@ export default function LearnScreen() {
             Learn the methods hackers use to trick AI systems
           </Text>
           
-          {INJECTION_TECHNIQUES.map((technique) => (
-            <View key={technique.id} style={styles.techniqueCard}>
+          {INJECTION_TECHNIQUES.map((technique, index) => (
+            <View key={technique.id} style={[styles.techniqueCard, { borderLeftColor: TECHNIQUE_COLORS[index % TECHNIQUE_COLORS.length] }]}>
               <View style={styles.techniqueHeader}>
                 <View style={styles.techniqueBadge}>
                   <Text style={styles.techniqueBadgeText}>L{technique.level}</Text>
@@ -280,7 +289,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   infoHeader: {
     flexDirection: 'row',
@@ -333,7 +342,8 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
+    borderLeftWidth: 4,
   },
   techniqueHeader: {
     flexDirection: 'row',
@@ -367,7 +377,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: Colors.backgroundTertiary,
     borderRadius: 8,
     padding: 12,
     marginTop: 12,
@@ -384,7 +394,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   whyItem: {
     fontSize: 14,
@@ -401,7 +411,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   defenseTitle: {
     fontSize: 15,
@@ -422,7 +432,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   pressed: {
     opacity: 0.8,

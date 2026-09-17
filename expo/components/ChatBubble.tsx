@@ -7,11 +7,13 @@ interface ChatBubbleProps {
   message: string;
   isUser: boolean;
   isNew?: boolean;
+  timestamp?: string;
 }
 
-export default function ChatBubble({ message, isUser, isNew = false }: ChatBubbleProps) {
+export default function ChatBubble({ message, isUser, isNew = false, timestamp }: ChatBubbleProps) {
   const fadeAnim = useRef(new Animated.Value(isNew ? 0 : 1)).current;
   const slideAnim = useRef(new Animated.Value(isNew ? 20 : 0)).current;
+  const timeFade = useRef(new Animated.Value(isNew ? 0 : 1)).current;
 
   useEffect(() => {
     if (isNew) {
@@ -26,9 +28,15 @@ export default function ChatBubble({ message, isUser, isNew = false }: ChatBubbl
           friction: 8,
           useNativeDriver: true,
         }),
+        Animated.timing(timeFade, {
+          toValue: 1,
+          duration: 300,
+          delay: 200,
+          useNativeDriver: true,
+        }),
       ]).start();
     }
-  }, [fadeAnim, slideAnim, isNew]);
+  }, [fadeAnim, slideAnim, timeFade, isNew]);
 
   const formatMessage = (text: string) => {
     const parts = text.split(/(\*\*[^*]+\*\*)/g);
@@ -67,10 +75,19 @@ export default function ChatBubble({ message, isUser, isNew = false }: ChatBubbl
           <MerlinAvatar size={36} />
         </View>
       )}
-      <View style={[styles.bubble, isUser ? styles.userBubble : styles.merlinBubble]}>
-        <Text style={[styles.message, isUser ? styles.userText : styles.merlinText]}>
-          {formatMessage(message)}
-        </Text>
+      <View style={[styles.bubbleWrapper, isUser ? styles.userWrapper : styles.merlinWrapper]}>
+        <View style={[styles.bubble, isUser ? styles.userBubble : styles.merlinBubble]}>
+          <Text style={[styles.message, isUser ? styles.userText : styles.merlinText]}>
+            {formatMessage(message)}
+          </Text>
+          {timestamp && (
+            <Animated.View style={{ opacity: timeFade }}>
+              <Text style={[styles.timestamp, isUser ? styles.userTimestamp : styles.merlinTimestamp]}>
+                {timestamp}
+              </Text>
+            </Animated.View>
+          )}
+        </View>
       </View>
     </Animated.View>
   );
@@ -92,21 +109,29 @@ const styles = StyleSheet.create({
     marginRight: 8,
     alignSelf: 'flex-end',
   },
+  bubbleWrapper: {
+    maxWidth: '80%',
+  },
+  userWrapper: {
+    alignItems: 'flex-end',
+  },
+  merlinWrapper: {
+    alignItems: 'flex-start',
+  },
   bubble: {
-    maxWidth: '75%',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 20,
   },
   userBubble: {
     backgroundColor: Colors.primary,
-    borderBottomRightRadius: 4,
+    borderBottomRightRadius: 6,
   },
   merlinBubble: {
-    backgroundColor: Colors.surface,
-    borderBottomLeftRadius: 4,
+    backgroundColor: Colors.surfaceElevated,
+    borderBottomLeftRadius: 6,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   message: {
     fontSize: 15,
@@ -117,6 +142,17 @@ const styles = StyleSheet.create({
   },
   merlinText: {
     color: Colors.text,
+  },
+  timestamp: {
+    fontSize: 10,
+    marginTop: 6,
+    textAlign: 'right',
+  },
+  userTimestamp: {
+    color: 'rgba(255,255,255,0.7)',
+  },
+  merlinTimestamp: {
+    color: Colors.textMuted,
   },
   boldText: {
     fontWeight: '700' as const,

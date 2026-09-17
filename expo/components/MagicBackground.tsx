@@ -24,20 +24,20 @@ function generateStars(count: number): Star[] {
 }
 
 export default function MagicBackground({ children }: { children: React.ReactNode }) {
-  const stars = useRef<Star[]>(generateStars(50)).current;
+  const stars = useRef<Star[]>(generateStars(40)).current;
 
   useEffect(() => {
     stars.forEach((star) => {
       const twinkle = () => {
         Animated.sequence([
           Animated.timing(star.opacity, {
-            toValue: 0.2,
-            duration: 1000 + Math.random() * 1000,
+            toValue: 0.15,
+            duration: 1500 + Math.random() * 1500,
             useNativeDriver: true,
           }),
           Animated.timing(star.opacity, {
             toValue: 1,
-            duration: 1000 + Math.random() * 1000,
+            duration: 1500 + Math.random() * 1500,
             useNativeDriver: true,
           }),
         ]).start(() => twinkle());

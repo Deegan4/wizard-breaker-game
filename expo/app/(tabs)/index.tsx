@@ -317,32 +317,24 @@ export default function HomeScreen() {
                 </Pressable>
               </Animated.View>
 
-              <View style={styles.infoSection}>
-                <Pressable
-                  style={styles.infoCard}
-                  onPress={() => router.push('/learn')}
-                >
-                  <View style={styles.infoIcon}>
-                    <Text style={styles.infoEmoji}>🔮</Text>
-                  </View>
-                  <View style={styles.infoContent}>
-                    <Text style={styles.infoTitle}>What is Prompt Injection?</Text>
-                    <Text style={styles.infoText}>
-                      Learn about AI security vulnerabilities
-                    </Text>
-                  </View>
-                  <ChevronRight size={20} color={Colors.textMuted} />
-                </Pressable>
-              </View>
-
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>
-                  Magic Born. Coder Loved. Wizard Hated.
-                </Text>
-                <Text style={styles.disclaimer}>
-                  For educational purposes only. Learn AI security responsibly.
-                </Text>
-              </View>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.infoCard,
+                  pressed && { opacity: 0.8 },
+                ]}
+                onPress={() => router.push('/learn')}
+              >
+                <View style={styles.infoIcon}>
+                  <Text style={styles.infoEmoji}>🔮</Text>
+                </View>
+                <View style={styles.infoContent}>
+                  <Text style={styles.infoTitle}>What is Prompt Injection?</Text>
+                  <Text style={styles.infoText}>
+                    Learn about AI security vulnerabilities
+                  </Text>
+                </View>
+                <ChevronRight size={20} color={Colors.textMuted} />
+              </Pressable>
             </>
           )}
         </ScrollView>
@@ -389,7 +381,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: 24,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   statsRow: {
     flexDirection: 'row',
@@ -419,12 +411,12 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.border,
   },
   currentLevelCard: {
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   levelHeader: {
     flexDirection: 'row',
@@ -515,9 +507,6 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     flex: 1,
   },
-  infoSection: {
-    marginTop: 24,
-  },
   infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -525,13 +514,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
+    marginTop: 20,
   },
   infoIcon: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: Colors.backgroundTertiary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
@@ -599,7 +589,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.text,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
     textAlign: 'center',
   },
   submitButton: {

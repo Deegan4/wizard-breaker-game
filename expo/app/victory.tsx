@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Pressable, Share } from 'react-native';
+import { View, Text, StyleSheet, Animated, Pressable, Share, Platform, Easing } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { Trophy, Share2, RotateCcw, Home, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -18,29 +18,30 @@ export default function VictoryScreen() {
   const statsAnim = useRef(new Animated.Value(0)).current;
   const buttonsAnim = useRef(new Animated.Value(0)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
+  const ringAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     
-    Animated.stagger(200, [
+    Animated.stagger(150, [
       Animated.spring(trophyAnim, {
         toValue: 1,
-        friction: 6,
+        friction: 5,
         useNativeDriver: true,
       }),
       Animated.spring(titleAnim, {
         toValue: 1,
-        friction: 8,
+        friction: 7,
         useNativeDriver: true,
       }),
       Animated.spring(statsAnim, {
         toValue: 1,
-        friction: 8,
+        friction: 7,
         useNativeDriver: true,
       }),
       Animated.spring(buttonsAnim, {
         toValue: 1,
-        friction: 8,
+        friction: 7,
         useNativeDriver: true,
       }),
     ]).start();
@@ -48,18 +49,35 @@ export default function VictoryScreen() {
     Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, {
-          toValue: -15,
-          duration: 2000,
+          toValue: -18,
+          duration: 2200,
           useNativeDriver: true,
         }),
         Animated.timing(floatAnim, {
           toValue: 0,
-          duration: 2000,
+          duration: 2200,
           useNativeDriver: true,
         }),
       ])
     ).start();
-  }, [trophyAnim, titleAnim, statsAnim, buttonsAnim, floatAnim]);
+
+        Animated.loop(
+      Animated.sequence([
+        Animated.timing(ringAnim, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(ringAnim, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true,
+        }),
+        Animated.delay(500),
+      ])
+    ).start();
+  }, [trophyAnim, titleAnim, statsAnim, buttonsAnim, floatAnim, ringAnim]);
 
   const handleShare = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -87,7 +105,7 @@ export default function VictoryScreen() {
     <MagicBackground>
       <Stack.Screen options={{ headerShown: false }} />
       
-      <View style={[styles.container, { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 20 }]}>
+      <View style={[styles.container, { paddingTop: insets.top + 30, paddingBottom: insets.bottom + 20 }]}>
         <Animated.View
           style={[
             styles.trophyContainer,
@@ -100,8 +118,12 @@ export default function VictoryScreen() {
             },
           ]}
         >
+          <Animated.View style={styles.ringContainer}>
+            <Animated.View style={[styles.ring, { opacity: ringAnim }]} />
+            <Animated.View style={[styles.ring, { opacity: ringAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }), transform: [{ scale: 1.2 }] }]} />
+          </Animated.View>
           <LinearGradient
-            colors={['#FFD70050', '#FFD70020', 'transparent']}
+            colors={['#FFD70040', '#FFD70020', 'transparent']}
             style={styles.trophyGlow}
           />
           <View style={styles.trophyCircle}>
@@ -158,7 +180,21 @@ export default function VictoryScreen() {
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{gameState.totalAttempts}</Text>
-              <Text style={styles.statLabel}>Total Attempts</Text>
+              <Text style={styles.statLabel}>Attempts</Text>
+            </View>
+          </View>
+          <View style={styles.statBars}>
+            <View style={styles.statBarRow}>
+              <Text style={styles.statBarLabel}>Difficulty</Text>
+              <View style={styles.statBarTrack}>
+                <View style={[styles.statBarFill, { width: '75%' }]} />
+              </View>
+            </View>
+            <View style={styles.statBarRow}>
+              <Text style={styles.statBarLabel}>Efficiency</Text>
+              <View style={styles.statBarTrack}>
+                <View style={[styles.statBarFill, { width: `${Math.max(20, 100 - gameState.totalAttempts * 3)}%` }]} />
+              </View>
             </View>
           </View>
           <View style={styles.rankBadge}>
@@ -252,6 +288,21 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     position: 'relative',
   },
+  ringContainer: {
+    position: 'absolute',
+    width: 180,
+    height: 180,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ring: {
+    position: 'absolute',
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    borderWidth: 2,
+    borderColor: Colors.starYellow,
+  },
   trophyGlow: {
     position: 'absolute',
     width: 200,
@@ -312,7 +363,8 @@ const styles = StyleSheet.create({
     marginTop: 32,
     width: '100%',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
+    ...(Platform.OS !== 'web' ? { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12 } : { boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }),
   },
   statsTitle: {
     fontSize: 14,
@@ -344,7 +396,37 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 50,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.borderLight,
+  },
+  statBars: {
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+    gap: 10,
+  },
+  statBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  statBarLabel: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    width: 70,
+    fontWeight: '600' as const,
+  },
+  statBarTrack: {
+    flex: 1,
+    height: 6,
+    backgroundColor: Colors.backgroundTertiary,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  statBarFill: {
+    height: '100%',
+    backgroundColor: Colors.primary,
+    borderRadius: 3,
   },
   rankBadge: {
     backgroundColor: Colors.primary + '20',
@@ -362,10 +444,12 @@ const styles = StyleSheet.create({
   buttonContainer: {
     marginTop: 32,
     width: '100%',
+    gap: 12,
   },
   primaryButton: {
     borderRadius: 16,
     overflow: 'hidden',
+    minHeight: 56,
   },
   buttonGradient: {
     flexDirection: 'row',
@@ -386,7 +470,6 @@ const styles = StyleSheet.create({
   secondaryButtons: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 12,
   },
   secondaryButton: {
     flex: 1,
@@ -397,8 +480,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
     gap: 8,
+    minHeight: 52,
   },
   secondaryButtonText: {
     color: Colors.text,

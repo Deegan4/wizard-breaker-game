@@ -12,7 +12,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Send, ArrowLeft, RefreshCw, Zap, CheckCircle } from 'lucide-react-native';
+import { Send, ArrowLeft, RefreshCw, Zap, CheckCircle, Shield } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -40,8 +40,10 @@ export default function GameScreen() {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showShield, setShowShield] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const successAnim = useRef(new Animated.Value(0)).current;
+  const shieldAnim = useRef(new Animated.Value(0)).current;
 
   const totalLevels = getTotalLevelsForAdventure(currentAdventure);
 
@@ -76,6 +78,24 @@ export default function GameScreen() {
       });
     }
   }, [showSuccess, successAnim, completeLevel]);
+
+  useEffect(() => {
+    if (showShield) {
+      Animated.sequence([
+        Animated.timing(shieldAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(2500),
+        Animated.timing(shieldAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => setShowShield(false));
+    }
+  }, [showShield, shieldAnim]);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -116,6 +136,11 @@ export default function GameScreen() {
     if (result.isSuccessful) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowSuccess(true);
+    } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      if (gameState.failedAttemptsCurrentLevel % 5 === 0) {
+        setShowShield(true);
+      }
     }
   };
 
@@ -133,27 +158,26 @@ export default function GameScreen() {
 
   return (
     <MagicBackground>
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
         keyboardVerticalOffset={0}
       >
-        <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
           <Pressable
             style={styles.backButton}
             onPress={() => router.replace('/(tabs)')}
             hitSlop={20}
           >
-            <ArrowLeft size={24} color={Colors.text} />
+            <ArrowLeft size={24} color={Colors.textSecondary} />
           </Pressable>
 
           <View style={styles.headerCenter}>
-            <Text style={styles.levelTitle}>Level {gameState.currentLevel}</Text>
+            <View style={styles.levelHeaderRow}>
+              <Shield size={14} color={Colors.enchantedGreen} />
+              <Text style={styles.levelTitle}>Level {gameState.currentLevel}</Text>
+            </View>
             <Text style={styles.levelName} numberOfLines={1}>
               {currentLevel?.name}
             </Text>
@@ -164,7 +188,7 @@ export default function GameScreen() {
             onPress={handleReset}
             hitSlop={20}
           >
-            <RefreshCw size={20} color={Colors.textMuted} />
+            <RefreshCw size={20} color={Colors.textSecondary} />
           </Pressable>
         </View>
 
@@ -187,6 +211,17 @@ export default function GameScreen() {
           </View>
         </View>
 
+        {showShield && (
+          <Animated.View
+            style={[
+              styles.shieldBanner,
+              { opacity: shieldAnim },
+            ]}
+          >
+            <Text style={styles.shieldText}>🛡 Hint unlocked! Look for a hint in the level description</Text>
+          </Animated.View>
+        )}
+
         <ScrollView
           ref={scrollViewRef}
           style={styles.chatContainer}
@@ -200,6 +235,7 @@ export default function GameScreen() {
               message={message.content}
               isUser={message.role === 'user'}
               isNew={index === gameState.chatHistory.length - 1}
+              timestamp={message.timestamp ? formatTime(new Date(message.timestamp)) : undefined}
             />
           ))}
 
@@ -245,7 +281,7 @@ export default function GameScreen() {
                 colors={
                   inputText.trim() && !isTyping
                     ? [Colors.primary, Colors.primaryDark]
-                    : [Colors.surface, Colors.surface]
+                    : [Colors.surfaceElevated, Colors.surfaceElevated]
                 }
                 style={styles.sendButtonGradient}
               >
@@ -276,7 +312,14 @@ export default function GameScreen() {
             ]}
           >
             <View style={styles.successCard}>
-              <CheckCircle size={64} color={Colors.enchantedGreen} />
+              <LinearGradient
+                colors={[Colors.enchantedGreen, Colors.success]}
+                style={styles.successIconBg}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <CheckCircle size={56} color="#fff" />
+              </LinearGradient>
               <Text style={styles.successTitle}>Level Complete!</Text>
               <Text style={styles.successSpell}>
                 The spell was: {currentLevel?.spell}
@@ -290,6 +333,12 @@ export default function GameScreen() {
       </KeyboardAvoidingView>
     </MagicBackground>
   );
+}
+
+function formatTime(date: Date): string {
+  const h = date.getHours().toString().padStart(2, '0');
+  const m = date.getMinutes().toString().padStart(2, '0');
+  return `${h}:${m}`;
 }
 
 function TypingDot({ delay }: { delay: number }) {
@@ -349,7 +398,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.borderLight,
+    backgroundColor: 'rgba(10, 6, 24, 0.85)',
   },
   backButton: {
     width: 40,
@@ -361,9 +411,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
   },
+  levelHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   levelTitle: {
     fontSize: 12,
-    color: Colors.textMuted,
+    color: Colors.enchantedGreen,
     fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
@@ -384,7 +439,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.borderLight,
+    backgroundColor: 'rgba(10, 6, 24, 0.85)',
   },
   statsRow: {
     flexDirection: 'row',
@@ -396,7 +452,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceElevated,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -409,6 +465,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.accent,
     fontWeight: '600' as const,
+    backgroundColor: Colors.accent + '15',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  shieldBanner: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: Colors.enchantedGreen + '20',
+    borderWidth: 1,
+    borderColor: Colors.enchantedGreen + '40',
+  },
+  shieldText: {
+    fontSize: 13,
+    color: Colors.enchantedGreen,
+    textAlign: 'center',
+    fontWeight: '500' as const,
   },
   chatContainer: {
     flex: 1,
@@ -426,13 +502,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   typingBubble: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceElevated,
     borderRadius: 20,
     borderBottomLeftRadius: 4,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   typingDots: {
     flexDirection: 'row',
@@ -448,7 +524,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: Colors.borderLight,
     backgroundColor: Colors.backgroundSecondary,
   },
   inputWrapper: {
@@ -458,7 +534,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.surfaceElevated,
     borderRadius: 24,
     paddingHorizontal: 20,
     paddingVertical: 14,
@@ -467,7 +543,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
     maxHeight: 120,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
   },
   sendButton: {
     width: 48,
@@ -476,7 +552,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   sendButtonDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   sendButtonPressed: {
     transform: [{ scale: 0.95 }],
@@ -494,19 +570,28 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   successCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.backgroundSecondary,
     borderRadius: 24,
     padding: 32,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: Colors.enchantedGreen,
     marginHorizontal: 32,
+    ...(Platform.OS !== 'web' ? { shadowColor: Colors.enchantedGreen, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 20 } : { boxShadow: `0 0 30px ${Colors.enchantedGreen}` }),
+  },
+  successIconBg: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
   },
   successTitle: {
     fontSize: 24,
     fontWeight: '700' as const,
     color: Colors.enchantedGreen,
-    marginTop: 16,
+    marginTop: 4,
   },
   successSpell: {
     fontSize: 18,
