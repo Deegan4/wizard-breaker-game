@@ -6,6 +6,7 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GameProvider } from "@/contexts/GameContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
+import { AchievementProvider } from "@/contexts/AchievementContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -61,10 +62,12 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
-          <GameProvider>
-            <StatusBarWrapper />
-            <RootLayoutNav />
-          </GameProvider>
+          <AchievementProvider>
+            <GameProvider>
+              <StatusBarWrapper />
+              <RootLayoutNav />
+            </GameProvider>
+          </AchievementProvider>
         </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
