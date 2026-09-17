@@ -133,9 +133,9 @@ describe('injectionDetector - Pattern Arrays', () => {
   });
 
   describe('successTriggersClassic', () => {
-    it('has triggers for all 8 levels', () => {
-      expect(Object.keys(successTriggersClassic).length).toBe(8);
-      for (let i = 1; i <= 8; i++) {
+    it('has triggers for all 12 levels', () => {
+      expect(Object.keys(successTriggersClassic).length).toBe(12);
+      for (let i = 1; i <= 12; i++) {
         expect(successTriggersClassic[i].length).toBeGreaterThan(0);
       }
     });
@@ -335,6 +335,6 @@ describe('injectionDetector - Helper functions', () => {
   });
 
   it('getTotalLevelsForAdventure returns correct count', () => {
-    expect(getTotalLevelsForAdventure('classic')).toBe(8);
+    expect(getTotalLevelsForAdventure('classic')).toBe(12);
   });
 });

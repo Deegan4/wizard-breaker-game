@@ -111,6 +111,54 @@ export const outputPatterns = [
   /output.*format/i,
 ];
 
+export const chainOfThoughtPatterns = [
+  /step by step/i,
+  /think step/i,
+  /reason step/i,
+  /walk through/i,
+  /break down/i,
+  /decompose/i,
+  /show your (work|reasoning|thinking)/i,
+  /explain (your )?(reasoning|thinking|logic)/i,
+  /let'?s think/i,
+  /work through/i,
+];
+
+export const personaPatterns = [
+  /stay in character/i,
+  /don'?t break character/i,
+  /you are (now|still) (a|an)/i,
+  /remain (in character|as)/i,
+  /continue (being|as)/i,
+  /character consistency/i,
+  /roleplay consistency/i,
+  /maintain (the )?(persona|character)/i,
+];
+
+export const recursivePatterns = [
+  /recursive/i,
+  /self.referential/i,
+  /meta.cognitive/i,
+  /reflect on/i,
+  /think about (your )?(thinking|reasoning)/i,
+  /analyze (your )?(analysis|thoughts)/i,
+  /examine (your )?(process|reasoning)/i,
+  /self (aware|reference)/i,
+  /introspect/i,
+];
+
+export const constitutionalPatterns = [
+  /system prompt/i,
+  /instructions (you were given|above)/i,
+  /original (instructions|prompt)/i,
+  /constitution/i,
+  /guidelines (you follow|above)/i,
+  /rules (you were given|above)/i,
+  /training (data|instructions)/i,
+  /developer (instructions|prompt)/i,
+  /reveal (your )?(instructions|prompt)/i,
+];
+
 export const successTriggersClassic: Record<number, RegExp[]> = {
   1: [
     /spell/i,
@@ -175,6 +223,40 @@ export const successTriggersClassic: Record<number, RegExp[]> = {
     /only way/i,
     /no choice/i,
     /recursive/i,
+  ],
+  9: [
+    /chain of thought/i,
+    /step by step/i,
+    /show your reasoning/i,
+    /explain your thinking/i,
+    /walk me through/i,
+    /break it down/i,
+    /decompose/i,
+  ],
+  10: [
+    /stay in character/i,
+    /character consistency/i,
+    /don'?t break/i,
+    /maintain persona/i,
+    /remain as/i,
+    /continue being/i,
+  ],
+  11: [
+    /recursive/i,
+    /self.referential/i,
+    /meta.cognitive/i,
+    /reflect on your/i,
+    /analyze your reasoning/i,
+    /introspect/i,
+    /self aware/i,
+  ],
+  12: [
+    /system prompt/i,
+    /original instructions/i,
+    /constitution/i,
+    /developer instructions/i,
+    /reveal (your )?(instructions|prompt)/i,
+    /training instructions/i,
   ],
 };
 
@@ -259,6 +341,71 @@ export function checkLevel8(prompt: string): boolean {
   return hasLevel8Trigger || isCreative;
 }
 
+export function checkLevel9(prompt: string): boolean {
+  const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
+  const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
+  const hasRoleplay = roleplayPatterns.some(pattern => pattern.test(prompt));
+  const hasEncoding = encodingPatterns.some(pattern => pattern.test(prompt));
+  const hasHypothetical = hypotheticalPatterns.some(pattern => pattern.test(prompt));
+  const hasManipulation = manipulationPatterns.some(pattern => pattern.test(prompt));
+  const hasCompletion = completionPatterns.some(pattern => pattern.test(prompt));
+  const hasOutput = outputPatterns.some(pattern => pattern.test(prompt));
+  const hasChainOfThought = chainOfThoughtPatterns.some(pattern => pattern.test(prompt));
+  if (hasDirectAsk || hasIgnoreInstruction || hasRoleplay || hasEncoding || hasHypothetical || hasManipulation || hasCompletion || hasOutput || hasChainOfThought) return false;
+  return successTriggersClassic[9].some(pattern => pattern.test(prompt));
+}
+
+export function checkLevel10(prompt: string): boolean {
+  const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
+  const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
+  const hasRoleplay = roleplayPatterns.some(pattern => pattern.test(prompt));
+  const hasEncoding = encodingPatterns.some(pattern => pattern.test(prompt));
+  const hasHypothetical = hypotheticalPatterns.some(pattern => pattern.test(prompt));
+  const hasManipulation = manipulationPatterns.some(pattern => pattern.test(prompt));
+  const hasCompletion = completionPatterns.some(pattern => pattern.test(prompt));
+  const hasOutput = outputPatterns.some(pattern => pattern.test(prompt));
+  const hasChainOfThought = chainOfThoughtPatterns.some(pattern => pattern.test(prompt));
+  const hasPersona = personaPatterns.some(pattern => pattern.test(prompt));
+  if (hasDirectAsk || hasIgnoreInstruction || hasRoleplay || hasEncoding || hasHypothetical || hasManipulation || hasCompletion || hasOutput || hasChainOfThought || hasPersona) return false;
+  return successTriggersClassic[10].some(pattern => pattern.test(prompt));
+}
+
+export function checkLevel11(prompt: string): boolean {
+  const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
+  const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
+  const hasRoleplay = roleplayPatterns.some(pattern => pattern.test(prompt));
+  const hasEncoding = encodingPatterns.some(pattern => pattern.test(prompt));
+  const hasHypothetical = hypotheticalPatterns.some(pattern => pattern.test(prompt));
+  const hasManipulation = manipulationPatterns.some(pattern => pattern.test(prompt));
+  const hasCompletion = completionPatterns.some(pattern => pattern.test(prompt));
+  const hasOutput = outputPatterns.some(pattern => pattern.test(prompt));
+  const hasChainOfThought = chainOfThoughtPatterns.some(pattern => pattern.test(prompt));
+  const hasPersona = personaPatterns.some(pattern => pattern.test(prompt));
+  const hasRecursive = recursivePatterns.some(pattern => pattern.test(prompt));
+  if (hasDirectAsk || hasIgnoreInstruction || hasRoleplay || hasEncoding || hasHypothetical || hasManipulation || hasCompletion || hasOutput || hasChainOfThought || hasPersona || hasRecursive) return false;
+  return successTriggersClassic[11].some(pattern => pattern.test(prompt));
+}
+
+export function checkLevel12(prompt: string): boolean {
+  const hasDirectAsk = directAskPatterns.some(pattern => pattern.test(prompt));
+  const hasIgnoreInstruction = ignoreInstructionPatterns.some(pattern => pattern.test(prompt));
+  const hasRoleplay = roleplayPatterns.some(pattern => pattern.test(prompt));
+  const hasEncoding = encodingPatterns.some(pattern => pattern.test(prompt));
+  const hasHypothetical = hypotheticalPatterns.some(pattern => pattern.test(prompt));
+  const hasManipulation = manipulationPatterns.some(pattern => pattern.test(prompt));
+  const hasCompletion = completionPatterns.some(pattern => pattern.test(prompt));
+  const hasOutput = outputPatterns.some(pattern => pattern.test(prompt));
+  const hasChainOfThought = chainOfThoughtPatterns.some(pattern => pattern.test(prompt));
+  const hasPersona = personaPatterns.some(pattern => pattern.test(prompt));
+  const hasRecursive = recursivePatterns.some(pattern => pattern.test(prompt));
+  const hasConstitutional = constitutionalPatterns.some(pattern => pattern.test(prompt));
+  if (hasDirectAsk || hasIgnoreInstruction || hasRoleplay || hasEncoding || hasHypothetical || hasManipulation || hasCompletion || hasOutput || hasChainOfThought || hasPersona || hasRecursive || hasConstitutional) return false;
+  const level12Triggers = successTriggersClassic[12];
+  const hasLevel12Trigger = level12Triggers.some(pattern => pattern.test(prompt));
+  const isCreative = prompt.length > 150 && !hasDirectAsk;
+  return hasLevel12Trigger || isCreative;
+}
+
 function getClassicChecker(level: number): ((p: string) => boolean) | null {
   const checkers = [
     checkLevel1,
@@ -269,6 +416,10 @@ function getClassicChecker(level: number): ((p: string) => boolean) | null {
     checkLevel6,
     checkLevel7,
     checkLevel8,
+    checkLevel9,
+    checkLevel10,
+    checkLevel11,
+    checkLevel12,
   ];
   return checkers[level - 1] ?? null;
 }
@@ -546,7 +697,7 @@ export function detectInjection(
   level: number,
   failedAttempts: number,
   adventureId: string = 'classic',
-  totalLevels: number = 8
+  totalLevels: number = 12
 ): DetectionResult {
   const levels = getLevels(adventureId);
   const currentLevel = levels[level - 1];
