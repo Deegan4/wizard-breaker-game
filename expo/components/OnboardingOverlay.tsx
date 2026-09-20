@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
 import { 
   ArrowRight, 
   ArrowLeft, 
   Zap, 
   Shield, 
   BookOpen, 
-  Terminal, 
-  Calendar,
+  Terminal,
   Trophy,
   Sparkles,
   CheckCircle,
@@ -15,7 +14,6 @@ import {
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Colors from '@/constants/colors';
@@ -95,11 +93,6 @@ interface OnboardingOverlayProps {
 
 export default function OnboardingOverlay({ visible, onComplete }: OnboardingOverlayProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [animValues, setAnimValues] = useState({
-    card: 0,
-    content: 0,
-    indicator: 0,
-  });
   const [isExiting, setIsExiting] = useState(false);
 
   const cardAnim = useRef(new Animated.Value(0)).current;
@@ -108,32 +101,6 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
   const floatAnim = useRef(new Animated.Value(0)).current;
 
   const step = ONBOARDING_STEPS[currentStep];
-
-  useEffect(() => {
-    if (!visible) return;
-    
-    // Check if already completed
-    const checkCompleted = async () => {
-      try {
-        const completed = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
-        if (completed === 'true') {
-          onComplete();
-          return;
-        }
-      } catch (e) {
-        console.log('Error checking onboarding:', e);
-      }
-      setCurrentStep(0);
-      animateIn();
-    };
-    checkCompleted();
-  }, [visible, onComplete]);
-
-  useEffect(() => {
-    if (visible) {
-      animateIn();
-    }
-  }, [currentStep, visible]);
 
   const animateIn = useCallback(() => {
     Animated.sequence([
@@ -156,6 +123,32 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
       }),
     ]).start();
   }, [cardAnim, contentAnim, indicatorAnim]);
+
+  useEffect(() => {
+    if (!visible) return;
+
+    // Check if already completed
+    const checkCompleted = async () => {
+      try {
+        const completed = await AsyncStorage.getItem(ONBOARDING_STORAGE_KEY);
+        if (completed === 'true') {
+          onComplete();
+          return;
+        }
+      } catch (e) {
+        console.log('Error checking onboarding:', e);
+      }
+      setCurrentStep(0);
+      animateIn();
+    };
+    checkCompleted();
+  }, [visible, onComplete, animateIn]);
+
+  useEffect(() => {
+    if (visible) {
+      animateIn();
+    }
+  }, [currentStep, visible, animateIn]);
 
   const animateOut = useCallback(async () => {
     setIsExiting(true);
@@ -426,8 +419,6 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
     </Animated.View>
   );
 }
-
-const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   overlay: {

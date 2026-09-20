@@ -63,14 +63,14 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
-          <AchievementProvider>
-            <GameProvider>
+          <GameProvider>
+            <AchievementProvider>
               <OnboardingWrapper>
                 <StatusBarWrapper />
                 <RootLayoutNav />
               </OnboardingWrapper>
-            </GameProvider>
-          </AchievementProvider>
+            </AchievementProvider>
+          </GameProvider>
         </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>

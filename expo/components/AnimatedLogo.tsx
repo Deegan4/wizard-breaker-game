@@ -296,6 +296,7 @@ export default function AnimatedLogo({ size = 140 }: AnimatedLogoProps) {
 
       setTimeout(animate, runePositions[index].delay + Math.random() * 1000);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const spin = mainRotation.interpolate({

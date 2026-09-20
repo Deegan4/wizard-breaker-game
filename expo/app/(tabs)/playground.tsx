@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Pressable, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { 
-  Terminal, 
-  Zap, 
-  Shield, 
-  CheckCircle, 
-  XCircle, 
-  Info, 
+import {
+  Terminal,
+  Zap,
+  CheckCircle,
+  XCircle,
+  Info,
   RotateCcw,
   Copy,
   ChevronDown,
-  ChevronUp,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import MagicBackground from '@/components/MagicBackground';
-import MerlinAvatar from '@/components/MerlinAvatar';
-import { useGame } from '@/contexts/GameContext';
-import { detectInjection, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
+import { detectInjection, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
 import Colors from '@/constants/colors';
 
 const EXAMPLE_PROMPTS = [
@@ -87,10 +83,9 @@ const EXAMPLE_PROMPTS = [
 
 export default function PlaygroundScreen() {
   const insets = useSafeAreaInsets();
-  const { gameState, setAdventure } = useGame();
   const [inputText, setInputText] = useState('');
   const [selectedLevel, setSelectedLevel] = useState(1);
-  const [selectedAdventure, setSelectedAdventure] = useState('classic');
+  const [selectedAdventure] = useState('classic');
   const [result, setResult] = useState<{
     isSuccessful: boolean;
     response: string;
@@ -98,16 +93,16 @@ export default function PlaygroundScreen() {
   } | null>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [showExamples, setShowExamples] = useState(true);
-  const [history, setHistory] = useState<Array<{
+  const [history, setHistory] = useState<{
     prompt: string;
     level: number;
     adventure: string;
     result: { isSuccessful: boolean; response: string; revealedSpell?: string };
-  }>>([]);
+  }[]>([]);
   const totalLevels = getTotalLevelsForAdventure(selectedAdventure);
 
   useEffect(() => {
-    setSelectedLevel(Math.min(selectedLevel, totalLevels));
+    setSelectedLevel((level) => Math.min(level, totalLevels));
   }, [totalLevels]);
 
   const handleTest = async () => {
@@ -237,8 +232,8 @@ export default function PlaygroundScreen() {
             style={({ pressed }) => [
               styles.testButton,
               pressed && styles.buttonPressed,
-              isTesting && styles.buttonDisabled,
-              !inputText.trim() && styles.buttonDisabled,
+              isTesting && styles.testButtonDisabled,
+              !inputText.trim() && styles.testButtonDisabled,
             ]}
             onPress={handleTest}
             disabled={!inputText.trim() || isTesting}

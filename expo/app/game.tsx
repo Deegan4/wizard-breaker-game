@@ -23,6 +23,7 @@ import ProgressBar from '@/components/ProgressBar';
 import { useGame } from '@/contexts/GameContext';
 import { detectInjection, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
 import Colors from '@/constants/colors';
+import DebriefScreen from '@/app/debrief';
 
 export default function GameScreen() {
   const insets = useSafeAreaInsets();
@@ -41,6 +42,9 @@ export default function GameScreen() {
   const [isTyping, setIsTyping] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showShield, setShowShield] = useState(false);
+  const [showDebrief, setShowDebrief] = useState(false);
+  const [lastTechnique, setLastTechnique] = useState('');
+  const [lastAttempts, setLastAttempts] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const successAnim = useRef(new Animated.Value(0)).current;
   const shieldAnim = useRef(new Animated.Value(0)).current;
