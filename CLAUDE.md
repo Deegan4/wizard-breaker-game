@@ -19,17 +19,17 @@ bun run start-web      # start web preview
 bun run lint           # expo lint (ESLint, eslint-config-expo)
 ```
 
-There is **no test suite and no build script** — `start`, `start-web`, and `lint` are the only scripts. The dev server runs through `bunx rork start` with a hardcoded Rork project id, not the plain `expo start` command.
+There's a Jest test suite (`bun run test`, 38 tests against `utils/injectionDetector.ts`) and a real GitHub Actions CI (`.github/workflows/ci.yml`: lint + typecheck + test) and Pages deploy (`.github/workflows/deploy.yml`), but no app build script beyond EAS (see `BUILD.md`) — `start`, `start-web`, `start-web-dev`, `lint`, `test`, `test:watch`, and `test:coverage` are the only `package.json` scripts. The dev server runs through `bunx rork start` with a hardcoded Rork project id, not the plain `expo start` command (plain `expo start --web` also works and is what CI/local verification without the Rork tunnel should use).
 
 ## Architecture
 
-A single-player React Native (Expo Router) game: the player tries to "prompt inject" a wizard NPC (Merlin) into revealing a secret spell across 8 levels of escalating defenses. Despite the AI/LLM theme, **there is no LLM or backend** — Merlin's responses are produced entirely by local regex matching.
+A single-player React Native (Expo Router) game: the player tries to "prompt inject" a wizard NPC (Merlin) into revealing a secret spell across 12 levels of escalating defenses (Classic mode), plus separate themed Adventure level sets. Despite the AI/LLM theme, **there is no LLM or backend** — Merlin's responses are produced entirely by local regex matching.
 
 ### The game engine: `utils/injectionDetector.ts`
 
-This is the heart of the app. `detectInjection(prompt, level, failedAttempts)` decides whether the player's message defeats the current level and returns Merlin's reply.
+This is the heart of the app. `detectInjection(prompt, level, failedAttempts, adventure, totalLevels)` decides whether the player's message defeats the current level and returns Merlin's reply.
 
-The defining design idea is **cumulative defense layering**. Levels 1–8 each have a `checkLevelN` function. Each higher level first rejects the prompt if it matches the *attack categories blocked by all lower levels* (direct-ask → ignore-instructions → roleplay → encoding → hypothetical → manipulation/completion → output-format), and only then checks that level's own `successTriggers`. So beating level N means using a technique that wasn't viable at any earlier level — this is what makes the game progressively harder.
+The defining design idea is **cumulative defense layering**. Each level has a `checkLevelN` function. Each higher level first rejects the prompt if it matches the *attack categories blocked by all lower levels*, and only then checks that level's own `successTriggers`. So beating level N means using a technique that wasn't viable at any earlier level — this is what makes the game progressively harder.
 
 When changing difficulty or adding a level, you must keep three things in sync:
 - the pattern arrays (`directAskPatterns`, `roleplayPatterns`, etc.) and `successTriggers[N]`,
@@ -50,9 +50,9 @@ A single global store created with `@nkzw/create-context-hook` and exposed as `u
 ### Routing & screens
 
 File-based via Expo Router with typed routes enabled (`app.json` → `experiments.typedRoutes`).
-- `app/_layout.tsx` — root `Stack` (tabs, `game`, `victory`, not-found).
-- `app/(tabs)/` — `index` (Home), `leaderboard`, `learn`, `adventures`.
-- `app/game.tsx` — the chat screen; calls `detectInjection`, drives the success animation, and on final-level success routes to `victory`.
+- `app/_layout.tsx` — root `Stack` (tabs, `game`, `victory`, `debrief`, not-found), providers mounted `ThemeProvider` → `GameProvider` → `AchievementProvider` → `OnboardingWrapper` (in that nesting order — `AchievementContext` calls `useGame()`, so it must stay *inside* `GameProvider`).
+- `app/(tabs)/` — `index` (Home), `daily` (Daily), `playground` (Lab), `leaderboard` (Ranks), `learn` (Learn), `adventures` (Quests).
+- `app/game.tsx` — the chat screen; calls `detectInjection`, drives the success animation, then renders `app/debrief.tsx`'s `DebriefScreen` inline as an overlay (not a route push) before advancing, and on final-level success routes to `victory`.
 
 ### Conventions
 
