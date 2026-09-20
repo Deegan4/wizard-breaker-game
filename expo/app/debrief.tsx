@@ -1,20 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, ScrollView } from 'react-native';
-import { 
-  CheckCircle, 
-  Zap, 
-  BookOpen, 
-  ArrowRight, 
-  Shield, 
+import {
+  CheckCircle,
+  Zap,
+  ArrowRight,
+  Shield,
   Lightbulb,
-  Sparkles,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
 import Colors from '@/constants/colors';
-import { LEVELS } from '@/constants/levels';
 
 interface DebriefScreenProps {
   onContinue: () => void;
