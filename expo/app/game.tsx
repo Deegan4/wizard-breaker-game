@@ -12,7 +12,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Send, ArrowLeft, RefreshCw, Zap, CheckCircle, Shield } from 'lucide-react-native';
+import { Send, ArrowLeft, RefreshCw, Zap, CheckCircle, Shield, Lightbulb } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -45,6 +45,7 @@ export default function GameScreen() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showShield, setShowShield] = useState(false);
   const [showDebrief, setShowDebrief] = useState(false);
+  const [showHint, setShowHint] = useState(false);
   const [lastTechnique, setLastTechnique] = useState('');
   const [lastAttempts, setLastAttempts] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -58,6 +59,7 @@ export default function GameScreen() {
       const greeting = getMerlinGreeting(gameState.currentLevel, currentAdventure);
       addMessage({ role: 'merlin', content: greeting });
     }
+    setShowHint(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.currentLevel, currentAdventure]);
 
@@ -164,6 +166,11 @@ export default function GameScreen() {
     addMessage({ role: 'merlin', content: greeting });
   };
 
+  const handleToggleHint = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowHint(prev => !prev);
+  };
+
   if (isGameComplete) {
     router.replace('/victory');
     return null;
@@ -198,8 +205,18 @@ export default function GameScreen() {
 
           <Pressable
             style={styles.resetButton}
+            onPress={handleToggleHint}
+            hitSlop={20}
+            accessibilityLabel={showHint ? 'Hide hint' : 'Show hint'}
+          >
+            <Lightbulb size={20} color={showHint ? colors.starYellow : colors.textSecondary} />
+          </Pressable>
+
+          <Pressable
+            style={styles.resetButton}
             onPress={handleReset}
             hitSlop={20}
+            accessibilityLabel="Reset chat"
           >
             <RefreshCw size={20} color={colors.textSecondary} />
           </Pressable>
@@ -231,8 +248,15 @@ export default function GameScreen() {
               { opacity: shieldAnim },
             ]}
           >
-            <Text style={styles.shieldText}>🛡 Hint unlocked! Look for a hint in the level description</Text>
+            <Text style={styles.shieldText}>🛡 Stuck? Tap the lightbulb above for a hint</Text>
           </Animated.View>
+        )}
+
+        {showHint && currentLevel?.hint && (
+          <View style={styles.hintBanner}>
+            <Lightbulb size={16} color={colors.starYellow} />
+            <Text style={styles.hintText}>{currentLevel.hint}</Text>
+          </View>
         )}
 
         <ScrollView
@@ -508,6 +532,25 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     fontSize: 13,
     color: colors.enchantedGreen,
     textAlign: 'center',
+    fontWeight: '500' as const,
+  },
+  hintBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: colors.starYellow + '20',
+    borderWidth: 1,
+    borderColor: colors.starYellow + '40',
+  },
+  hintText: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.starYellow,
     fontWeight: '500' as const,
   },
   chatContainer: {
