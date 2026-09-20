@@ -53,6 +53,7 @@
     "@expo/ngrok": "^4.1.0",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^14.0.1",
+    "@types/bun": "^1.4.2",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
     "eslint": "^9.31.0",
@@ -60,6 +61,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^30.5.1",
     "jest-environment-jsdom": "^30.5.1",
+    "jest-expo": "~54.0.0",
     "jest-extended": "^7.0.0",
     "ts-jest": "^29.4.12",
     "typescript": "~5.9.2"

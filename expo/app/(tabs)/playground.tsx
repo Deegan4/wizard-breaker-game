@@ -232,8 +232,8 @@ export default function PlaygroundScreen() {
             style={({ pressed }) => [
               styles.testButton,
               pressed && styles.buttonPressed,
-              isTesting && styles.buttonDisabled,
-              !inputText.trim() && styles.buttonDisabled,
+              isTesting && styles.testButtonDisabled,
+              !inputText.trim() && styles.testButtonDisabled,
             ]}
             onPress={handleTest}
             disabled={!inputText.trim() || isTesting}

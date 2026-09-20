@@ -1,11 +1,10 @@
-import { serve } from "bun";
-import { readFile, readdir } from "fs/promises";
+import { file, serve } from "bun";
 import { join, extname } from "path";
 
 const ROOT = process.argv[2] ?? "./dist";
 const PORT = parseInt(process.argv[3] ?? "8080");
 
-const MIME = {
+const MIME: Record<string, string> = {
   ".html": "text/html",
   ".js": "application/javascript",
   ".css": "text/css",
@@ -27,22 +26,21 @@ const MIME = {
 
 serve({
   port: PORT,
-  async fetch(req) {
+  async fetch(req: Request) {
     let url = new URL(req.url).pathname;
     if (url === "/") url = "/index.html";
     const filePath = join(ROOT, url);
-    try {
-      const data = await readFile(filePath);
-      const ext = extname(filePath);
-      return new Response(data, {
-        headers: {
-          "Content-Type": MIME[ext] ?? "application/octet-stream",
-          "Cache-Control": "no-cache",
-        },
-      });
-    } catch {
+    const bunFile = file(filePath);
+    if (!(await bunFile.exists())) {
       return new Response("Not Found", { status: 404 });
     }
+    const ext = extname(filePath);
+    return new Response(bunFile, {
+      headers: {
+        "Content-Type": MIME[ext] ?? "application/octet-stream",
+        "Cache-Control": "no-cache",
+      },
+    });
   },
 });
 
