@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -28,7 +28,7 @@ import MagicBackground from '@/components/MagicBackground';
 import AdventureCard from '@/components/AdventureCard';
 import { ADVENTURES } from '@/constants/adventures';
 import { useGame } from '@/contexts/GameContext';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 
 
@@ -57,6 +57,8 @@ const MENU_ITEMS: MenuItem[] = [
 ];
 
 export default function AdventuresScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { setAdventure } = useGame();
   const bannerAnim = useRef(new Animated.Value(0)).current;
@@ -112,7 +114,7 @@ export default function AdventuresScreen() {
   };
 
   const getIcon = (iconName: string, isActive?: boolean) => {
-    const color = isActive ? Colors.primary : Colors.textMuted;
+    const color = isActive ? colors.primary : colors.textMuted;
     const size = 18;
     switch (iconName) {
       case 'key':
@@ -198,7 +200,7 @@ export default function AdventuresScreen() {
           </View>
           <Pressable style={styles.shareButton} onPress={handleShareLink}>
             <Text style={styles.shareText}>Share Wizard Link</Text>
-            <Share2 size={14} color={Colors.textSecondary} />
+            <Share2 size={14} color={colors.textSecondary} />
           </Pressable>
         </View>
 
@@ -225,7 +227,7 @@ export default function AdventuresScreen() {
               ]}
             >
               <LinearGradient
-                colors={[Colors.primary + '40', Colors.mysticBlue + '30']}
+                colors={[colors.primary + '40', colors.mysticBlue + '30']}
                 style={styles.promoBannerGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -240,7 +242,7 @@ export default function AdventuresScreen() {
                   onPress={() => handleMenuPress('agent-breaker')}
                 >
                   <Text style={styles.promoButtonText}>Play Agent Breaker</Text>
-                  <Sparkles size={14} color={Colors.primary} />
+                  <Sparkles size={14} color={colors.primary} />
                 </Pressable>
               </LinearGradient>
             </Animated.View>
@@ -266,7 +268,7 @@ export default function AdventuresScreen() {
               onPress={() => Alert.alert('Coming Soon', 'More adventures are on the way!')}
             >
               <Text style={styles.moreButtonText}>More Adventures</Text>
-              <Plus size={18} color={Colors.text} />
+              <Plus size={18} color={colors.text} />
             </Pressable>
           </View>
         </View>
@@ -275,7 +277,7 @@ export default function AdventuresScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 16,
@@ -301,29 +303,29 @@ const styles = StyleSheet.create({
   brandName: {
     fontSize: 14,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: colors.text,
     letterSpacing: 2,
   },
   brandTagline: {
     fontSize: 10,
     fontWeight: '600' as const,
-    color: Colors.primary,
+    color: colors.primary,
     letterSpacing: 1,
   },
   shareButton: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   shareText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500' as const,
   },
   mainContent: {
@@ -334,13 +336,13 @@ const styles = StyleSheet.create({
   },
   menuDivider: {
     height: 1,
-    backgroundColor: Colors.borderLight,
+    backgroundColor: colors.borderLight,
     marginVertical: 12,
   },
   menuSection: {
     fontSize: 10,
     fontWeight: '700' as const,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     letterSpacing: 1,
     marginBottom: 8,
     marginTop: 4,
@@ -355,7 +357,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   menuItemActive: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
   },
   menuItemPressed: {
     opacity: 0.7,
@@ -372,15 +374,15 @@ const styles = StyleSheet.create({
   },
   menuLabel: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500' as const,
   },
   menuLabelActive: {
-    color: Colors.text,
+    color: colors.text,
     fontWeight: '600' as const,
   },
   newTag: {
-    backgroundColor: Colors.enchantedGreen,
+    backgroundColor: colors.enchantedGreen,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -388,7 +390,7 @@ const styles = StyleSheet.create({
   newTagText: {
     fontSize: 9,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   promoBanner: {
     marginTop: 16,
@@ -399,25 +401,25 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.primary + '40',
+    borderColor: colors.primary + '40',
   },
   promoLabel: {
     fontSize: 10,
     fontWeight: '700' as const,
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
     letterSpacing: 1,
     marginBottom: 8,
   },
   promoTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
     lineHeight: 24,
     marginBottom: 8,
   },
   promoDescription: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginBottom: 16,
   },
   promoButton: {
@@ -425,7 +427,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: Colors.text,
+    backgroundColor: colors.text,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -434,7 +436,7 @@ const styles = StyleSheet.create({
   promoButtonText: {
     fontSize: 13,
     fontWeight: '600' as const,
-    color: Colors.background,
+    color: colors.background,
   },
   adventuresSection: {
     flex: 1,
@@ -449,12 +451,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
     alignSelf: 'center',
     marginTop: 8,
   },
@@ -465,6 +467,6 @@ const styles = StyleSheet.create({
   moreButtonText: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: colors.text,
   },
 });

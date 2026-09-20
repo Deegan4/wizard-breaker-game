@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Easing, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, RadialGradient, Stop, Circle, Path, G } from 'react-native-svg';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 interface AnimatedLogoProps {
   size?: number;
@@ -48,6 +48,8 @@ function generateParticles(count: number, centerX: number, centerY: number): Par
 }
 
 export default function AnimatedLogo({ size = 140 }: AnimatedLogoProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const centerX = size / 2;
   const centerY = size / 2;
   const orbSize = size * 0.5;
@@ -446,7 +448,7 @@ export default function AnimatedLogo({ size = 140 }: AnimatedLogoProps) {
                 ]}
               >
                 <Svg width={16} height={16} viewBox="0 0 16 16">
-                  <G fill="none" stroke={Colors.starYellow} strokeWidth="1.5">
+                  <G fill="none" stroke={colors.starYellow} strokeWidth="1.5">
                     {index % 3 === 0 && (
                       <>
                         <Path d="M8 2L8 14" />
@@ -496,7 +498,7 @@ export default function AnimatedLogo({ size = 140 }: AnimatedLogoProps) {
               },
             ]}
           >
-            <View style={[styles.particleInner, { backgroundColor: index % 2 === 0 ? Colors.starYellow : Colors.secondary }]} />
+            <View style={[styles.particleInner, { backgroundColor: index % 2 === 0 ? colors.starYellow : colors.secondary }]} />
           </Animated.View>
         ))}
 
@@ -506,7 +508,7 @@ export default function AnimatedLogo({ size = 140 }: AnimatedLogoProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -527,7 +529,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: Colors.magicPurple,
+        shadowColor: colors.magicPurple,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.8,
         shadowRadius: 20,
@@ -536,7 +538,7 @@ const styles = StyleSheet.create({
         elevation: 15,
       },
       web: {
-        boxShadow: `0 0 40px ${Colors.magicPurple}, 0 0 60px rgba(139, 92, 246, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1)`,
+        boxShadow: `0 0 40px ${colors.magicPurple}, 0 0 60px rgba(139, 92, 246, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1)`,
       },
     }),
   },

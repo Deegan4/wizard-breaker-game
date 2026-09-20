@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Text } from 'react-native';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 interface ProgressBarProps {
   current: number;
@@ -9,6 +9,8 @@ interface ProgressBarProps {
 }
 
 export default function ProgressBar({ current, total, showLabel = true }: ProgressBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const animatedWidth = useRef(new Animated.Value(0)).current;
   const progress = (current / total) * 100;
 
@@ -45,7 +47,7 @@ export default function ProgressBar({ current, total, showLabel = true }: Progre
               styles.marker,
               {
                 left: `${((index + 1) / total) * 100}%`,
-                backgroundColor: index < current ? Colors.enchantedGreen : Colors.textMuted,
+                backgroundColor: index < current ? colors.enchantedGreen : colors.textMuted,
               },
             ]}
           />
@@ -55,7 +57,7 @@ export default function ProgressBar({ current, total, showLabel = true }: Progre
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     width: '100%',
   },
@@ -65,25 +67,25 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   label: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '500' as const,
   },
   value: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 12,
     fontWeight: '700' as const,
   },
   track: {
     height: 8,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 4,
     overflow: 'hidden',
     position: 'relative',
   },
   fill: {
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: 4,
     position: 'relative',
     overflow: 'hidden',

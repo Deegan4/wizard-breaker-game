@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Trophy, Medal, Award, Crown, Target, Share2 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 export default function LeaderboardScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { leaderboard, gameState } = useGame();
 
@@ -20,7 +22,7 @@ export default function LeaderboardScreen() {
       case 3:
         return <Award size={24} color="#CD7F32" />;
       default:
-        return <Target size={20} color={Colors.textMuted} />;
+        return <Target size={20} color={colors.textMuted} />;
     }
   };
 
@@ -33,7 +35,7 @@ export default function LeaderboardScreen() {
       case 3:
         return '#CD7F32';
       default:
-        return Colors.textMuted;
+        return colors.textMuted;
     }
   };
 
@@ -60,7 +62,7 @@ export default function LeaderboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Trophy size={32} color={Colors.starYellow} />
+          <Trophy size={32} color={colors.starYellow} />
           <Text style={styles.title}>Leaderboard</Text>
           <Text style={styles.subtitle}>Top Wizard Breakers</Text>
         </View>
@@ -186,7 +188,7 @@ export default function LeaderboardScreen() {
           ]}
           onPress={handleShare}
         >
-          <Share2 size={20} color={Colors.text} />
+          <Share2 size={20} color={colors.text} />
           <Text style={styles.shareButtonText}>Share Your Progress</Text>
         </Pressable>
       </ScrollView>
@@ -194,7 +196,7 @@ export default function LeaderboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
@@ -206,12 +208,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
     marginTop: 12,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 4,
   },
   podiumContainer: {
@@ -244,7 +246,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
@@ -258,7 +260,7 @@ const styles = StyleSheet.create({
   podiumAvatarText: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   firstPlaceText: {
     fontSize: 24,
@@ -274,17 +276,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: Colors.background,
+    borderColor: colors.background,
   },
   rankBadgeText: {
     fontSize: 12,
     fontWeight: '700' as const,
-    color: Colors.background,
+    color: colors.background,
   },
   podiumName: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: colors.text,
     marginTop: 8,
     maxWidth: 80,
     textAlign: 'center',
@@ -296,12 +298,12 @@ const styles = StyleSheet.create({
   podiumScore: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 4,
   },
   firstPlaceScore: {
     fontSize: 22,
-    color: Colors.starYellow,
+    color: colors.starYellow,
   },
   podiumBar: {
     width: '100%',
@@ -310,21 +312,21 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   listContainer: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   listHeader: {
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: colors.borderLight,
   },
   listHeaderText: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
   },
@@ -333,10 +335,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: colors.borderLight,
   },
   currentUserItem: {
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: colors.primary + '15',
   },
   rankContainer: {
     width: 40,
@@ -352,7 +354,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.backgroundTertiary,
+    backgroundColor: colors.backgroundTertiary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -360,7 +362,7 @@ const styles = StyleSheet.create({
   listAvatarText: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   userDetails: {
     marginLeft: 12,
@@ -369,14 +371,14 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 15,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   currentUserText: {
-    color: Colors.primary,
+    color: colors.primary,
   },
   attempts: {
     fontSize: 12,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     marginTop: 2,
   },
   scoreContainer: {
@@ -386,25 +388,25 @@ const styles = StyleSheet.create({
   score: {
     fontSize: 24,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   scoreLabel: {
     fontSize: 14,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     marginLeft: 2,
   },
   shareButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: 12,
     paddingVertical: 16,
     marginTop: 24,
     gap: 8,
   },
   shareButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '600' as const,
   },

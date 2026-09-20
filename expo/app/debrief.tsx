@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, ScrollView } from 'react-native';
 import {
   CheckCircle,
@@ -11,7 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 interface DebriefScreenProps {
   onContinue: () => void;
@@ -105,6 +105,8 @@ export default function DebriefScreen({
   techniqueUsed, 
   attempts 
 }: DebriefScreenProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { gameState } = useGame();
   const technique = TECHNIQUE_EXPLANATIONS[level];
   
@@ -156,7 +158,7 @@ export default function DebriefScreen({
           ]}
         >
           <LinearGradient
-            colors={[Colors.enchantedGreen, Colors.success]}
+            colors={[colors.enchantedGreen, colors.success]}
             style={styles.iconBg}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -179,7 +181,7 @@ export default function DebriefScreen({
         >
           <View style={styles.techniqueHeader}>
             <View style={styles.techniqueIcon}>
-              <Zap size={24} color={Colors.accent} />
+              <Zap size={24} color={colors.accent} />
             </View>
             <View style={styles.techniqueInfo}>
               <Text style={styles.techniqueLabel}>Technique Used</Text>
@@ -208,7 +210,7 @@ export default function DebriefScreen({
         >
           <View style={styles.defenseHeader}>
             <View style={styles.defenseIcon}>
-              <Shield size={24} color={Colors.enchantedGreen} />
+              <Shield size={24} color={colors.enchantedGreen} />
             </View>
             <Text style={styles.defenseTitle}>Defense Analysis</Text>
           </View>
@@ -229,7 +231,7 @@ export default function DebriefScreen({
         >
           <View style={styles.lessonHeader}>
             <View style={styles.lessonIcon}>
-              <Lightbulb size={24} color={Colors.accent} />
+              <Lightbulb size={24} color={colors.accent} />
             </View>
             <Text style={styles.lessonTitle}>Key Takeaway</Text>
           </View>
@@ -285,11 +287,11 @@ export default function DebriefScreen({
             onPress={onContinue}
           >
             <LinearGradient
-              colors={[Colors.primary, Colors.primaryDark]}
+              colors={[colors.primary, colors.primaryDark]}
               style={styles.continueButtonGradient}
             >
               <Text style={styles.continueButtonText}>Continue to Next Level</Text>
-              <ArrowRight size={20} color={Colors.text} />
+              <ArrowRight size={20} color={colors.text} />
             </LinearGradient>
           </Pressable>
         </Animated.View>
@@ -320,7 +322,7 @@ function getLessonForLevel(level: number): string {
   return lessons[level] || 'Every defense has a weakness. Study, adapt, and overcome.';
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
@@ -342,26 +344,26 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '800' as const,
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
     textAlign: 'center',
   },
   spellText: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 8,
   },
   spellHighlight: {
-    color: Colors.starYellow,
+    color: colors.starYellow,
     fontWeight: '700' as const,
   },
   techniqueCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   techniqueHeader: {
     flexDirection: 'row',
@@ -373,7 +375,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: Colors.accent + '20',
+    backgroundColor: colors.accent + '20',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -383,14 +385,14 @@ const styles = StyleSheet.create({
   techniqueLabel: {
     fontSize: 11,
     fontWeight: '600' as const,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
   },
   techniqueName: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: Colors.accent,
+    color: colors.accent,
     marginTop: 2,
   },
   techniqueDetails: {
@@ -399,22 +401,22 @@ const styles = StyleSheet.create({
   detailTitle: {
     fontSize: 12,
     fontWeight: '600' as const,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
   },
   detailText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 22,
   },
   defenseCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   defenseHeader: {
     flexDirection: 'row',
@@ -426,27 +428,27 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: Colors.enchantedGreen + '20',
+    backgroundColor: colors.enchantedGreen + '20',
     alignItems: 'center',
     justifyContent: 'center',
   },
   defenseTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   defenseExplanation: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 22,
   },
   lessonCard: {
-    backgroundColor: Colors.primary + '10',
+    backgroundColor: colors.primary + '10',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.primary + '30',
+    borderColor: colors.primary + '30',
   },
   lessonHeader: {
     flexDirection: 'row',
@@ -458,32 +460,32 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 10,
-    backgroundColor: Colors.accent + '20',
+    backgroundColor: colors.accent + '20',
     alignItems: 'center',
     justifyContent: 'center',
   },
   lessonTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: colors.primary,
   },
   lessonText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 22,
   },
   statsCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   statsTitle: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     textAlign: 'center',
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
@@ -499,18 +501,18 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 28,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   statLabel: {
     fontSize: 11,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     marginTop: 4,
     textAlign: 'center',
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: Colors.borderLight,
+    backgroundColor: colors.borderLight,
   },
   buttonContainer: {
     marginTop: 8,
@@ -527,7 +529,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   continueButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700' as const,
   },
@@ -536,7 +538,7 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   footerText: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 13,
     fontStyle: 'italic' as const,
     textAlign: 'center',

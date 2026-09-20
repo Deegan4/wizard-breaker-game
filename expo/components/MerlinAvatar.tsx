@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { Sparkles } from 'lucide-react-native';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 interface MerlinAvatarProps {
   size?: number;
@@ -9,6 +9,8 @@ interface MerlinAvatarProps {
 }
 
 export default function MerlinAvatar({ size = 60, isThinking = false }: MerlinAvatarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const glowAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -82,12 +84,12 @@ export default function MerlinAvatar({ size = 60, isThinking = false }: MerlinAv
         </View>
         <Sparkles
           size={16}
-          color={Colors.starYellow}
+          color={colors.starYellow}
           style={styles.sparkle1}
         />
         <Sparkles
           size={12}
-          color={Colors.secondary}
+          color={colors.secondary}
           style={styles.sparkle2}
         />
       </View>
@@ -95,21 +97,21 @@ export default function MerlinAvatar({ size = 60, isThinking = false }: MerlinAv
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   glow: {
     position: 'absolute',
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
   },
   avatar: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: Colors.primary,
+    borderColor: colors.primary,
     overflow: 'hidden',
   },
   hatContainer: {
@@ -125,12 +127,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 25,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderBottomColor: Colors.primary,
+    borderBottomColor: colors.primary,
   },
   hatBrim: {
     width: 30,
     height: 3,
-    backgroundColor: Colors.primaryDark,
+    backgroundColor: colors.primaryDark,
     borderRadius: 2,
   },
   face: {
@@ -145,13 +147,13 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Colors.text,
+    backgroundColor: colors.text,
   },
   beard: {
     marginTop: 4,
     width: 20,
     height: 12,
-    backgroundColor: Colors.textMuted,
+    backgroundColor: colors.textMuted,
     borderBottomLeftRadius: 10,
     borderBottomRightRadius: 10,
   },

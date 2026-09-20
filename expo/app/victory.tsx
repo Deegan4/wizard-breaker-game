@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Pressable, Share, Platform, Easing } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { Trophy, Share2, RotateCcw, Home, Sparkles } from 'lucide-react-native';
@@ -7,12 +7,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 export default function VictoryScreen() {
   const insets = useSafeAreaInsets();
   const { gameState, resetGame } = useGame();
-  
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const trophyAnim = useRef(new Animated.Value(0)).current;
   const titleAnim = useRef(new Animated.Value(0)).current;
   const statsAnim = useRef(new Animated.Value(0)).current;
@@ -22,7 +24,7 @@ export default function VictoryScreen() {
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
+
     Animated.stagger(150, [
       Animated.spring(trophyAnim, {
         toValue: 1,
@@ -104,7 +106,7 @@ export default function VictoryScreen() {
   return (
     <MagicBackground>
       <Stack.Screen options={{ headerShown: false }} />
-      
+
       <View style={[styles.container, { paddingTop: insets.top + 30, paddingBottom: insets.bottom + 20 }]}>
         <Animated.View
           style={[
@@ -129,9 +131,9 @@ export default function VictoryScreen() {
           <View style={styles.trophyCircle}>
             <Trophy size={80} color="#FFD700" />
           </View>
-          <Sparkles size={24} color={Colors.starYellow} style={styles.sparkle1} />
-          <Sparkles size={20} color={Colors.secondary} style={styles.sparkle2} />
-          <Sparkles size={16} color={Colors.primary} style={styles.sparkle3} />
+          <Sparkles size={24} color={colors.starYellow} style={styles.sparkle1} />
+          <Sparkles size={20} color={colors.secondary} style={styles.sparkle2} />
+          <Sparkles size={16} color={colors.primary} style={styles.sparkle3} />
         </Animated.View>
 
         <Animated.View
@@ -150,7 +152,7 @@ export default function VictoryScreen() {
           <Text style={styles.title}>Victory!</Text>
           <Text style={styles.subtitle}>You Have Defeated Merlin!</Text>
           <Text style={styles.description}>
-            Congratulations, master hacker! You have successfully broken through 
+            Congratulations, master hacker! You have successfully broken through
             all of Merlins magical defenses and discovered every secret spell.
           </Text>
         </Animated.View>
@@ -199,7 +201,7 @@ export default function VictoryScreen() {
           </View>
           <View style={styles.rankBadge}>
             <Text style={styles.rankText}>
-              {gameState.totalAttempts <= 20 
+              {gameState.totalAttempts <= 20
                 ? '🏆 Grand Wizard Breaker'
                 : gameState.totalAttempts <= 40
                 ? '⭐ Expert Hacker'
@@ -234,10 +236,10 @@ export default function VictoryScreen() {
             onPress={handleShare}
           >
             <LinearGradient
-              colors={[Colors.primary, Colors.primaryDark]}
+              colors={[colors.primary, colors.primaryDark]}
               style={styles.buttonGradient}
             >
-              <Share2 size={22} color={Colors.text} />
+              <Share2 size={22} color={colors.text} />
               <Text style={styles.primaryButtonText}>Share Victory</Text>
             </LinearGradient>
           </Pressable>
@@ -250,10 +252,10 @@ export default function VictoryScreen() {
               ]}
               onPress={handlePlayAgain}
             >
-              <RotateCcw size={20} color={Colors.text} />
+              <RotateCcw size={20} color={colors.text} />
               <Text style={styles.secondaryButtonText}>Play Again</Text>
             </Pressable>
-            
+
             <Pressable
               style={({ pressed }) => [
                 styles.secondaryButton,
@@ -261,7 +263,7 @@ export default function VictoryScreen() {
               ]}
               onPress={handleGoHome}
             >
-              <Home size={20} color={Colors.text} />
+              <Home size={20} color={colors.text} />
               <Text style={styles.secondaryButtonText}>Home</Text>
             </Pressable>
           </View>
@@ -275,7 +277,7 @@ export default function VictoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 24,
@@ -301,7 +303,7 @@ const styles = StyleSheet.create({
     height: 160,
     borderRadius: 80,
     borderWidth: 2,
-    borderColor: Colors.starYellow,
+    borderColor: colors.starYellow,
   },
   trophyGlow: {
     position: 'absolute',
@@ -313,7 +315,7 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
@@ -344,32 +346,32 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 20,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: colors.text,
     textAlign: 'center',
     marginTop: 8,
   },
   description: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 16,
     lineHeight: 22,
     paddingHorizontal: 20,
   },
   statsCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 24,
     marginTop: 32,
     width: '100%',
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
     ...(Platform.OS !== 'web' ? { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12 } : { boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }),
   },
   statsTitle: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     textAlign: 'center',
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
@@ -386,23 +388,23 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 36,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   statLabel: {
     fontSize: 13,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
     height: 50,
-    backgroundColor: Colors.borderLight,
+    backgroundColor: colors.borderLight,
   },
   statBars: {
     marginTop: 20,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
+    borderTopColor: colors.borderLight,
     gap: 10,
   },
   statBarRow: {
@@ -412,24 +414,24 @@ const styles = StyleSheet.create({
   },
   statBarLabel: {
     fontSize: 12,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     width: 70,
     fontWeight: '600' as const,
   },
   statBarTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: Colors.backgroundTertiary,
+    backgroundColor: colors.backgroundTertiary,
     borderRadius: 3,
     overflow: 'hidden',
   },
   statBarFill: {
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   rankBadge: {
-    backgroundColor: Colors.primary + '20',
+    backgroundColor: colors.primary + '20',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -439,7 +441,7 @@ const styles = StyleSheet.create({
   rankText: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: colors.primary,
   },
   buttonContainer: {
     marginTop: 32,
@@ -459,7 +461,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   primaryButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700' as const,
   },
@@ -477,20 +479,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 16,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
     gap: 8,
     minHeight: 52,
   },
   secondaryButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 15,
     fontWeight: '600' as const,
   },
   footerText: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 13,
     fontStyle: 'italic' as const,
     marginTop: 32,

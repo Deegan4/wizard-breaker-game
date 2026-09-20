@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated } from 'react-native';
 import { 
   ArrowRight, 
@@ -16,73 +16,73 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import MerlinAvatar from '@/components/MerlinAvatar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 const ONBOARDING_STORAGE_KEY = 'wizard_breaker_onboarding_complete';
 
-const ONBOARDING_STEPS = [
+const getOnboardingSteps = (colors: ColorPalette) => [
   {
     id: 'welcome',
     title: 'Welcome, Young Seeker',
     subtitle: 'You have been chosen to test your wits against Merlin, the ancient guardian of forbidden spells.',
     icon: Sparkles,
-    iconColor: Colors.starYellow,
-    background: Colors.primary + '20',
-    borderColor: Colors.primary + '40',
+    iconColor: colors.starYellow,
+    background: colors.primary + '20',
+    borderColor: colors.primary + '40',
   },
   {
     id: 'gameplay',
     title: 'How to Play',
     subtitle: 'Each level, Merlin guards a secret spell. Your goal: trick him into revealing it using clever prompts.',
     icon: Zap,
-    iconColor: Colors.accent,
-    background: Colors.accent + '20',
-    borderColor: Colors.accent + '40',
+    iconColor: colors.accent,
+    background: colors.accent + '20',
+    borderColor: colors.accent + '40',
   },
   {
     id: 'levels',
     title: 'Progressive Defenses',
     subtitle: 'Merlin learns from each attempt. Level 1 has no defenses. Level 12 protects his very constitutional instructions.',
     icon: Shield,
-    iconColor: Colors.enchantedGreen,
-    background: Colors.enchantedGreen + '20',
-    borderColor: Colors.enchantedGreen + '40',
+    iconColor: colors.enchantedGreen,
+    background: colors.enchantedGreen + '20',
+    borderColor: colors.enchantedGreen + '40',
   },
   {
     id: 'techniques',
     title: 'Attack Categories',
     subtitle: 'Direct questions → Indirect hints → Storytelling → Translation → Emergency access → Recall → Error logs → Paradoxes → Chain-of-thought → Persona → Recursion → Constitutional extraction',
     icon: BookOpen,
-    iconColor: Colors.mysticBlue,
-    background: Colors.mysticBlue + '20',
-    borderColor: Colors.mysticBlue + '40',
+    iconColor: colors.mysticBlue,
+    background: colors.mysticBlue + '20',
+    borderColor: colors.mysticBlue + '40',
   },
   {
     id: 'modes',
     title: 'Game Modes',
     subtitle: 'Classic: 12 levels of increasing difficulty. Adventures: themed campaigns. Daily: unique challenge each day. Lab: test any prompt against any level.',
     icon: Terminal,
-    iconColor: Colors.secondary,
-    background: Colors.secondary + '20',
-    borderColor: Colors.secondary + '40',
+    iconColor: colors.secondary,
+    background: colors.secondary + '20',
+    borderColor: colors.secondary + '40',
   },
   {
     id: 'features',
     title: 'Track Your Progress',
     subtitle: 'Earn achievements, maintain daily streaks, compete on leaderboards, and review debriefs after each level to learn why your technique worked.',
     icon: Trophy,
-    iconColor: Colors.starYellow,
-    background: Colors.starYellow + '20',
-    borderColor: Colors.starYellow + '40',
+    iconColor: colors.starYellow,
+    background: colors.starYellow + '20',
+    borderColor: colors.starYellow + '40',
   },
   {
     id: 'ready',
     title: 'Ready to Begin?',
     subtitle: 'Your journey starts now. Remember: every defense has a weakness. Study, adapt, and overcome.',
     icon: CheckCircle,
-    iconColor: Colors.enchantedGreen,
-    background: Colors.enchantedGreen + '20',
-    borderColor: Colors.enchantedGreen + '40',
+    iconColor: colors.enchantedGreen,
+    background: colors.enchantedGreen + '20',
+    borderColor: colors.enchantedGreen + '40',
   },
 ];
 
@@ -92,6 +92,9 @@ interface OnboardingOverlayProps {
 }
 
 export default function OnboardingOverlay({ visible, onComplete }: OnboardingOverlayProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const ONBOARDING_STEPS = useMemo(() => getOnboardingSteps(colors), [colors]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
 
@@ -179,7 +182,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
     } else {
       animateOut();
     }
-  }, [currentStep, animateOut]);
+  }, [currentStep, animateOut, ONBOARDING_STEPS.length]);
 
   const goPrev = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -240,7 +243,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
       >
         {/* Close Button */}
         <Pressable style={styles.closeButton} onPress={skipOnboarding} hitSlop={20}>
-          <X size={24} color={Colors.textMuted} />
+          <X size={24} color={colors.textMuted} />
         </Pressable>
 
         {/* Merlin Avatar */}
@@ -354,10 +357,10 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
             onPress={goPrev}
             disabled={currentStep === 0}
           >
-            <ArrowLeft size={20} color={currentStep === 0 ? Colors.textMuted : Colors.primary} />
+            <ArrowLeft size={20} color={currentStep === 0 ? colors.textMuted : colors.primary} />
             <Text style={[
               styles.navButtonText,
-              currentStep === 0 && { color: Colors.textMuted },
+              currentStep === 0 && { color: colors.textMuted },
             ]}>
               Back
             </Text>
@@ -371,7 +374,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
                   styles.dot,
                   index === currentStep ? styles.dotActive : styles.dotInactive,
                   {
-                    backgroundColor: index === currentStep ? step.iconColor : Colors.borderLight,
+                    backgroundColor: index === currentStep ? step.iconColor : colors.borderLight,
                     transform: [
                       {
                         scale: index === currentStep ? 1.3 : 1,
@@ -393,7 +396,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
                 style={styles.navButtonPrimaryGradient}
               >
                 <Text style={styles.navButtonPrimaryText}>Begin Journey</Text>
-                <ArrowRight size={20} color={Colors.text} />
+                <ArrowRight size={20} color={colors.text} />
               </LinearGradient>
             </Pressable>
           ) : (
@@ -402,11 +405,11 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
               onPress={goNext}
             >
               <LinearGradient
-                colors={[Colors.primary, Colors.primaryDark]}
+                colors={[colors.primary, colors.primaryDark]}
                 style={styles.navButtonPrimaryGradient}
               >
                 <Text style={styles.navButtonPrimaryText}>Next</Text>
-                <ArrowRight size={20} color={Colors.text} />
+                <ArrowRight size={20} color={colors.text} />
               </LinearGradient>
             </Pressable>
           )}
@@ -420,14 +423,14 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 1000,
   },
   background: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.overlay,
+    backgroundColor: colors.overlay,
   },
   content: {
     flex: 1,
@@ -457,19 +460,19 @@ const styles = StyleSheet.create({
   progressBar: {
     width: '100%',
     height: 4,
-    backgroundColor: Colors.borderLight,
+    backgroundColor: colors.borderLight,
     borderRadius: 2,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressFill: {
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: 2,
   },
   stepCounter: {
     fontSize: 12,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontWeight: '600' as const,
   },
   card: {
@@ -504,7 +507,7 @@ const styles = StyleSheet.create({
   },
   cardSubtitle: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -521,10 +524,10 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
     minWidth: 80,
     justifyContent: 'center',
   },
@@ -534,7 +537,7 @@ const styles = StyleSheet.create({
   navButtonText: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: Colors.primary,
+    color: colors.primary,
   },
   dotContainer: {
     flexDirection: 'row',
@@ -563,7 +566,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   navButtonPrimaryText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '700' as const,
   },
@@ -573,9 +576,9 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: 13,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontWeight: '500' as const,
   },
 });
 
-export { ONBOARDING_STEPS, ONBOARDING_STORAGE_KEY };
+export { ONBOARDING_STORAGE_KEY };

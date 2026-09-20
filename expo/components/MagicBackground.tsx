@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,6 +24,8 @@ function generateStars(count: number): Star[] {
 }
 
 export default function MagicBackground({ children }: { children: React.ReactNode }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const stars = useRef<Star[]>(generateStars(40)).current;
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function MagicBackground({ children }: { children: React.ReactNod
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={Colors.gradient.magic}
+        colors={colors.gradient.magic}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -76,10 +78,10 @@ export default function MagicBackground({ children }: { children: React.ReactNod
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   starsContainer: {
     ...StyleSheet.absoluteFillObject,

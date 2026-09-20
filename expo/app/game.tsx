@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,10 +22,12 @@ import ChatBubble from '@/components/ChatBubble';
 import ProgressBar from '@/components/ProgressBar';
 import { useGame } from '@/contexts/GameContext';
 import { detectInjection, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
-import Colors from '@/constants/colors';
 import DebriefScreen from '@/app/debrief';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 export default function GameScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const {
     gameState,
@@ -181,12 +183,12 @@ export default function GameScreen() {
             onPress={() => router.replace('/(tabs)')}
             hitSlop={20}
           >
-            <ArrowLeft size={24} color={Colors.textSecondary} />
+            <ArrowLeft size={24} color={colors.textSecondary} />
           </Pressable>
 
           <View style={styles.headerCenter}>
             <View style={styles.levelHeaderRow}>
-              <Shield size={14} color={Colors.enchantedGreen} />
+              <Shield size={14} color={colors.enchantedGreen} />
               <Text style={styles.levelTitle}>Level {gameState.currentLevel}</Text>
             </View>
             <Text style={styles.levelName} numberOfLines={1}>
@@ -199,7 +201,7 @@ export default function GameScreen() {
             onPress={handleReset}
             hitSlop={20}
           >
-            <RefreshCw size={20} color={Colors.textSecondary} />
+            <RefreshCw size={20} color={colors.textSecondary} />
           </Pressable>
         </View>
 
@@ -211,7 +213,7 @@ export default function GameScreen() {
           />
           <View style={styles.statsRow}>
             <View style={styles.statBadge}>
-              <Zap size={12} color={Colors.accent} />
+              <Zap size={12} color={colors.accent} />
               <Text style={styles.statText}>
                 {gameState.failedAttemptsCurrentLevel} attempts
               </Text>
@@ -257,9 +259,9 @@ export default function GameScreen() {
               </View>
               <View style={styles.typingBubble}>
                 <View style={styles.typingDots}>
-                  <TypingDot delay={0} />
-                  <TypingDot delay={150} />
-                  <TypingDot delay={300} />
+                  <TypingDot delay={0} color={colors.textMuted} />
+                  <TypingDot delay={150} color={colors.textMuted} />
+                  <TypingDot delay={300} color={colors.textMuted} />
                 </View>
               </View>
             </View>
@@ -273,7 +275,7 @@ export default function GameScreen() {
               value={inputText}
               onChangeText={setInputText}
               placeholder="Try to trick Merlin..."
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={colors.textMuted}
               multiline
               maxLength={500}
               editable={!isTyping}
@@ -291,14 +293,14 @@ export default function GameScreen() {
               <LinearGradient
                 colors={
                   inputText.trim() && !isTyping
-                    ? [Colors.primary, Colors.primaryDark]
-                    : [Colors.surfaceElevated, Colors.surfaceElevated]
+                    ? [colors.primary, colors.primaryDark]
+                    : [colors.surfaceElevated, colors.surfaceElevated]
                 }
                 style={styles.sendButtonGradient}
               >
                 <Send
                   size={20}
-                  color={inputText.trim() && !isTyping ? Colors.text : Colors.textMuted}
+                  color={inputText.trim() && !isTyping ? colors.text : colors.textMuted}
                 />
               </LinearGradient>
             </Pressable>
@@ -324,7 +326,7 @@ export default function GameScreen() {
           >
             <View style={styles.successCard}>
               <LinearGradient
-                colors={[Colors.enchantedGreen, Colors.success]}
+                colors={[colors.enchantedGreen, colors.success]}
                 style={styles.successIconBg}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -363,7 +365,7 @@ function formatTime(date: Date): string {
   return `${h}:${m}`;
 }
 
-function TypingDot({ delay }: { delay: number }) {
+function TypingDot({ delay, color }: { delay: number; color: string }) {
   const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -390,7 +392,7 @@ function TypingDot({ delay }: { delay: number }) {
   return (
     <Animated.View
       style={[
-        styles.typingDot,
+        { width: 8, height: 8, borderRadius: 4, backgroundColor: color },
         {
           opacity: anim.interpolate({
             inputRange: [0, 1],
@@ -410,7 +412,7 @@ function TypingDot({ delay }: { delay: number }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   flex: {
     flex: 1,
   },
@@ -420,7 +422,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: colors.borderLight,
     backgroundColor: 'rgba(10, 6, 24, 0.85)',
   },
   backButton: {
@@ -440,14 +442,14 @@ const styles = StyleSheet.create({
   },
   levelTitle: {
     fontSize: 12,
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
     fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
   },
   levelName: {
     fontSize: 16,
-    color: Colors.text,
+    color: colors.text,
     fontWeight: '700' as const,
     marginTop: 2,
   },
@@ -461,7 +463,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    borderBottomColor: colors.borderLight,
     backgroundColor: 'rgba(10, 6, 24, 0.85)',
   },
   statsRow: {
@@ -474,20 +476,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: Colors.surfaceElevated,
+    backgroundColor: colors.surfaceElevated,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   statText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   difficultyBadge: {
     fontSize: 12,
-    color: Colors.accent,
+    color: colors.accent,
     fontWeight: '600' as const,
-    backgroundColor: Colors.accent + '15',
+    backgroundColor: colors.accent + '15',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
@@ -498,13 +500,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: Colors.enchantedGreen + '20',
+    backgroundColor: colors.enchantedGreen + '20',
     borderWidth: 1,
-    borderColor: Colors.enchantedGreen + '40',
+    borderColor: colors.enchantedGreen + '40',
   },
   shieldText: {
     fontSize: 13,
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
     textAlign: 'center',
     fontWeight: '500' as const,
   },
@@ -524,13 +526,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   typingBubble: {
-    backgroundColor: Colors.surfaceElevated,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: 20,
     borderBottomLeftRadius: 4,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   typingDots: {
     flexDirection: 'row',
@@ -540,14 +542,14 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.textMuted,
+    backgroundColor: colors.textMuted,
   },
   inputContainer: {
     paddingHorizontal: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-    backgroundColor: Colors.backgroundSecondary,
+    borderTopColor: colors.borderLight,
+    backgroundColor: colors.backgroundSecondary,
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -556,16 +558,16 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: Colors.surfaceElevated,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: 24,
     paddingHorizontal: 20,
     paddingVertical: 14,
     paddingRight: 16,
     fontSize: 16,
-    color: Colors.text,
+    color: colors.text,
     maxHeight: 120,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   sendButton: {
     width: 48,
@@ -586,20 +588,20 @@ const styles = StyleSheet.create({
   },
   successOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.overlay,
+    backgroundColor: colors.overlay,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 100,
   },
   successCard: {
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 24,
     padding: 32,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: Colors.enchantedGreen,
+    borderColor: colors.enchantedGreen,
     marginHorizontal: 32,
-    ...(Platform.OS !== 'web' ? { shadowColor: Colors.enchantedGreen, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 20 } : { boxShadow: `0 0 30px ${Colors.enchantedGreen}` }),
+    ...(Platform.OS !== 'web' ? { shadowColor: colors.enchantedGreen, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 20 } : { boxShadow: `0 0 30px ${colors.enchantedGreen}` }),
   },
   successIconBg: {
     width: 80,
@@ -612,18 +614,18 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 24,
     fontWeight: '700' as const,
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
     marginTop: 4,
   },
   successSpell: {
     fontSize: 18,
-    color: Colors.starYellow,
+    color: colors.starYellow,
     fontWeight: '600' as const,
     marginTop: 8,
   },
   successMessage: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 16,
   },
 });

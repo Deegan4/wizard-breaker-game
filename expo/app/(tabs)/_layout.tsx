@@ -1,18 +1,19 @@
 import { Tabs } from "expo-router";
 import { Home, Trophy, BookOpen, Compass, Calendar, Terminal } from "lucide-react-native";
 import React from "react";
-import Colors from "@/constants/colors";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function TabLayout() {
+  const { colors } = useTheme();
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textMuted,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: Colors.backgroundSecondary,
-          borderTopColor: Colors.border,
+          backgroundColor: colors.backgroundSecondary,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
           paddingBottom: 8,
           paddingTop: 8,

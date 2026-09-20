@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import Colors from '@/constants/colors';
 import MerlinAvatar from './MerlinAvatar';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 interface ChatBubbleProps {
   message: string;
@@ -11,6 +11,8 @@ interface ChatBubbleProps {
 }
 
 export default function ChatBubble({ message, isUser, isNew = false, timestamp }: ChatBubbleProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const fadeAnim = useRef(new Animated.Value(isNew ? 0 : 1)).current;
   const slideAnim = useRef(new Animated.Value(isNew ? 20 : 0)).current;
   const timeFade = useRef(new Animated.Value(isNew ? 0 : 1)).current;
@@ -93,7 +95,7 @@ export default function ChatBubble({ message, isUser, isNew = false, timestamp }
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     marginVertical: 6,
@@ -124,24 +126,24 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   userBubble: {
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderBottomRightRadius: 6,
   },
   merlinBubble: {
-    backgroundColor: Colors.surfaceElevated,
+    backgroundColor: colors.surfaceElevated,
     borderBottomLeftRadius: 6,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   message: {
     fontSize: 15,
     lineHeight: 22,
   },
   userText: {
-    color: Colors.text,
+    color: colors.text,
   },
   merlinText: {
-    color: Colors.text,
+    color: colors.text,
   },
   timestamp: {
     fontSize: 10,
@@ -152,14 +154,14 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.7)',
   },
   merlinTimestamp: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
   },
   boldText: {
     fontWeight: '700' as const,
-    color: Colors.starYellow,
+    color: colors.starYellow,
   },
   italicText: {
     fontStyle: 'italic' as const,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
 });
