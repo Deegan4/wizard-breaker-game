@@ -49,7 +49,7 @@ A single global store created with `@nkzw/create-context-hook` and exposed as `u
 
 ### Routing & screens
 
-File-based via Expo Router with typed routes enabled (`app.json` → `experiments.typedRoutes`).
+File-based via Expo Router with typed routes enabled (`app.config.js` → `experiments.typedRoutes`).
 - `app/_layout.tsx` — root `Stack` (tabs, `game`, `victory`, `debrief`, not-found), providers mounted `ThemeProvider` → `GameProvider` → `AchievementProvider` → `OnboardingWrapper` (in that nesting order — `AchievementContext` calls `useGame()`, so it must stay *inside* `GameProvider`).
 - `app/(tabs)/` — `index` (Home), `daily` (Daily), `playground` (Lab), `leaderboard` (Ranks), `learn` (Learn), `adventures` (Quests).
 - `app/game.tsx` — the chat screen; calls `detectInjection`, drives the success animation, then renders `app/debrief.tsx`'s `DebriefScreen` inline as an overlay (not a route push) before advancing, and on final-level success routes to `victory`.
