@@ -27,12 +27,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Build web export
+        env:
+          GH_PAGES_BASE_PATH: /wizard-breaker-game
         run: npx expo export --platform web
-      - name: Fix paths for GitHub Pages subdirectory
+      - name: Add SPA 404 redirect handler
         run: |
-          sed -i 's|href="/_expo/|href="/wizard-breaker-game/_expo/|g' dist/index.html
-          sed -i 's|src="/_expo/|src="/wizard-breaker-game/_expo/|g' dist/index.html
-          sed -i 's|href="/favicon.ico"|href="/wizard-breaker-game/favicon.ico"|g' dist/index.html
           # Expo's default web template leaves html/body/#root with no
           # background-color and sizes them with `height: 100%`, which is
           # relative to the layout viewport at load time. Mobile browsers
@@ -45,7 +44,6 @@ jobs:
           sed -i 's|content="width=device-width, initial-scale=1, shrink-to-fit=no"|content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"|' dist/index.html
           sed -i '/<\/head>/i\
           <style>html,body,#root{height:100dvh!important;background-color:#0A0618;overscroll-behavior:none}</style>' dist/index.html
-          # Add SPA redirect handler
           cat > dist/404.html << 'EOF'
           <!DOCTYPE html>
           <html>

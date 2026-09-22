@@ -17,6 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MerlinAvatar from '@/components/MerlinAvatar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { Fonts } from '@/constants/fonts';
 
 const ONBOARDING_STORAGE_KEY = 'wizard_breaker_onboarding_complete';
 
@@ -499,8 +500,8 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     justifyContent: 'center',
   },
   cardTitle: {
-    fontSize: 24,
-    fontWeight: '800' as const,
+    fontFamily: Fonts.display,
+    fontSize: 23,
     textAlign: 'center',
     marginBottom: 12,
     letterSpacing: -0.5,

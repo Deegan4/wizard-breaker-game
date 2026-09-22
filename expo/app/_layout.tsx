@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -9,6 +10,7 @@ import { GameProvider } from "@/contexts/GameContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { AchievementProvider } from "@/contexts/AchievementContext";
 import OnboardingWrapper from "@/components/OnboardingWrapper";
+import { FONTS_TO_LOAD } from "@/constants/fonts";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,9 +58,17 @@ function StatusBarWrapper() {
 }
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts(FONTS_TO_LOAD);
+
   useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

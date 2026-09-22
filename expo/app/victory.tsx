@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { Fonts } from '@/constants/fonts';
 
 export default function VictoryScreen() {
   const insets = useSafeAreaInsets();
@@ -337,11 +338,11 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     left: 30,
   },
   title: {
-    fontSize: 44,
-    fontWeight: '800' as const,
+    fontFamily: Fonts.display,
+    fontSize: 42,
     color: '#FFD700',
     textAlign: 'center',
-    letterSpacing: -1,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 20,

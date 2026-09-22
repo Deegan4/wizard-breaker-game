@@ -11,7 +11,7 @@ This document describes how to build and deploy Wizard Breaker Game using Expo A
 ## Configuration Files
 
 - `eas.json` - Build profiles (development, preview, production)
-- `app.json` - App configuration (bundle ID, version, plugins, etc.)
+- `app.config.js` - App configuration (bundle ID, version, plugins, etc.)
 - `google-play-service-account.json` - Required for Google Play submission (not committed)
 - Apple credentials - Configured via `eas credentials`
 
@@ -53,7 +53,7 @@ eas build --profile production
    - Android: Keystore (generated or upload existing)
    - iOS: Distribution certificate + provisioning profile
 
-3. **Configure app.json:**
+3. **Configure app.config.js:**
    - Update `owner` with your Expo username
    - Update `bundleIdentifier` / `package` for your app
    - Set `runtimeVersion` policy
@@ -91,7 +91,7 @@ Requires Apple ID, App Store Connect App ID, and Team ID configured in `eas.json
 
 ## Version Management
 
-- Version in `app.json` (`version`) for user-facing version
+- Version in `app.config.js` (`version`) for user-facing version
 - `versionCode` (Android) auto-incremented in production profile
 - `runtimeVersion` policy set to `appVersion` for OTA updates
 
