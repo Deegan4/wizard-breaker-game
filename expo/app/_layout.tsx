@@ -4,6 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GameProvider } from "@/contexts/GameContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { AchievementProvider } from "@/contexts/AchievementContext";
@@ -61,18 +62,20 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ThemeProvider>
-          <GameProvider>
-            <AchievementProvider>
-              <OnboardingWrapper>
-                <StatusBarWrapper />
-                <RootLayoutNav />
-              </OnboardingWrapper>
-            </AchievementProvider>
-          </GameProvider>
-        </ThemeProvider>
-      </GestureHandlerRootView>
+      <SafeAreaProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <ThemeProvider>
+            <GameProvider>
+              <AchievementProvider>
+                <OnboardingWrapper>
+                  <StatusBarWrapper />
+                  <RootLayoutNav />
+                </OnboardingWrapper>
+              </AchievementProvider>
+            </GameProvider>
+          </ThemeProvider>
+        </GestureHandlerRootView>
+      </SafeAreaProvider>
     </QueryClientProvider>
   );
 }
