@@ -5,12 +5,14 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GameProvider } from "@/contexts/GameContext";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { AchievementProvider } from "@/contexts/AchievementContext";
 import OnboardingWrapper from "@/components/OnboardingWrapper";
 import { FONTS_TO_LOAD } from "@/constants/fonts";
+import "@/global.css";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -74,16 +76,18 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <ThemeProvider>
-            <GameProvider>
-              <AchievementProvider>
-                <OnboardingWrapper>
-                  <StatusBarWrapper />
-                  <RootLayoutNav />
-                </OnboardingWrapper>
-              </AchievementProvider>
-            </GameProvider>
-          </ThemeProvider>
+          <BottomSheetModalProvider>
+            <ThemeProvider>
+              <GameProvider>
+                <AchievementProvider>
+                  <OnboardingWrapper>
+                    <StatusBarWrapper />
+                    <RootLayoutNav />
+                  </OnboardingWrapper>
+                </AchievementProvider>
+              </GameProvider>
+            </ThemeProvider>
+          </BottomSheetModalProvider>
         </GestureHandlerRootView>
       </SafeAreaProvider>
     </QueryClientProvider>
