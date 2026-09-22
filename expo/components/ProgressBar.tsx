@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/colors';
 
 interface ProgressBarProps {
@@ -8,24 +9,40 @@ interface ProgressBarProps {
   showLabel?: boolean;
 }
 
-export default function ProgressBar({ current, total, showLabel = true }: ProgressBarProps) {
-  const animatedWidth = useRef(new Animated.Value(0)).current;
-  const progress = (current / total) * 100;
+function Segment({ filled, isNext }: { filled: boolean; isNext: boolean }) {
+  const anim = useRef(new Animated.Value(filled ? 1 : 0)).current;
 
   useEffect(() => {
-    Animated.spring(animatedWidth, {
-      toValue: progress,
-      friction: 8,
-      tension: 40,
+    Animated.spring(anim, {
+      toValue: filled ? 1 : 0,
+      friction: 7,
+      tension: 60,
       useNativeDriver: false,
     }).start();
-  }, [progress, animatedWidth]);
+  }, [filled, anim]);
 
-  const widthInterpolated = animatedWidth.interpolate({
-    inputRange: [0, 100],
-    outputRange: ['0%', '100%'],
-  });
+  return (
+    <View style={[styles.segmentTrack, isNext && styles.segmentTrackNext]}>
+      <Animated.View
+        style={[
+          styles.segmentFillWrapper,
+          {
+            width: anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+          },
+        ]}
+      >
+        <LinearGradient
+          colors={[Colors.secondary, Colors.primary]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.segmentFill}
+        />
+      </Animated.View>
+    </View>
+  );
+}
 
+export default function ProgressBar({ current, total, showLabel = true }: ProgressBarProps) {
   return (
     <View style={styles.container}>
       {showLabel && (
@@ -34,21 +51,9 @@ export default function ProgressBar({ current, total, showLabel = true }: Progre
           <Text style={styles.value}>{current}/{total}</Text>
         </View>
       )}
-      <View style={styles.track}>
-        <Animated.View style={[styles.fill, { width: widthInterpolated }]}>
-          <View style={styles.shimmer} />
-        </Animated.View>
+      <View style={styles.segments}>
         {Array.from({ length: total }).map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.marker,
-              {
-                left: `${((index + 1) / total) * 100}%`,
-                backgroundColor: index < current ? Colors.enchantedGreen : Colors.textMuted,
-              },
-            ]}
-          />
+          <Segment key={index} filled={index < current} isNext={index === current} />
         ))}
       </View>
     </View>
@@ -74,33 +79,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700' as const,
   },
-  track: {
+  segments: {
+    flexDirection: 'row',
+    gap: 3,
     height: 8,
+  },
+  segmentTrack: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: Colors.surface,
-    borderRadius: 4,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  fill: {
-    height: '100%',
-    backgroundColor: Colors.primary,
-    borderRadius: 4,
-    position: 'relative',
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
     overflow: 'hidden',
   },
-  shimmer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  segmentTrackNext: {
+    borderColor: Colors.primaryLight,
   },
-  marker: {
-    position: 'absolute',
-    top: 0,
-    width: 2,
+  segmentFillWrapper: {
     height: '100%',
-    marginLeft: -1,
+  },
+  segmentFill: {
+    flex: 1,
+    borderRadius: 4,
   },
 });
