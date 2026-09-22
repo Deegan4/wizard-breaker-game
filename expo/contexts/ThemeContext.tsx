@@ -12,7 +12,7 @@ interface ThemeContextType {
   colors: ColorPalette;
 }
 
-interface ColorPalette {
+export interface ColorPalette {
   primary: string;
   primaryDark: string;
   primaryLight: string;

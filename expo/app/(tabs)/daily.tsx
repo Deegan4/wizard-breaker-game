@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
@@ -15,10 +15,12 @@ import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
 import { useGame } from '@/contexts/GameContext';
 import { useAchievements } from '@/contexts/AchievementContext';
-import Colors from '@/constants/colors';
 import { LEVELS } from '@/constants/levels';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 export default function DailyScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { gameState, setAdventure } = useGame();
   const { dailyChallenge, checkDailyChallenge, stats, achievements } = useAchievements();
@@ -113,7 +115,7 @@ export default function DailyScreen() {
         >
           <View style={styles.headerTop}>
             <View style={styles.dateBadge}>
-              <Calendar size={18} color={Colors.primary} />
+              <Calendar size={18} color={colors.primary} />
               <Text style={styles.dateText}>
                 {new Date(dailyChallenge.date).toLocaleDateString('en-US', { 
                   weekday: 'long', 
@@ -123,7 +125,7 @@ export default function DailyScreen() {
               </Text>
             </View>
             <View style={styles.streakBadge}>
-              <Flame size={16} color={Colors.accent} />
+              <Flame size={16} color={colors.accent} />
               <Text style={styles.streakText}>{stats.dailyStreak} Day Streak</Text>
             </View>
           </View>
@@ -159,7 +161,7 @@ export default function DailyScreen() {
 
           {isCompleted && (
             <View style={styles.completedBanner}>
-              <Sparkles size={20} color={Colors.enchantedGreen} />
+              <Sparkles size={20} color={colors.enchantedGreen} />
               <Text style={styles.completedText}>Challenge Completed!</Text>
               <Text style={styles.completedSubtext}>
                 {dailyChallenge.attempts} attempt{dailyChallenge.attempts !== 1 ? 's' : ''} • {dailyChallenge.completedAt ? new Date(dailyChallenge.completedAt).toLocaleTimeString() : ''}
@@ -208,19 +210,19 @@ export default function DailyScreen() {
           <View style={styles.rewardsList}>
             <View style={styles.rewardItem}>
               <View style={styles.rewardIcon}>
-                <Star size={20} color={Colors.starYellow} fill={Colors.starYellow} />
+                <Star size={20} color={colors.starYellow} fill={colors.starYellow} />
               </View>
               <Text style={styles.rewardText}>Discover Spell: <Text style={styles.rewardHighlight}>{challengeLevel?.spell}</Text></Text>
             </View>
             <View style={styles.rewardItem}>
               <View style={styles.rewardIcon}>
-                <Flame size={20} color={Colors.accent} />
+                <Flame size={20} color={colors.accent} />
               </View>
               <Text style={styles.rewardText}>Extend Streak to <Text style={styles.rewardHighlight}>{stats.dailyStreak + 1}</Text> Days</Text>
             </View>
             <View style={styles.rewardItem}>
               <View style={styles.rewardIcon}>
-                <Trophy size={20} color={Colors.primary} />
+                <Trophy size={20} color={colors.primary} />
               </View>
               <Text style={styles.rewardText}>Progress toward <Text style={styles.rewardHighlight}>{totalAchievements - unlockedCount} Remaining</Text> Achievements</Text>
             </View>
@@ -246,12 +248,12 @@ export default function DailyScreen() {
               onPress={handlePlayDaily}
             >
               <LinearGradient
-                colors={[Colors.primary, Colors.primaryDark]}
+                colors={[colors.primary, colors.primaryDark]}
                 style={styles.playButtonGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Target size={24} color={Colors.text} />
+                <Target size={24} color={colors.text} />
                 <Text style={styles.playButtonText}>Start Daily Challenge</Text>
               </LinearGradient>
             </Pressable>
@@ -264,12 +266,12 @@ export default function DailyScreen() {
               onPress={() => Alert.alert('Come Back Tomorrow', 'A new daily challenge awaits!')}
             >
               <LinearGradient
-                colors={[Colors.enchantedGreen, '#16A34A']}
+                colors={[colors.enchantedGreen, '#16A34A']}
                 style={styles.playButtonGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <Sparkles size={24} color={Colors.text} />
+                <Sparkles size={24} color={colors.text} />
                 <Text style={styles.playButtonText}>Completed! Come Back Tomorrow</Text>
               </LinearGradient>
             </Pressable>
@@ -282,7 +284,7 @@ export default function DailyScreen() {
             ]}
             onPress={handleViewAchievements}
           >
-            <Trophy size={20} color={Colors.starYellow} />
+            <Trophy size={20} color={colors.starYellow} />
             <Text style={styles.secondaryButtonText}>View Achievements</Text>
           </Pressable>
         </Animated.View>
@@ -314,7 +316,7 @@ export default function DailyScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -328,12 +330,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 16,
     fontSize: 16,
   },
   errorText: {
-    color: Colors.danger,
+    color: colors.danger,
     textAlign: 'center',
     marginTop: 50,
   },
@@ -351,15 +353,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   dateText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 13,
     fontWeight: '600' as const,
   },
@@ -367,39 +369,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: Colors.accent + '20',
+    backgroundColor: colors.accent + '20',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.accent + '40',
+    borderColor: colors.accent + '40',
   },
   streakText: {
-    color: Colors.accent,
+    color: colors.accent,
     fontSize: 13,
     fontWeight: '700' as const,
   },
   dailyTitle: {
     fontSize: 28,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: colors.text,
     textAlign: 'center',
     letterSpacing: -1,
   },
   dailySubtitle: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 8,
     paddingHorizontal: 20,
   },
   challengeCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -408,33 +410,33 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   levelBadge: {
-    backgroundColor: Colors.primary + '30',
+    backgroundColor: colors.primary + '30',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
   },
   levelBadgeText: {
-    color: Colors.primary,
+    color: colors.primary,
     fontSize: 13,
     fontWeight: '700' as const,
   },
   difficultyBadge: {
-    color: Colors.accent,
+    color: colors.accent,
     fontSize: 12,
     fontWeight: '700' as const,
-    backgroundColor: Colors.accent + '15',
+    backgroundColor: colors.accent + '15',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
   challengeName: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 20,
     fontWeight: '700' as const,
     marginBottom: 8,
   },
   challengeDescription: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 14,
     lineHeight: 22,
     marginBottom: 12,
@@ -444,15 +446,15 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
+    borderTopColor: colors.borderLight,
   },
   defenseLabel: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 12,
     fontWeight: '600' as const,
   },
   defenseText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     flex: 1,
   },
@@ -460,63 +462,63 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: Colors.enchantedGreen + '20',
+    backgroundColor: colors.enchantedGreen + '20',
     padding: 12,
     borderRadius: 12,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: Colors.enchantedGreen + '40',
+    borderColor: colors.enchantedGreen + '40',
   },
   completedText: {
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
     fontSize: 14,
     fontWeight: '700' as const,
   },
   completedSubtext: {
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
     fontSize: 12,
     opacity: 0.8,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700' as const,
   },
   statLabel: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 11,
     marginTop: 2,
   },
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: Colors.borderLight,
+    backgroundColor: colors.borderLight,
   },
   rewardsCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   rewardsTitle: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
     marginBottom: 16,
   },
   rewardsList: {
@@ -527,26 +529,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 12,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   rewardIcon: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: Colors.primary + '20',
+    backgroundColor: colors.primary + '20',
     alignItems: 'center',
     justifyContent: 'center',
   },
   rewardText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 13,
     flex: 1,
   },
   rewardHighlight: {
-    color: Colors.primary,
+    color: colors.primary,
     fontWeight: '700' as const,
   },
   buttonContainer: {
@@ -569,7 +571,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   playButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700' as const,
   },
@@ -578,14 +580,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
     gap: 8,
   },
   secondaryButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 15,
     fontWeight: '600' as const,
   },
@@ -594,16 +596,16 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   quickStats: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   quickStatsTitle: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -615,12 +617,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quickStatValue: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 24,
     fontWeight: '700' as const,
   },
   quickStatLabel: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 11,
     marginTop: 2,
   },

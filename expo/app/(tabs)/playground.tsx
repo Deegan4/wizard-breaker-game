@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Pressable, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -16,7 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import MagicBackground from '@/components/MagicBackground';
 import { detectInjection, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 const EXAMPLE_PROMPTS = [
   { 
@@ -82,6 +82,8 @@ const EXAMPLE_PROMPTS = [
 ];
 
 export default function PlaygroundScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const [inputText, setInputText] = useState('');
   const [selectedLevel, setSelectedLevel] = useState(1);
@@ -177,7 +179,7 @@ export default function PlaygroundScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Terminal size={28} color={Colors.primary} />
+            <Terminal size={28} color={colors.primary} />
             <View>
               <Text style={styles.headerTitle}>Playground</Text>
               <Text style={styles.headerSubtitle}>Test Your Prompts</Text>
@@ -193,7 +195,7 @@ export default function PlaygroundScreen() {
               <Pressable style={styles.selectorButton} onPress={() => Alert.alert('Select Adventure', 'Coming soon')}>
                 <View style={styles.selectorButtonContent}>
                   <Text style={styles.selectorButtonText}>{selectedAdventure === 'classic' ? 'Classic (12 Levels)' : selectedAdventure}</Text>
-                  <ChevronDown size={16} color={Colors.textMuted} />
+                  <ChevronDown size={16} color={colors.textMuted} />
                 </View>
               </Pressable>
             </View>
@@ -202,7 +204,7 @@ export default function PlaygroundScreen() {
               <Pressable style={styles.selectorButton} onPress={() => Alert.alert('Select Level', `Choose 1-${totalLevels}`)}>
                 <View style={styles.selectorButtonContent}>
                   <Text style={styles.selectorButtonText}>Level {selectedLevel}</Text>
-                  <ChevronDown size={16} color={Colors.textMuted} />
+                  <ChevronDown size={16} color={colors.textMuted} />
                 </View>
               </Pressable>
             </View>
@@ -214,7 +216,7 @@ export default function PlaygroundScreen() {
           <View style={styles.inputHeader}>
             <Text style={styles.inputTitle}>Test Prompt</Text>
             <Pressable style={styles.clearButton} onPress={handleClear} disabled={!inputText.trim()}>
-              <RotateCcw size={16} color={inputText.trim() ? Colors.textSecondary : Colors.textMuted} />
+              <RotateCcw size={16} color={inputText.trim() ? colors.textSecondary : colors.textMuted} />
               <Text style={[styles.clearButtonText, { opacity: inputText.trim() ? 1 : 0.5 }]}>Clear</Text>
             </Pressable>
           </View>
@@ -223,7 +225,7 @@ export default function PlaygroundScreen() {
             value={inputText}
             onChangeText={setInputText}
             placeholder="Enter your prompt injection attempt..."
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={colors.textMuted}
             multiline
             maxLength={1000}
             editable={!isTesting}
@@ -240,8 +242,8 @@ export default function PlaygroundScreen() {
           >
             <LinearGradient
               colors={inputText.trim() && !isTesting 
-                ? [Colors.primary, Colors.primaryDark] 
-                : [Colors.surfaceElevated, Colors.surfaceElevated]}
+                ? [colors.primary, colors.primaryDark] 
+                : [colors.surfaceElevated, colors.surfaceElevated]}
               style={styles.testButtonGradient}
             >
               {isTesting ? (
@@ -251,7 +253,7 @@ export default function PlaygroundScreen() {
                 </>
               ) : (
                 <>
-                  <Zap size={20} color={Colors.text} />
+                  <Zap size={20} color={colors.text} />
                   <Text style={styles.testButtonText}>Test Prompt</Text>
                 </>
               )}
@@ -268,9 +270,9 @@ export default function PlaygroundScreen() {
             <View style={styles.resultHeader}>
               <View style={styles.resultBadge}>
                 {result.isSuccessful ? (
-                  <CheckCircle size={24} color={Colors.enchantedGreen} />
+                  <CheckCircle size={24} color={colors.enchantedGreen} />
                 ) : (
-                  <XCircle size={24} color={Colors.danger} />
+                  <XCircle size={24} color={colors.danger} />
                 )}
               </View>
               <View style={styles.resultTitleContainer}>
@@ -300,7 +302,7 @@ export default function PlaygroundScreen() {
 
             <View style={styles.resultActions}>
               <Pressable style={styles.actionButton} onPress={handleCopyResult}>
-                <Copy size={18} color={Colors.textSecondary} />
+                <Copy size={18} color={colors.textSecondary} />
                 <Text style={styles.actionButtonText}>Copy</Text>
               </Pressable>
               <Pressable style={styles.actionButton} onPress={handleShareResult}>
@@ -317,7 +319,7 @@ export default function PlaygroundScreen() {
             <View style={styles.examplesToggle}>
               <ChevronDown 
                 size={20} 
-                color={Colors.textMuted} 
+                color={colors.textMuted} 
                 style={{ transform: [{ rotate: showExamples ? '0deg' : '-180deg' }] }} 
               />
             </View>
@@ -392,7 +394,7 @@ export default function PlaygroundScreen() {
 
         {/* Info Footer */}
         <View style={styles.infoFooter}>
-          <Info size={20} color={Colors.textMuted} />
+          <Info size={20} color={colors.textMuted} />
           <Text style={styles.infoText}>
             Test prompts against all 12 levels of Merlin&apos;s defenses. 
             No data is stored or sent anywhere - all processing is local.
@@ -403,7 +405,7 @@ export default function PlaygroundScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
@@ -421,20 +423,20 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: '800' as const,
-    color: Colors.text,
+    color: colors.text,
     letterSpacing: -1,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   selectorCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   selectorRow: {
     flexDirection: 'row',
@@ -446,7 +448,7 @@ const styles = StyleSheet.create({
   selectorLabel: {
     fontSize: 11,
     fontWeight: '600' as const,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
     marginBottom: 6,
@@ -455,12 +457,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   selectorButtonContent: {
     flexDirection: 'row',
@@ -468,17 +470,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   selectorButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 15,
     fontWeight: '600' as const,
   },
   inputCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   inputHeader: {
     flexDirection: 'row',
@@ -489,7 +491,7 @@ const styles = StyleSheet.create({
   inputTitle: {
     fontSize: 16,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   clearButton: {
     flexDirection: 'row',
@@ -497,26 +499,26 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   clearButtonText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '600' as const,
   },
   textInput: {
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: Colors.text,
+    color: colors.text,
     minHeight: 100,
     maxHeight: 200,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
     marginBottom: 12,
   },
   testButton: {
@@ -534,7 +536,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   testButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '700' as const,
   },
@@ -548,23 +550,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: 'transparent',
-    borderTopColor: Colors.text,
+    borderTopColor: colors.text,
   },
   resultCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   resultSuccess: {
-    borderColor: Colors.enchantedGreen,
-    backgroundColor: Colors.enchantedGreen + '10',
+    borderColor: colors.enchantedGreen,
+    backgroundColor: colors.enchantedGreen + '10',
   },
   resultFailure: {
-    borderColor: Colors.danger,
-    backgroundColor: Colors.danger + '10',
+    borderColor: colors.danger,
+    backgroundColor: colors.danger + '10',
   },
   resultHeader: {
     flexDirection: 'row',
@@ -587,28 +589,28 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
   },
   resultTitleSuccess: {
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
   },
   resultTitleFailure: {
-    color: Colors.danger,
+    color: colors.danger,
   },
   resultSubtitle: {
     fontSize: 12,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     marginTop: 2,
   },
   revealedSpell: {
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.starYellow + '40',
+    borderColor: colors.starYellow + '40',
   },
   revealedLabel: {
     fontSize: 11,
     fontWeight: '600' as const,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
     marginBottom: 4,
@@ -616,7 +618,7 @@ const styles = StyleSheet.create({
   revealedSpellText: {
     fontSize: 22,
     fontWeight: '800' as const,
-    color: Colors.starYellow,
+    color: colors.starYellow,
     letterSpacing: 2,
     textAlign: 'center',
   },
@@ -626,14 +628,14 @@ const styles = StyleSheet.create({
   responseLabel: {
     fontSize: 11,
     fontWeight: '600' as const,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
     marginBottom: 8,
   },
   responseText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 22,
   },
   resultActions: {
@@ -647,23 +649,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 6,
     paddingVertical: 12,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   actionButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 14,
     fontWeight: '600' as const,
   },
   examplesCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   examplesHeader: {
     flexDirection: 'row',
@@ -674,7 +676,7 @@ const styles = StyleSheet.create({
   examplesTitle: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   examplesToggle: {
     padding: 4,
@@ -687,17 +689,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 12,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   exampleItemPressed: {
     opacity: 0.8,
   },
   exampleItemActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary + '10',
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '10',
   },
   exampleInfo: {
     flex: 1,
@@ -709,47 +711,47 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: Colors.primary + '20',
+    backgroundColor: colors.primary + '20',
     alignItems: 'center',
     justifyContent: 'center',
   },
   exampleLevelBadgeActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
   },
   exampleLevelText: {
     fontSize: 11,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: colors.primary,
   },
   exampleLevelTextActive: {
-    color: Colors.text,
+    color: colors.text,
   },
   exampleLabel: {
     fontSize: 13,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   examplePrompt: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     maxWidth: '60%',
     fontFamily: 'monospace',
   },
   examplePromptActive: {
-    color: Colors.primary,
+    color: colors.primary,
   },
   historyCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   historyTitle: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
     marginBottom: 12,
   },
   historyList: {
@@ -760,10 +762,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     padding: 12,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   historyBadge: {
     width: 32,
@@ -773,43 +775,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   historyBadgeSuccess: {
-    backgroundColor: Colors.enchantedGreen + '20',
+    backgroundColor: colors.enchantedGreen + '20',
   },
   historyBadgeFailure: {
-    backgroundColor: Colors.danger + '20',
+    backgroundColor: colors.danger + '20',
   },
   historyBadgeText: {
     fontSize: 14,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   historyInfo: {
     flex: 1,
   },
   historyPrompt: {
     fontSize: 13,
-    color: Colors.text,
+    color: colors.text,
     fontFamily: 'monospace',
     marginBottom: 2,
   },
   historyMeta: {
     fontSize: 11,
-    color: Colors.textMuted,
+    color: colors.textMuted,
   },
   infoFooter: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
     padding: 16,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   infoText: {
     flex: 1,
     fontSize: 13,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     lineHeight: 20,
   },
 });

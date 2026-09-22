@@ -35,6 +35,7 @@ module.exports = {
       package: 'app.rork.wizard_breaker_game',
       permissions: ['android.permission.VIBRATE'],
       versionCode: 1,
+      softwareKeyboardLayoutMode: 'resize',
     },
     web: {
       favicon: './assets/images/favicon.png',

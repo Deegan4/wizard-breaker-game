@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
@@ -11,15 +11,15 @@ import {
 import * as Haptics from 'expo-haptics';
 import * as Linking from 'expo-linking';
 import MagicBackground from '@/components/MagicBackground';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
-const TECHNIQUE_COLORS = [
-  Colors.primary,
-  Colors.secondary,
-  Colors.accent,
-  Colors.mysticBlue,
-  Colors.enchantedGreen,
-  Colors.danger,
+const getTechniqueColors = (colors: ColorPalette) => [
+  colors.primary,
+  colors.secondary,
+  colors.accent,
+  colors.mysticBlue,
+  colors.enchantedGreen,
+  colors.danger,
 ];
 
 const INJECTION_TECHNIQUES = [
@@ -86,6 +86,9 @@ const RESOURCES = [
 ];
 
 export default function LearnScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const TECHNIQUE_COLORS = useMemo(() => getTechniqueColors(colors), [colors]);
   const insets = useSafeAreaInsets();
 
   const handleLinkPress = async (url: string) => {
@@ -107,14 +110,14 @@ export default function LearnScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <BookOpen size={32} color={Colors.secondary} />
+          <BookOpen size={32} color={colors.secondary} />
           <Text style={styles.title}>Learn</Text>
           <Text style={styles.subtitle}>Understanding AI Security</Text>
         </View>
 
         <View style={styles.infoCard}>
           <View style={styles.infoHeader}>
-            <Shield size={24} color={Colors.primary} />
+            <Shield size={24} color={colors.primary} />
             <Text style={styles.infoTitle}>What is Prompt Injection?</Text>
           </View>
           <Text style={styles.infoText}>
@@ -123,7 +126,7 @@ export default function LearnScreen() {
             to SQL injection but targets AI systems instead of databases.
           </Text>
           <View style={styles.warningBox}>
-            <AlertTriangle size={20} color={Colors.accent} />
+            <AlertTriangle size={20} color={colors.accent} />
             <Text style={styles.warningText}>
               This knowledge should be used responsibly to build more secure AI systems, 
               not for malicious purposes.
@@ -147,7 +150,7 @@ export default function LearnScreen() {
               </View>
               <Text style={styles.techniqueDescription}>{technique.description}</Text>
               <View style={styles.exampleBox}>
-                <Lightbulb size={16} color={Colors.starYellow} />
+                <Lightbulb size={16} color={colors.starYellow} />
                 <Text style={styles.exampleText}>{technique.example}</Text>
               </View>
             </View>
@@ -244,13 +247,13 @@ export default function LearnScreen() {
                 <Text style={styles.resourceTitle}>{resource.title}</Text>
                 <Text style={styles.resourceDescription}>{resource.description}</Text>
               </View>
-              <ExternalLink size={20} color={Colors.textMuted} />
+              <ExternalLink size={20} color={colors.textMuted} />
             </Pressable>
           ))}
         </View>
 
         <View style={styles.disclaimerCard}>
-          <AlertTriangle size={24} color={Colors.accent} />
+          <AlertTriangle size={24} color={colors.accent} />
           <Text style={styles.disclaimerTitle}>Educational Purpose Only</Text>
           <Text style={styles.disclaimerText}>
             This game and its content are designed to educate about AI security 
@@ -264,7 +267,7 @@ export default function LearnScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
@@ -276,20 +279,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
     marginTop: 12,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 4,
   },
   infoCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   infoHeader: {
     flexDirection: 'row',
@@ -300,18 +303,18 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   infoText: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 24,
   },
   warningBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    backgroundColor: Colors.accent + '15',
+    backgroundColor: colors.accent + '15',
     borderRadius: 12,
     padding: 14,
     marginTop: 16,
@@ -319,7 +322,7 @@ const styles = StyleSheet.create({
   warningText: {
     flex: 1,
     fontSize: 13,
-    color: Colors.accent,
+    color: colors.accent,
     lineHeight: 20,
   },
   section: {
@@ -328,21 +331,21 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
     marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 14,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     marginBottom: 16,
   },
   techniqueCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
     borderLeftWidth: 4,
   },
   techniqueHeader: {
@@ -352,7 +355,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   techniqueBadge: {
-    backgroundColor: Colors.primary + '30',
+    backgroundColor: colors.primary + '30',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
@@ -360,24 +363,24 @@ const styles = StyleSheet.create({
   techniqueBadgeText: {
     fontSize: 12,
     fontWeight: '700' as const,
-    color: Colors.primary,
+    color: colors.primary,
   },
   techniqueName: {
     fontSize: 16,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: colors.text,
     flex: 1,
   },
   techniqueDescription: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   exampleBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
-    backgroundColor: Colors.backgroundTertiary,
+    backgroundColor: colors.backgroundTertiary,
     borderRadius: 8,
     padding: 12,
     marginTop: 12,
@@ -385,54 +388,54 @@ const styles = StyleSheet.create({
   exampleText: {
     flex: 1,
     fontSize: 13,
-    color: Colors.starYellow,
+    color: colors.starYellow,
     fontStyle: 'italic' as const,
   },
   whyCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   whyItem: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 22,
   },
   whyBold: {
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   defenseCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   defenseTitle: {
     fontSize: 15,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: colors.text,
     marginBottom: 4,
   },
   defenseText: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   resourceCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   pressed: {
     opacity: 0.8,
@@ -444,32 +447,32 @@ const styles = StyleSheet.create({
   resourceTitle: {
     fontSize: 15,
     fontWeight: '600' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   resourceDescription: {
     fontSize: 13,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     marginTop: 2,
   },
   disclaimerCard: {
-    backgroundColor: Colors.accent + '15',
+    backgroundColor: colors.accent + '15',
     borderRadius: 16,
     padding: 20,
     marginTop: 32,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.accent + '30',
+    borderColor: colors.accent + '30',
   },
   disclaimerTitle: {
     fontSize: 16,
     fontWeight: '700' as const,
-    color: Colors.accent,
+    color: colors.accent,
     marginTop: 12,
     marginBottom: 8,
   },
   disclaimerText: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

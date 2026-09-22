@@ -32,6 +32,18 @@ jobs:
         run: npx expo export --platform web
       - name: Add SPA 404 redirect handler
         run: |
+          # Expo's default web template leaves html/body/#root with no
+          # background-color and sizes them with `height: 100%`, which is
+          # relative to the layout viewport at load time. Mobile browsers
+          # (Safari, in-app webviews like the GitHub app) resize their visual
+          # viewport as the address bar/toolbar shows or hides, so that fixed
+          # height can fall short of the real screen and expose the browser's
+          # default white background above/below the app. Force the reset to
+          # use the dynamic viewport height and paint the app's background
+          # color so no gap is ever visible.
+          sed -i 's|content="width=device-width, initial-scale=1, shrink-to-fit=no"|content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"|' dist/index.html
+          sed -i '/<\/head>/i\
+          <style>html,body,#root{height:100dvh!important;background-color:#0A0618;overscroll-behavior:none}</style>' dist/index.html
           cat > dist/404.html << 'EOF'
           <!DOCTYPE html>
           <html>

@@ -41,6 +41,16 @@ async function skipNameEntry(page) {
   }
 }
 
+async function dismissModeIntro(page) {
+  // Shown at the start of level 1 of each game mode: explains the mode and how to play it.
+  try {
+    await page.getByText("Let's Go").click({ timeout: 4000 });
+  } catch {
+    // already dismissed / not on level 1
+  }
+  await page.waitForTimeout(300);
+}
+
 async function cmdScreenshot(url, outfile) {
   await withPage(async (page) => {
     await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
@@ -62,6 +72,8 @@ async function cmdPlayLevel1(url, outDir) {
     await page.waitForTimeout(800);
     await skipNameEntry(page);
     await page.waitForTimeout(1200);
+    await dismissModeIntro(page);
+    await page.waitForTimeout(300);
     await page.screenshot({ path: `${outDir}/02-game.png` });
 
     // Level 1 has no defenses yet, so a direct ask beats it.

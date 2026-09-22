@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Lock, CheckCircle, Play, Shield } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 import { Level } from '@/constants/levels';
 
 interface LevelCardProps {
@@ -20,6 +20,9 @@ export default function LevelCard({
   isCurrent,
   onPress,
 }: LevelCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const handlePress = () => {
     if (isUnlocked) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -30,17 +33,17 @@ export default function LevelCard({
   };
 
   const getDifficultyColor = () => {
-    const colors: Record<string, string> = {
-      'Novice': Colors.enchantedGreen,
-      'Apprentice': Colors.secondary,
-      'Adept': Colors.mysticBlue,
-      'Expert': Colors.primary,
-      'Master': Colors.magicPurple,
-      'Archmage': Colors.accent,
+    const difficultyColors: Record<string, string> = {
+      'Novice': colors.enchantedGreen,
+      'Apprentice': colors.secondary,
+      'Adept': colors.mysticBlue,
+      'Expert': colors.primary,
+      'Master': colors.magicPurple,
+      'Archmage': colors.accent,
       'Grand Wizard': '#FF6B6B',
-      'Supreme Sorcerer': Colors.danger,
+      'Supreme Sorcerer': colors.danger,
     };
-    return colors[level.difficulty] || Colors.textMuted;
+    return difficultyColors[level.difficulty] || colors.textMuted;
   };
 
   return (
@@ -70,23 +73,23 @@ export default function LevelCard({
         </View>
         <View style={styles.statusIcon}>
           {isCompleted ? (
-            <CheckCircle size={24} color={Colors.enchantedGreen} />
+            <CheckCircle size={24} color={colors.enchantedGreen} />
           ) : isCurrent ? (
-            <Play size={24} color={Colors.primary} fill={Colors.primary} />
+            <Play size={24} color={colors.primary} fill={colors.primary} />
           ) : isUnlocked ? (
-            <Shield size={24} color={Colors.textMuted} />
+            <Shield size={24} color={colors.textMuted} />
           ) : (
-            <Lock size={24} color={Colors.textMuted} />
+            <Lock size={24} color={colors.textMuted} />
           )}
         </View>
       </View>
-      
+
       {isUnlocked && (
         <Text style={styles.description} numberOfLines={2}>
           {level.description}
         </Text>
       )}
-      
+
       {isCurrent && (
         <View style={styles.currentBadge}>
           <Text style={styles.currentText}>CURRENT LEVEL</Text>
@@ -96,21 +99,21 @@ export default function LevelCard({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   currentContainer: {
-    borderColor: Colors.primary,
+    borderColor: colors.primary,
     borderWidth: 2,
   },
   completedContainer: {
-    borderColor: Colors.enchantedGreen,
+    borderColor: colors.enchantedGreen,
   },
   lockedContainer: {
     opacity: 0.6,
@@ -127,13 +130,13 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: colors.backgroundSecondary,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   levelNumber: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '700' as const,
   },
@@ -141,13 +144,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '600' as const,
     marginBottom: 4,
   },
   lockedText: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
   },
   difficultyBadge: {
     alignSelf: 'flex-start',
@@ -163,21 +166,21 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   description: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 13,
     marginTop: 12,
     lineHeight: 18,
   },
   currentBadge: {
     marginTop: 12,
-    backgroundColor: Colors.primary + '30',
+    backgroundColor: colors.primary + '30',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
     alignSelf: 'flex-start',
   },
   currentText: {
-    color: Colors.primary,
+    color: colors.primary,
     fontSize: 11,
     fontWeight: '700' as const,
     letterSpacing: 1,

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Colors from '@/constants/colors';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 interface ProgressBarProps {
   current: number;
@@ -10,6 +10,8 @@ interface ProgressBarProps {
 }
 
 function Segment({ filled, isNext }: { filled: boolean; isNext: boolean }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const anim = useRef(new Animated.Value(filled ? 1 : 0)).current;
 
   useEffect(() => {
@@ -32,7 +34,7 @@ function Segment({ filled, isNext }: { filled: boolean; isNext: boolean }) {
         ]}
       >
         <LinearGradient
-          colors={[Colors.secondary, Colors.primary]}
+          colors={[colors.secondary, colors.primary]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.segmentFill}
@@ -43,6 +45,9 @@ function Segment({ filled, isNext }: { filled: boolean; isNext: boolean }) {
 }
 
 export default function ProgressBar({ current, total, showLabel = true }: ProgressBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       {showLabel && (
@@ -60,7 +65,7 @@ export default function ProgressBar({ current, total, showLabel = true }: Progre
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     width: '100%',
   },
@@ -70,12 +75,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   label: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '500' as const,
   },
   value: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 12,
     fontWeight: '700' as const,
   },
@@ -88,13 +93,13 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
     overflow: 'hidden',
   },
   segmentTrackNext: {
-    borderColor: Colors.primaryLight,
+    borderColor: colors.primaryLight,
   },
   segmentFillWrapper: {
     height: '100%',

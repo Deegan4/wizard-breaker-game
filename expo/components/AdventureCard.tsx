@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,8 @@ import {
 import { ArrowRight, Lock, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import Colors from '@/constants/colors';
 import { Adventure } from '@/constants/adventures';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -24,6 +24,8 @@ interface AdventureCardProps {
 }
 
 export default function AdventureCard({ adventure, onPress, index }: AdventureCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -57,15 +59,15 @@ export default function AdventureCard({ adventure, onPress, index }: AdventureCa
   const getDifficultyColor = () => {
     switch (adventure.difficulty) {
       case 'Easy':
-        return Colors.enchantedGreen;
+        return colors.enchantedGreen;
       case 'Medium':
-        return Colors.starYellow;
+        return colors.starYellow;
       case 'Hard':
-        return Colors.accent;
+        return colors.accent;
       case 'Expert':
-        return Colors.danger;
+        return colors.danger;
       default:
-        return Colors.textMuted;
+        return colors.textMuted;
     }
   };
 
@@ -106,13 +108,13 @@ export default function AdventureCard({ adventure, onPress, index }: AdventureCa
           />
           {adventure.isNew && (
             <View style={styles.newBadge}>
-              <Sparkles size={10} color={Colors.text} />
+              <Sparkles size={10} color={colors.text} />
               <Text style={styles.newBadgeText}>NEW</Text>
             </View>
           )}
           {adventure.isLocked && (
             <View style={styles.lockedOverlay}>
-              <Lock size={32} color={Colors.textMuted} />
+              <Lock size={32} color={colors.textMuted} />
             </View>
           )}
         </View>
@@ -139,7 +141,7 @@ export default function AdventureCard({ adventure, onPress, index }: AdventureCa
               <Text style={[styles.playText, adventure.isLocked && styles.lockedText]}>
                 Play Adventure
               </Text>
-              <ArrowRight size={14} color={adventure.isLocked ? Colors.textMuted : Colors.primary} />
+              <ArrowRight size={14} color={adventure.isLocked ? colors.textMuted : colors.primary} />
             </Pressable>
           </View>
         </View>
@@ -148,17 +150,17 @@ export default function AdventureCard({ adventure, onPress, index }: AdventureCa
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
     width: CARD_WIDTH,
     marginBottom: 16,
   },
   card: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   cardPressed: {
     transform: [{ scale: 0.98 }],
@@ -187,7 +189,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: Colors.enchantedGreen,
+    backgroundColor: colors.enchantedGreen,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -196,7 +198,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   newBadgeText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 10,
     fontWeight: '700' as const,
   },
@@ -212,22 +214,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
     marginBottom: 6,
   },
   description: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 18,
     marginBottom: 12,
     minHeight: 54,
   },
   lockedText: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
   },
   footer: {
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
     paddingTop: 10,
   },
   meta: {
@@ -247,7 +249,7 @@ const styles = StyleSheet.create({
   },
   levels: {
     fontSize: 11,
-    color: Colors.textMuted,
+    color: colors.textMuted,
   },
   playButton: {
     flexDirection: 'row',
@@ -257,6 +259,6 @@ const styles = StyleSheet.create({
   playText: {
     fontSize: 13,
     fontWeight: '600' as const,
-    color: Colors.primary,
+    color: colors.primary,
   },
 });

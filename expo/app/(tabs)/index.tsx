@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,13 +22,15 @@ import MerlinAvatar from '@/components/MerlinAvatar';
 import AnimatedLogo from '@/components/AnimatedLogo';
 import ProgressBar from '@/components/ProgressBar';
 import { useGame } from '@/contexts/GameContext';
-import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { LEVELS } from '@/constants/levels';
+import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const { gameState, setUsername, markIntroSeen, setAdventure } = useGame();
   const [showUsernameInput, setShowUsernameInput] = useState(false);
@@ -170,7 +172,7 @@ export default function HomeScreen() {
                 value={tempUsername}
                 onChangeText={setTempUsername}
                 placeholder="Your wizard name..."
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={colors.textMuted}
                 autoFocus
                 autoCapitalize="words"
                 maxLength={20}
@@ -186,13 +188,13 @@ export default function HomeScreen() {
                 disabled={!tempUsername.trim()}
               >
                 <LinearGradient
-                  colors={[Colors.primary, Colors.primaryDark]}
+                  colors={[colors.primary, colors.primaryDark]}
                   style={styles.buttonGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
                   <Text style={styles.submitButtonText}>Begin Journey</Text>
-                  <Wand2 size={20} color={Colors.text} />
+                  <Wand2 size={20} color={colors.text} />
                 </LinearGradient>
               </Pressable>
               
@@ -231,9 +233,9 @@ export default function HomeScreen() {
               >
                 <Text style={styles.title}>Wizard Breaker</Text>
                 <View style={styles.subtitleContainer}>
-                  <Sparkles size={16} color={Colors.starYellow} />
+                  <Sparkles size={16} color={colors.starYellow} />
                   <Text style={styles.subtitle}>Test Your AI Hacking Skills</Text>
-                  <Sparkles size={16} color={Colors.starYellow} />
+                  <Sparkles size={16} color={colors.starYellow} />
                 </View>
               </Animated.View>
 
@@ -344,12 +346,12 @@ export default function HomeScreen() {
                     onPress={handlePlayPress}
                   >
                     <LinearGradient
-                      colors={[Colors.secondary, Colors.primary, Colors.primaryDark]}
+                      colors={[colors.secondary, colors.primary, colors.primaryDark]}
                       style={styles.playButtonGradient}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                     >
-                      <Play size={28} color={Colors.text} fill={Colors.text} />
+                      <Play size={28} color={colors.text} fill={colors.text} />
                       <Text style={styles.playButtonText}>
                         {gameState.levelsCompleted === 0 ? 'Start Game' : 'Continue'}
                       </Text>
@@ -364,9 +366,9 @@ export default function HomeScreen() {
                   ]}
                   onPress={() => router.push('/leaderboard')}
                 >
-                  <Trophy size={20} color={Colors.starYellow} />
+                  <Trophy size={20} color={colors.starYellow} />
                   <Text style={styles.secondaryButtonText}>Leaderboard</Text>
-                  <ChevronRight size={16} color={Colors.textMuted} />
+                  <ChevronRight size={16} color={colors.textMuted} />
                 </Pressable>
               </Animated.View>
 
@@ -379,12 +381,12 @@ export default function HomeScreen() {
               >
                 <View style={styles.infoTermHeader}>
                   <View style={styles.infoTermDots}>
-                    <View style={[styles.infoTermDot, { backgroundColor: Colors.danger }]} />
-                    <View style={[styles.infoTermDot, { backgroundColor: Colors.accent }]} />
-                    <View style={[styles.infoTermDot, { backgroundColor: Colors.enchantedGreen }]} />
+                    <View style={[styles.infoTermDot, { backgroundColor: colors.danger }]} />
+                    <View style={[styles.infoTermDot, { backgroundColor: colors.accent }]} />
+                    <View style={[styles.infoTermDot, { backgroundColor: colors.enchantedGreen }]} />
                   </View>
                   <View style={styles.infoTermLabel}>
-                    <Terminal size={12} color={Colors.textMuted} />
+                    <Terminal size={12} color={colors.textMuted} />
                     <Text style={styles.infoTermLabelText}>tip_of_the_day.sh</Text>
                   </View>
                 </View>
@@ -413,7 +415,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   flex: {
     flex: 1,
   },
@@ -429,7 +431,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: Fonts.display,
     fontSize: 34,
-    color: Colors.text,
+    color: colors.text,
     textAlign: 'center',
     letterSpacing: -0.5,
   },
@@ -442,14 +444,14 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   statsCardOuter: {
     marginTop: 24,
     borderRadius: 20,
     overflow: 'hidden',
-    shadowColor: Colors.primary,
+    shadowColor: colors.primary,
     shadowOpacity: 0.25,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
@@ -472,30 +474,30 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 32,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
   },
   statLabel: {
     fontSize: 12,
-    color: Colors.textMuted,
+    color: colors.textMuted,
     marginTop: 4,
   },
   statDivider: {
     width: 1,
-    backgroundColor: Colors.border,
+    backgroundColor: colors.border,
   },
   progressSection: {
     marginTop: 20,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
   },
   currentLevelCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginTop: 16,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
   },
   levelHeader: {
     flexDirection: 'row',
@@ -504,29 +506,29 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   levelBadge: {
-    backgroundColor: Colors.primary + '30',
+    backgroundColor: colors.primary + '30',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
   levelBadgeText: {
-    color: Colors.primary,
+    color: colors.primary,
     fontSize: 12,
     fontWeight: '600' as const,
   },
   levelDifficulty: {
-    color: Colors.accent,
+    color: colors.accent,
     fontSize: 12,
     fontWeight: '600' as const,
   },
   levelName: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700' as const,
     marginBottom: 6,
   },
   levelDescription: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 10,
@@ -536,12 +538,12 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   defenseLabel: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 12,
     fontWeight: '600' as const,
   },
   defenseText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     flex: 1,
   },
@@ -551,7 +553,7 @@ const styles = StyleSheet.create({
   },
   playButtonGlow: {
     borderRadius: 16,
-    shadowColor: Colors.secondary,
+    shadowColor: colors.secondary,
     shadowOffset: { width: 0, height: 0 },
     elevation: 8,
   },
@@ -570,7 +572,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   playButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 20,
     fontWeight: '700' as const,
   },
@@ -583,14 +585,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 14,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     gap: 8,
   },
   secondaryButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '600' as const,
     flex: 1,
@@ -600,7 +602,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: Colors.enchantedGreen + '30',
+    borderColor: colors.enchantedGreen + '30',
     marginTop: 20,
   },
   infoTermHeader: {
@@ -609,7 +611,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: Colors.backgroundTertiary,
+    backgroundColor: colors.backgroundTertiary,
   },
   infoTermDots: {
     flexDirection: 'row',
@@ -626,7 +628,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   infoTermLabelText: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 11,
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
   },
@@ -636,18 +638,18 @@ const styles = StyleSheet.create({
   infoTermLine: {
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
     fontSize: 13,
-    color: Colors.text,
+    color: colors.text,
     marginBottom: 6,
   },
   infoTermPrompt: {
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
   },
   infoTermCommand: {
-    color: Colors.secondary,
+    color: colors.secondary,
   },
   infoText: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 13,
     marginTop: 2,
   },
@@ -657,7 +659,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   infoTermCursor: {
-    color: Colors.enchantedGreen,
+    color: colors.enchantedGreen,
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
     fontSize: 13,
   },
@@ -667,13 +669,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 14,
     fontWeight: '600' as const,
     fontStyle: 'italic' as const,
   },
   disclaimer: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 11,
     marginTop: 8,
     textAlign: 'center',
@@ -688,27 +690,27 @@ const styles = StyleSheet.create({
   usernameTitle: {
     fontSize: 28,
     fontWeight: '700' as const,
-    color: Colors.text,
+    color: colors.text,
     marginTop: 24,
     textAlign: 'center',
   },
   usernameSubtitle: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 8,
     textAlign: 'center',
     marginBottom: 32,
   },
   usernameInput: {
     width: width - 80,
-    backgroundColor: Colors.surface,
+    backgroundColor: colors.surface,
     borderRadius: 12,
     paddingHorizontal: 20,
     paddingVertical: 16,
     fontSize: 18,
-    color: Colors.text,
+    color: colors.text,
     borderWidth: 1,
-    borderColor: Colors.borderLight,
+    borderColor: colors.borderLight,
     textAlign: 'center',
   },
   submitButton: {
@@ -728,7 +730,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   submitButtonText: {
-    color: Colors.text,
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700' as const,
   },
@@ -737,7 +739,7 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   skipButtonText: {
-    color: Colors.textMuted,
+    color: colors.textMuted,
     fontSize: 14,
   },
 });
