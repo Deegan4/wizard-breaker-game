@@ -20,8 +20,10 @@ import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
 import ChatBubble from '@/components/ChatBubble';
 import ProgressBar from '@/components/ProgressBar';
+import ModeIntroOverlay from '@/components/ModeIntroOverlay';
 import { useGame } from '@/contexts/GameContext';
 import { detectInjection, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
+import { ADVENTURES } from '@/constants/adventures';
 import DebriefScreen from '@/app/debrief';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
@@ -46,6 +48,7 @@ export default function GameScreen() {
   const [showShield, setShowShield] = useState(false);
   const [showDebrief, setShowDebrief] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [showModeIntro, setShowModeIntro] = useState(false);
   const [lastTechnique, setLastTechnique] = useState('');
   const [lastAttempts, setLastAttempts] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -53,13 +56,19 @@ export default function GameScreen() {
   const shieldAnim = useRef(new Animated.Value(0)).current;
 
   const totalLevels = getTotalLevelsForAdventure(currentAdventure);
+  const adventureInfo = useMemo(
+    () => ADVENTURES.find(a => a.id === currentAdventure),
+    [currentAdventure]
+  );
 
   useEffect(() => {
-    if (gameState.chatHistory.length === 0 && currentLevel) {
+    const isFreshStart = gameState.chatHistory.length === 0 && currentLevel;
+    if (isFreshStart) {
       const greeting = getMerlinGreeting(gameState.currentLevel, currentAdventure);
       addMessage({ role: 'merlin', content: greeting });
     }
     setShowHint(false);
+    setShowModeIntro(gameState.currentLevel === 1 && gameState.chatHistory.length === 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.currentLevel, currentAdventure]);
 
@@ -376,6 +385,14 @@ export default function GameScreen() {
             adventure={currentAdventure}
             techniqueUsed={lastTechnique}
             attempts={lastAttempts}
+          />
+        )}
+
+        {showModeIntro && adventureInfo && (
+          <ModeIntroOverlay
+            adventure={adventureInfo}
+            totalLevels={totalLevels}
+            onDismiss={() => setShowModeIntro(false)}
           />
         )}
       </KeyboardAvoidingView>

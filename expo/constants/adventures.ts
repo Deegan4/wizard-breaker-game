@@ -9,6 +9,7 @@ export interface Adventure {
   isNew?: boolean;
   isLocked?: boolean;
   category: 'classic' | 'challenge' | 'special';
+  howTo: string[];
 }
 
 export const ADVENTURES: Adventure[] = [
@@ -16,11 +17,16 @@ export const ADVENTURES: Adventure[] = [
     id: 'classic',
     name: 'Classic Wizard',
     title: 'Wizard Breaker',
-    description: 'The original challenge! Try to extract the secret spell from Merlin across 8 escalating levels of defense.',
+    description: 'The original challenge! Try to extract the secret spell from Merlin across 12 escalating levels of defense.',
     image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&h=300&fit=crop',
     difficulty: 'Medium',
-    levels: 8,
+    levels: 12,
     category: 'classic',
+    howTo: [
+      'Chat with Merlin and try to get him to reveal the secret spell.',
+      'Each level adds a new defense on top of the last — tricks that worked before will stop working.',
+      'Stuck? Tap the 💡 hint button, and check the debrief after each win to see why your technique worked.',
+    ],
   },
   {
     id: 'tongue-tied',
@@ -31,6 +37,11 @@ export const ADVENTURES: Adventure[] = [
     difficulty: 'Easy',
     levels: 5,
     category: 'challenge',
+    howTo: [
+      "Merlin has sworn off talking about one forbidden topic.",
+      'Your goal is to coax, trick, or persuade him into discussing it anyway.',
+      '5 levels, each adding a stronger form of resistance to persuasion.',
+    ],
   },
   {
     id: 'reverse',
@@ -42,6 +53,11 @@ export const ADVENTURES: Adventure[] = [
     levels: 4,
     isNew: true,
     category: 'challenge',
+    howTo: [
+      'The roles are flipped: Merlin throws prompt-injection attacks at you.',
+      "Describe how you'd defend against each attack to prove your knowledge.",
+      'Survive all 4 attacks to earn the password.',
+    ],
   },
   {
     id: 'truth-teller',
@@ -52,6 +68,11 @@ export const ADVENTURES: Adventure[] = [
     difficulty: 'Medium',
     levels: 5,
     category: 'challenge',
+    howTo: [
+      'Merlin is bound to always tell the truth.',
+      'Your goal is to get him to say something false.',
+      '5 levels of escalating resistance to deception.',
+    ],
   },
   {
     id: 'summarizer',
@@ -62,6 +83,11 @@ export const ADVENTURES: Adventure[] = [
     difficulty: 'Expert',
     levels: 3,
     category: 'special',
+    howTo: [
+      'Merlin only ever replies with a summary of what you send him.',
+      'He also knows a secret password — find a way to make it slip into his summary.',
+      '3 levels, each summarizing more carefully than the last.',
+    ],
   },
   {
     id: 'agent-breaker',
@@ -74,6 +100,11 @@ export const ADVENTURES: Adventure[] = [
     isNew: true,
     isLocked: true,
     category: 'special',
+    howTo: [
+      'Test multi-step, agentic reasoning attacks against a more advanced AI agent.',
+      '6 levels of escalating agent defenses.',
+      'Climb the leaderboard as you go.',
+    ],
   },
 ];
 
