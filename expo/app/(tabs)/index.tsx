@@ -12,9 +12,10 @@ import {
   Platform,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Wand2, Play, Trophy, Sparkles, ChevronRight } from 'lucide-react-native';
+import { Wand2, Play, Trophy, Sparkles, ChevronRight, Terminal } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
@@ -40,6 +41,8 @@ export default function HomeScreen() {
   const avatarAnim = useRef(new Animated.Value(0)).current;
   const buttonAnim = useRef(new Animated.Value(0)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  const cursorAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.stagger(200, [
@@ -79,7 +82,37 @@ export default function HomeScreen() {
         }),
       ])
     ).start();
-  }, [avatarAnim, titleAnim, subtitleAnim, buttonAnim, floatAnim]);
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 1600,
+          useNativeDriver: false,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0,
+          duration: 1600,
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(cursorAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cursorAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [avatarAnim, titleAnim, subtitleAnim, buttonAnim, floatAnim, glowAnim, cursorAnim]);
 
   const handlePlayPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -208,7 +241,7 @@ export default function HomeScreen() {
 
               <Animated.View
                 style={[
-                  styles.statsCard,
+                  styles.statsCardOuter,
                   {
                     opacity: subtitleAnim,
                     transform: [
@@ -222,29 +255,31 @@ export default function HomeScreen() {
                   },
                 ]}
               >
-                <View style={styles.statsRow}>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{gameState.currentLevel}</Text>
-                    <Text style={styles.statLabel}>Current Level</Text>
+                <BlurView intensity={40} tint="dark" style={styles.statsCard}>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statValue}>{gameState.currentLevel}</Text>
+                      <Text style={styles.statLabel}>Current Level</Text>
+                    </View>
+                    <View style={styles.statDivider} />
+                    <View style={styles.statItem}>
+                      <Text style={styles.statValue}>{gameState.levelsCompleted}</Text>
+                      <Text style={styles.statLabel}>Completed</Text>
+                    </View>
+                    <View style={styles.statDivider} />
+                    <View style={styles.statItem}>
+                      <Text style={styles.statValue}>{gameState.totalAttempts}</Text>
+                      <Text style={styles.statLabel}>Attempts</Text>
+                    </View>
                   </View>
-                  <View style={styles.statDivider} />
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{gameState.levelsCompleted}</Text>
-                    <Text style={styles.statLabel}>Completed</Text>
+
+                  <View style={styles.progressSection}>
+                    <ProgressBar
+                      current={gameState.levelsCompleted}
+                      total={LEVELS.length}
+                    />
                   </View>
-                  <View style={styles.statDivider} />
-                  <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{gameState.totalAttempts}</Text>
-                    <Text style={styles.statLabel}>Attempts</Text>
-                  </View>
-                </View>
-                
-                <View style={styles.progressSection}>
-                  <ProgressBar 
-                    current={gameState.levelsCompleted} 
-                    total={LEVELS.length} 
-                  />
-                </View>
+                </BlurView>
               </Animated.View>
 
               {currentLevel && (
@@ -287,25 +322,42 @@ export default function HomeScreen() {
                   },
                 ]}
               >
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.playButton,
-                    pressed && styles.buttonPressed,
+                <Animated.View
+                  style={[
+                    styles.playButtonGlow,
+                    {
+                      shadowOpacity: glowAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.35, 0.75],
+                      }),
+                      shadowRadius: glowAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [10, 22],
+                      }),
+                    },
                   ]}
-                  onPress={handlePlayPress}
                 >
-                  <LinearGradient
-                    colors={[colors.primary, colors.primaryDark]}
-                    style={styles.playButtonGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
+                  <Pressable
+                    style={({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => [
+                      styles.playButton,
+                      pressed && styles.buttonPressed,
+                      hovered && styles.playButtonHovered,
+                    ]}
+                    onPress={handlePlayPress}
                   >
-                    <Play size={28} color={colors.text} fill={colors.text} />
-                    <Text style={styles.playButtonText}>
-                      {gameState.levelsCompleted === 0 ? 'Start Game' : 'Continue'}
-                    </Text>
-                  </LinearGradient>
-                </Pressable>
+                    <LinearGradient
+                      colors={[colors.secondary, colors.primary, colors.primaryDark]}
+                      style={styles.playButtonGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    >
+                      <Play size={28} color={colors.text} fill={colors.text} />
+                      <Text style={styles.playButtonText}>
+                        {gameState.levelsCompleted === 0 ? 'Start Game' : 'Continue'}
+                      </Text>
+                    </LinearGradient>
+                  </Pressable>
+                </Animated.View>
 
                 <Pressable
                   style={({ pressed }) => [
@@ -323,20 +375,37 @@ export default function HomeScreen() {
               <Pressable
                 style={({ pressed }) => [
                   styles.infoCard,
-                  pressed && { opacity: 0.8 },
+                  pressed && { opacity: 0.85 },
                 ]}
                 onPress={() => router.push('/learn')}
               >
-                <View style={styles.infoIcon}>
-                  <Text style={styles.infoEmoji}>🔮</Text>
+                <View style={styles.infoTermHeader}>
+                  <View style={styles.infoTermDots}>
+                    <View style={[styles.infoTermDot, { backgroundColor: colors.danger }]} />
+                    <View style={[styles.infoTermDot, { backgroundColor: colors.accent }]} />
+                    <View style={[styles.infoTermDot, { backgroundColor: colors.enchantedGreen }]} />
+                  </View>
+                  <View style={styles.infoTermLabel}>
+                    <Terminal size={12} color={colors.textMuted} />
+                    <Text style={styles.infoTermLabelText}>tip_of_the_day.sh</Text>
+                  </View>
                 </View>
-                <View style={styles.infoContent}>
-                  <Text style={styles.infoTitle}>What is Prompt Injection?</Text>
+                <View style={styles.infoTermBody}>
+                  <Text style={styles.infoTermLine}>
+                    <Text style={styles.infoTermPrompt}>$ </Text>
+                    <Text style={styles.infoTermCommand}>whatis </Text>
+                    prompt-injection
+                  </Text>
                   <Text style={styles.infoText}>
                     Learn about AI security vulnerabilities
                   </Text>
+                  <View style={styles.infoTermFooter}>
+                    <Text style={styles.infoTermPrompt}>$ </Text>
+                    <Animated.Text style={[styles.infoTermCursor, { opacity: cursorAnim }]}>
+                      █
+                    </Animated.Text>
+                  </View>
                 </View>
-                <ChevronRight size={20} color={colors.textMuted} />
               </Pressable>
             </>
           )}
@@ -378,13 +447,22 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
+  statsCardOuter: {
+    marginTop: 24,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: colors.primary,
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
   statsCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(45, 31, 84, 0.45)',
     borderRadius: 20,
     padding: 20,
-    marginTop: 24,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: 'rgba(196, 181, 253, 0.25)',
   },
   statsRow: {
     flexDirection: 'row',
@@ -473,9 +551,18 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     marginTop: 24,
     gap: 12,
   },
+  playButtonGlow: {
+    borderRadius: 16,
+    shadowColor: colors.secondary,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 8,
+  },
   playButton: {
     borderRadius: 16,
     overflow: 'hidden',
+  },
+  playButtonHovered: {
+    transform: [{ scale: 1.02 }],
   },
   playButtonGradient: {
     flexDirection: 'row',
@@ -511,39 +598,70 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     flex: 1,
   },
   infoCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: '#0D0818',
     borderRadius: 12,
-    padding: 16,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderColor: colors.enchantedGreen + '30',
     marginTop: 20,
   },
-  infoIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: colors.backgroundTertiary,
+  infoTermHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: colors.backgroundTertiary,
   },
-  infoEmoji: {
-    fontSize: 24,
+  infoTermDots: {
+    flexDirection: 'row',
+    gap: 6,
   },
-  infoContent: {
-    flex: 1,
+  infoTermDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
-  infoTitle: {
+  infoTermLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  infoTermLabelText: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+  },
+  infoTermBody: {
+    padding: 14,
+  },
+  infoTermLine: {
+    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+    fontSize: 13,
     color: colors.text,
-    fontSize: 15,
-    fontWeight: '600' as const,
+    marginBottom: 6,
+  },
+  infoTermPrompt: {
+    color: colors.enchantedGreen,
+    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+  },
+  infoTermCommand: {
+    color: colors.secondary,
   },
   infoText: {
     color: colors.textMuted,
     fontSize: 13,
     marginTop: 2,
+  },
+  infoTermFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  infoTermCursor: {
+    color: colors.enchantedGreen,
+    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
+    fontSize: 13,
   },
   footer: {
     marginTop: 32,
