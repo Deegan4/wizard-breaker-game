@@ -22,6 +22,7 @@ import AnimatedLogo from '@/components/AnimatedLogo';
 import ProgressBar from '@/components/ProgressBar';
 import { useGame } from '@/contexts/GameContext';
 import Colors from '@/constants/colors';
+import { Fonts } from '@/constants/fonts';
 import { LEVELS } from '@/constants/levels';
 
 const { width } = Dimensions.get('window');
@@ -357,11 +358,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   title: {
-    fontSize: 36,
-    fontWeight: '800' as const,
+    fontFamily: Fonts.display,
+    fontSize: 34,
     color: Colors.text,
     textAlign: 'center',
-    letterSpacing: -1,
+    letterSpacing: -0.5,
   },
   subtitleContainer: {
     flexDirection: 'row',

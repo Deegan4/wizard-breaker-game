@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
 import Colors from '@/constants/colors';
+import { Fonts } from '@/constants/fonts';
 
 interface DebriefScreenProps {
   onContinue: () => void;
@@ -340,8 +341,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '800' as const,
+    fontFamily: Fonts.display,
+    fontSize: 26,
     color: Colors.enchantedGreen,
     textAlign: 'center',
   },
