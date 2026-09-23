@@ -8,16 +8,17 @@ bun run start        # dev server (Rork tunnel)
 bun run start-web    # web preview (Rork tunnel)
 npx expo start --web # web preview without the Rork tunnel (works headless/CI)
 bun run lint         # ESLint (eslint-config-expo)
-bun run test         # Jest (38 tests, utils/injectionDetector.ts)
+bun run test         # Jest (41 tests: 38 utils/injectionDetector.ts, 3 contexts/GameContext.tsx)
 ```
 
-**All commands run from `expo/`** — this is a Rork project with code in `expo/`.
+**All commands run from `expo/`** — this is a Rork project with code in `expo/`. If `bun` isn't installed, `npm install -g --allow-scripts=bun bun` (plain `npm install -g bun` blocks its postinstall and leaves no binary on PATH).
 
 ## Architecture
 
 - **React Native + Expo Router** (file-based routing, typed routes enabled)
 - **Single-player prompt injection game**: 12 levels (Classic) + themed Adventures, local regex matching only — no LLM/backend
-- **State**: `contexts/GameContext.tsx` → `useGame()` (AsyncStorage persistence, React Query wrappers)
+- **State**: `contexts/GameContext.tsx` → `useGame()` (AsyncStorage persistence, React Query wrappers) — also holds `xpTotal`, per-adventure resumable progress, and lock-state helpers (`getLevelStatus`, `getAdventureUnlockState`)
+- **Also**: `contexts/AchievementContext.tsx` → `useAchievements()` (daily challenge, streaks, achievements) and `contexts/LessonContext.tsx` → `useLessons()` (scripted lesson curriculum, `constants/lessons.ts`) — both nested inside `GameProvider`, both award XP via `useGame().awardXP`
 - **Game engine**: `utils/injectionDetector.ts` — `detectInjection(prompt, level, failedAttempts, adventure, totalLevels)`
 - **Levels defined in**: `constants/levels.ts` (`LEVELS` array, index = `level - 1`)
 
@@ -37,7 +38,7 @@ Each level `checkLevelN` first rejects prompts matching **all lower-level attack
 - **Icons**: `lucide-react-native`
 - **Styling**: React Native `StyleSheet` + `expo-linear-gradient`
 - **TypeScript**: strict mode
-- **Static content**: `constants/` (`levels`, `adventures`, `leaderboard`)
+- **Static content**: `constants/` (`levels`, `adventures`, `leaderboard`, `lessons`, `xp`)
 - **Components**: presentational only in `components/`
 
 ## Key Files
@@ -48,9 +49,12 @@ Each level `checkLevelN` first rejects prompts matching **all lower-level attack
 | `app/(tabs)/_layout.tsx` | Tab bar config (Home, Daily, Lab, Ranks, Learn, Quests) |
 | `app/game.tsx` | Chat screen, calls `detectInjection`, success animation |
 | `app/victory.tsx` | Win screen with stats, share, replay |
-| `contexts/GameContext.tsx` | Global state, `useGame()` hook |
+| `contexts/GameContext.tsx` | Global state, `useGame()` hook (XP, level/adventure lock state) |
+| `contexts/AchievementContext.tsx` | Daily challenge, streaks, achievements, `useAchievements()` |
+| `contexts/LessonContext.tsx` | Lesson progress/XP, `useLessons()` |
 | `utils/injectionDetector.ts` | Core game logic, level checkers |
-| `constants/levels.ts` | Level definitions (name, spell, difficulty, hints) |
+| `constants/levels.ts` | Level definitions (name, spell, difficulty, hints, xpReward) |
+| `constants/lessons.ts` | Scripted lesson curriculum (no LLM) |
 | `contexts/ThemeContext.tsx` | Theme tokens (primary, surfaces, gradients, shadows) |
 | `constants/adventures.ts` | Adventure definitions for tab screen |
 
@@ -59,7 +63,7 @@ Each level `checkLevelN` first rejects prompts matching **all lower-level attack
 ```bash
 bun run lint       # must pass (0 errors)
 npx tsc --noEmit   # type check (run from expo/)
-bun run test       # 38 tests must pass
+bun run test       # 41 tests must pass
 ```
 
 CI (`.github/workflows/ci.yml`) runs all three of the above on every push/PR to `main`.
@@ -71,4 +75,5 @@ CI (`.github/workflows/ci.yml`) runs all three of the above on every push/PR to 
 - `server.ts` is a small standalone static file server (`bun server.ts <dir> <port>`) for previewing the `dist/` web export locally; it isn't wired into any `package.json` script or CI job
 - GitHub Pages deployment runs via `.github/workflows/deploy.yml` using `actions/deploy-pages` (no `gh-pages` branch involved) — builds `expo export --platform web`, rewrites asset paths for the `/wizard-breaker-game/` subpath, adds SPA 404 redirect + PWA manifest/service worker
 - When editing level logic: hints show every 5th failed attempt via `constants/levels.ts`
-- `AchievementContext` calls `useGame()`, so in `app/_layout.tsx` its provider must be nested *inside* `GameProvider`, not the other way around — getting this backwards crashes the whole app on load
+- `AchievementContext` and `LessonContext` both call `useGame()`, so in `app/_layout.tsx` their providers must be nested *inside* `GameProvider`, not the other way around — getting this backwards crashes the whole app on load (this exact class of bug happened once before, see `HANDOFF.md`)
+- `jest.setup.tsx`'s `@nkzw/create-context-hook`/`@tanstack/react-query` mocks must match the real packages' export shapes (default vs. named export, which hooks are mocked) or any test that renders `GameContext` fails opaquely — this was broken and unexercised until `contexts/__tests__/GameContext.test.tsx` was added

@@ -19,7 +19,9 @@ bun run start-web      # start web preview
 bun run lint           # expo lint (ESLint, eslint-config-expo)
 ```
 
-There's a Jest test suite (`bun run test`, 38 tests against `utils/injectionDetector.ts`) and a real GitHub Actions CI (`.github/workflows/ci.yml`: lint + typecheck + test) and Pages deploy (`.github/workflows/deploy.yml`), but no app build script beyond EAS (see `BUILD.md`) — `start`, `start-web`, `start-web-dev`, `lint`, `test`, `test:watch`, and `test:coverage` are the only `package.json` scripts. The dev server runs through `bunx rork start` with a hardcoded Rork project id, not the plain `expo start` command (plain `expo start --web` also works and is what CI/local verification without the Rork tunnel should use).
+There's a Jest test suite (`bun run test`, 41 tests: 38 against `utils/injectionDetector.ts`, 3 against `contexts/GameContext.tsx`) and a real GitHub Actions CI (`.github/workflows/ci.yml`: lint + typecheck + test) and Pages deploy (`.github/workflows/deploy.yml`), but no app build script beyond EAS (see `BUILD.md`) — `start`, `start-web`, `start-web-dev`, `lint`, `test`, `test:watch`, and `test:coverage` are the only `package.json` scripts. The dev server runs through `bunx rork start` with a hardcoded Rork project id, not the plain `expo start` command (plain `expo start --web` also works and is what CI/local verification without the Rork tunnel should use).
+
+`bun` is the required package manager; if it isn't installed, `npm install -g --allow-scripts=bun bun` gets it (the plain `npm install -g bun` blocks bun's own postinstall script by default and leaves no `bun` binary on PATH).
 
 ## Architecture
 
@@ -40,17 +42,29 @@ Failure replies, success replies, and a hint (shown every 5th failed attempt) ar
 
 ### State: `contexts/GameContext.tsx`
 
-A single global store created with `@nkzw/create-context-hook` and exposed as `useGame()`. It is the only source of game state. Pattern to follow:
+A single global store created with `@nkzw/create-context-hook` and exposed as `useGame()`. It is the primary source of game state (see also `AchievementContext`/`LessonContext` below). Pattern to follow:
 - Persistence is **local-only** via `AsyncStorage` (keys `wizard_breaker_game_state`, `wizard_breaker_leaderboard`); there is no server.
 - React Query (`useQuery`/`useMutation`) wraps the async load/save. State is held in `useState` and mirrored to storage on every mutation through `saveState`; mutations invalidate the query keys.
 - The leaderboard is seeded from `MOCK_LEADERBOARD` and updated locally in `completeLevel`, which also handles game-completion and re-sorting (by levels completed, then fewest attempts).
+- `xpTotal` is the player's lifetime XP; `awardXP(amount)` is the only way to add to it. `completeLevel()` awards a Classic level's `xpReward` (`constants/levels.ts`) on that level's completion, and a Practice adventure's `xpReward` (`constants/adventures.ts`) only on full adventure completion — never per-level for non-Classic modes.
+- `adventureProgress: Record<adventureId, {levelsCompleted, completedAt?}>` tracks each of the 5 Practice adventures independently of whichever one is currently active, so switching adventures via `setAdventure(id)` **resumes** where you left off instead of restarting at level 1 (this replaced the old always-reset-to-level-1 behavior). Classic's own progress is read via the live `currentLevel`/`levelsCompleted` fields when active, or `adventureProgress['classic']` when another adventure is active.
+- `getLevelStatus(levelId)` → `'locked' | 'current' | 'completed'` for a Classic level; `getAdventureUnlockState(adventureId)` → `'locked' | 'unlocked' | 'current' | 'completed'` for a Practice adventure, sequentially chained in `constants/adventures.ts`'s declaration order (excluding `classic`) — adventure N+1 unlocks only once N is completed.
+- `startLevel(adventureId, level)` + the `dailyChallengeActive` flag let something like the Daily tab open an arbitrary Classic level for a one-off replay without it counting as real progression — `completeLevel()` checks the flag first and, if set, just returns to wherever the player actually is instead of advancing `levelsCompleted`.
 
 `GameProvider` is mounted once in `app/_layout.tsx` under `QueryClientProvider` and `GestureHandlerRootView`.
+
+### `contexts/AchievementContext.tsx` (`useAchievements()`)
+
+Nested *inside* `GameProvider` (calls `useGame()` for `awardXP`). Tracks achievements, the daily challenge, and play stats — three separate `AsyncStorage` keys (`wizard_breaker_achievements`, `wizard_breaker_daily_challenge`, `wizard_breaker_stats`), each with its own load-once/save-on-change `useEffect` pair. `checkDailyChallenge()` derives today's Classic level deterministically from the date; `completeDailyChallenge(attempts)` marks it done, bumps `stats.dailyStreak`, appends today to `stats.completedDates`, awards `DAILY_CHALLENGE_XP_REWARD` (`constants/xp.ts`), and checks streak achievements. `getWeekCalendar()` derives a Sun–Sat `{date, label, state}[]` row from `completedDates` for calendar-style streak UI.
+
+### `contexts/LessonContext.tsx` (`useLessons()`)
+
+Also nested inside `GameProvider`. Tracks per-lesson step completion (`AsyncStorage` key `wizard_breaker_lesson_progress`) for the scripted curriculum in `constants/lessons.ts` (`LESSONS`, grouped into `LEARNING_MODULES`). A lesson is a **fixed, authored dialogue script** — `LessonStep[]` with `wizardText`, an optional `example`, and up to a few `quickReplies` that branch to more fixed canned text — never a real model call, consistent with the rest of the app having no LLM anywhere. `completeLesson(id)` awards XP via `useGame().awardXP`; `isLessonUnlocked(id)` chains lessons sequentially within their module, the same pattern as `getAdventureUnlockState`.
 
 ### Routing & screens
 
 File-based via Expo Router with typed routes enabled (`app.config.js` → `experiments.typedRoutes`).
-- `app/_layout.tsx` — root `Stack` (tabs, `game`, `victory`, `debrief`, not-found), providers mounted `ThemeProvider` → `GameProvider` → `AchievementProvider` → `OnboardingWrapper` (in that nesting order — `AchievementContext` calls `useGame()`, so it must stay *inside* `GameProvider`).
+- `app/_layout.tsx` — root `Stack` (tabs, `game`, `victory`, `debrief`, not-found), providers mounted `ThemeProvider` → `GameProvider` → `LessonProvider` → `AchievementProvider` → `OnboardingWrapper` (in that nesting order — both `LessonContext` and `AchievementContext` call `useGame()`, so they must stay *inside* `GameProvider`; the two have no dependency on each other, so their relative order doesn't matter).
 - `app/(tabs)/` — `index` (Home), `daily` (Daily), `playground` (Lab), `leaderboard` (Ranks), `learn` (Learn), `adventures` (Quests).
 - `app/game.tsx` — the chat screen; calls `detectInjection`, drives the success animation, then renders `app/debrief.tsx`'s `DebriefScreen` inline as an overlay (not a route push) before advancing, and on final-level success routes to `victory`.
 
@@ -59,4 +73,4 @@ File-based via Expo Router with typed routes enabled (`app.config.js` → `exper
 - **Path alias**: `@/*` maps to the `expo/` root (e.g. `@/constants/levels`, `@/contexts/GameContext`). Use it instead of relative climbs.
 - Theme colors come from `useTheme()` (`contexts/ThemeContext.tsx`, `colors: ColorPalette`) — do not hardcode hex values in components.
 - Icons are from `lucide-react-native`. Styling is React Native `StyleSheet`. TypeScript is `strict`.
-- Static game content lives in `constants/` (`levels`, `adventures`, `leaderboard`, `colors`); presentational pieces in `components/`.
+- Static game content lives in `constants/` (`levels`, `adventures`, `leaderboard`, `lessons`, `xp`); presentational pieces in `components/`.
