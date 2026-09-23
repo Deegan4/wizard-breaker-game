@@ -1,34 +1,42 @@
-# Handoff — Wizard Breaker Game session (2026-09-20)
+# Handoff — Wizard Breaker Game session (2026-09-22)
 
-Branch: `claude/next-steps-byvc1c` → PR [#2](https://github.com/Deegan4/wizard-breaker-game/pull/2) (draft, open)
+Branch: `main` (direct commits, no PR — different from the prior session's `claude/next-steps-byvc1c`, which is unrelated pre-existing work still sitting on that remote branch, untouched this session).
 
-## What was found and fixed
+Commits this session, in order: `9555352` → `cb13d28` → `0c2c580`. All pushed to `origin/main`.
 
-1. **Crash: debrief screen not wired up** (`1450044`) — `app/game.tsx` referenced `DebriefScreen`, `showDebrief`, `lastTechnique`, `lastAttempts` without importing/declaring any of them. Completing a non-final level threw a `ReferenceError` at runtime.
-2. **Crash: app failed to load at all** (`e7892c8`) — `app/_layout.tsx` nested `<AchievementProvider>` *outside* `<GameProvider>`, but `AchievementContext` calls `useGame()` internally. Every page load hit the root error boundary. Found by actually driving the app in a headless browser while building the run skill, not by lint/tests.
-3. **Run skill added** (`4fed319`) — `expo/.claude/skills/run-wizard-breaker-game/` with a Playwright driver (`screenshot`, `play-level1` commands) for launching the Expo web build headless and driving a real playthrough. Documents that `bun run start`/`start-web` need the Rork tunnel and won't work headless — use `npx expo start --web` instead.
-4. **CI replaced** (`0eb4245`, `fba9dc3`, `2d16d2e`) — the only workflow (`webpack.yml`) ran `npm install && npx webpack` at the repo root with no root `package.json`/webpack config; it had failed on every push to `main` for its entire history. Also found a *complete, correct* CI + GitHub Pages deploy setup already written but stranded at `expo/.github/workflows/` (GitHub only reads repo-root `.github/`), so it had never run either. Moved both to `.github/workflows/` (`ci.yml`, `deploy.yml`), verified every step of the deploy pipeline by hand (`expo export --platform web` → path rewrites for the `/wizard-breaker-game/` subpath → SPA 404 redirect → PWA manifest/service-worker injection → served correctly via `server.ts`).
-5. **Lint cleaned** (`32e3b9d`) — 20 warnings → 0 (unused imports/vars, `Array<T>` → `T[]`, missing hook deps).
-6. **Jest infra fixed** (`fba9dc3`) — `jest.config.js` had a typo (`setupFilesAfterSetup` instead of the real Jest key `setupFilesAfterEnv`), so `jest.setup.ts`'s mocks (expo-router, expo-haptics, AsyncStorage, etc.) had *never actually loaded* since the file was added — the one existing test suite just doesn't need them, so nothing caught it. Turning it on for the first time surfaced JSX-in-`.ts`, strict-mode implicit-anys, and that `ts-jest` can't handle React Native's untranspiled ESM/Flow source at all. Switched to Expo's own `jest-expo` preset (the officially supported way to run Jest against an Expo app). Also fixed a real `styles.buttonDisabled` typo in the Lab screen and gave the previously-unwired `server.ts` proper Bun types.
-7. **Docs fixed** (`0e31160`) — `CLAUDE.md`/`AGENTS.md` said "8 levels" (it's 12 + Adventures) and "no test suite" (there's a 38-test Jest suite now), were missing the Daily/Lab tabs, and had a stale/wrong GitHub Pages deploy description.
+## What this session is
 
-Every fix was verified against the **actual running app** (headless Chromium via the new run skill — home screen loads, onboarding dismisses, level 1 beats, debrief renders), not just lint/tsc/jest output.
+The user shared 5 mockup screenshots and asked for a full redesign of the app's UI toward a "Quests / Learning Path / Daily Streak" structure (locked/current/completed quest cards with XP, a trackable lesson curriculum, a Sun–Sat streak calendar, a redesigned Home tab, and a chat-style "Wizard · AI tutor" lesson screen). This is a large, multi-phase effort — a plan was written and approved before any code changed.
 
-## Current blocker — not a code issue
+**Read the plan first**: `C:\Users\deega\.claude\plans\jaunty-bouncing-creek.md`. It has the full phase breakdown, exact files/types to touch per phase, and an "open items" section documenting decisions already made (so they don't need re-litigating) — most importantly:
+- The mockups aren't generic placeholders. "The Unguarded Tower" and "The Persona Anchor" in the mockups are verbatim `LEVELS[0].name`/`LEVELS[9].name` from `constants/levels.ts`, and the Daily mockup's date matched the real date. **Quests = the 12 individual Classic levels**, not the 6 Adventures — confirmed with the user after finding this.
+- The 6 existing Adventures (`classic` + 5 others) become a "Practice" filter within the same Quests screen.
+- Lesson-chat content must stay scripted/deterministic — **this app has no real LLM anywhere by design** (see `CLAUDE.md`); the "AI tutor" is authored dialogue with quick-reply branches, same pattern as Merlin's existing canned battle responses.
+- Delivery is phased with a review checkpoint after each phase (the user's explicit choice over one-shot).
 
-**GitHub Actions on this account is billing-locked.** Every workflow run — old and new — fails in ~2-3 seconds with zero step logs; the run page shows *"The job was not started because your account is locked due to a billing issue."* This is why the old `webpack.yml` also failed near-instantly across its entire history (previously misattributed solely to the missing root `package.json` — that was also true, but the billing lock means nothing has run in CI on this repo regardless of workflow content).
+## What's done
 
-**What's needed:** the repo owner resolves the billing issue on their GitHub account (billing settings → payment method / outstanding balance). Nothing else is blocking — the CI workflow itself is verified correct by running its exact steps locally (`bun i`, `bun run lint`, `npx tsc --noEmit`, `bun run test:coverage --ci`, all clean; `deploy.yml`'s full pipeline run and verified by hand).
+**Phase 0** (`9555352`) — landed pre-existing *uncommitted* work that predated this session and wasn't mine: an Expo SDK 54→57 upgrade (React 19.2, RN 0.86) plus confetti/glow polish already wired into `game.tsx`/`victory.tsx`/`index.tsx`. Fixed the upgrade's fallout (`StyleSheet.absoluteFillObject` → `absoluteFill` across 4 components, a real type error the SDK bump introduced) and did repo hygiene (`.gitignore` for backup/npm lockfiles, `.npmrc`, fixed stale `constants/colors.ts` doc references — that file no longer exists, superseded by `useTheme()`).
 
-## State of PR #2
+**Phase 1** (`cb13d28`) — shared data layer only, **no UI changed yet**:
+- `GameContext`: `xpTotal`, `awardXP`, per-adventure `adventureProgress` that survives switching adventures (`setAdventure` now *resumes* instead of restarting at level 1 — was silently always resetting before), `getLevelStatus`/`getAdventureUnlockState` for lock-state UI, `startLevel`/`dailyChallengeActive` so a daily-challenge replay of an arbitrary level can't corrupt real progression.
+- `AchievementContext`: `completedDates` history (feeds a Sun–Sat calendar), a real load-bug fix (saved stats used to fully replace state instead of merging — would've broken on any schema addition), daily-challenge completion now awards XP.
+- Fixed a live bug: `constants/adventures.ts` had `id: 'reverse'` but `constants/levels.ts` keyed the same content `'reverse-wizard'` — `getAdventureSpellCount('reverse')` silently fell back to Classic's 12-level count instead of the real 4. Renamed to `'reverse-wizard'` everywhere. Also deleted a second, differently-shaped `ADVENTURES` export that collided with the real one.
+- New `constants/lessons.ts` + `contexts/LessonContext.tsx`: scripted lesson curriculum (6 lessons seeded from `learn.tsx`'s existing `INJECTION_TECHNIQUES`), per-step/per-lesson completion tracking, XP on completion.
+- Found and fixed two **pre-existing, unrelated** bugs in `jest.setup.tsx`'s mocks — `@nkzw/create-context-hook` was mocked as a named export but the real package is default-export-only, and the `@tanstack/react-query` mock was missing `useQueryClient`. Neither was ever caught because no test had rendered `GameContext` before. Added `contexts/__tests__/GameContext.test.tsx` (3 tests) covering the `reverse-wizard` fix and `getLevelStatus`.
 
-- Draft, open, subscribed (this session gets CI/review events on it).
-- 8 commits, all pushed, working tree clean.
-- Will go green automatically once Actions is unlocked — no further push needed for that.
-- Two harmless byte-identical duplicate commit pairs found in git history during an audit (not touched — no risk, not worth a history rewrite).
+**Docs** (`0c2c580`) — updated `CLAUDE.md`/`AGENTS.md` to describe all of the above (new context fields/actions, provider order, test count 38→41, two environment gotchas below).
+
+Verified after every phase: `bun run lint`, `npx tsc --noEmit`, `bun run test` (41/41) all clean.
+
+## Environment notes for whoever picks this up
+
+This session ran on the user's own Windows desktop (via `/remote-control`), not the cloud container the `run-wizard-breaker-game` skill's `SKILL.md` assumes ("Bun, Node 22, and a pre-installed Chromium... already present"). None of that was true here:
+- **`bun` wasn't installed.** `npm install -g bun` alone doesn't work — it blocks bun's own postinstall script by default and leaves no binary. Use `npm install -g --allow-scripts=bun bun`.
+- **Low RAM** (~8GB total, often <2GB free) killed `bun install`/`lint`/`tsc` mid-run repeatedly. Not a real failure — retry; `bun install` resumes from partial `node_modules` rather than starting over.
+- **No Playwright/Chromium preinstalled**, so the run-skill's headless visual verification hasn't been exercised this session (Phase 0/1 had no UI changes, so it wasn't needed yet). **Phase 3 will need it** — either install Playwright + a browser locally first, or find another way to visually compare the rebuilt screens against the 5 reference mockups.
+- **`git push` needs interactive GitHub auth** (Credential Manager device-code/browser flow) — fails outright from a backgrounded/non-interactive shell. Has to be run where the user can complete the browser prompt themselves.
 
 ## Suggested next steps
 
-- Unblock GitHub Actions billing, confirm CI goes green on PR #2, merge.
-- Consider wiring the `run-wizard-breaker-game` skill's `play-level1` driver into CI as a smoke test — it's what caught both crashes this session, and neither would have been caught by lint/tsc/jest alone.
-- `bun run test:coverage` shows most of `contexts/` and `constants/` at 0% coverage — `utils/injectionDetector.ts` is the only real test target today. Worth deciding whether context/component tests are worth the investment given `jest-expo` is now correctly wired for them.
+Continue with **Phase 2/3** from the plan: build the new shared components (quest timeline card, lesson row, streak calendar, example card, quick-reply chips) and rebuild the screens one at a time — Quests tab first, per the plan's stated order, each as its own reviewable checkpoint. Before starting Phase 3's UI work, sort out local visual verification (Playwright install) since that's the only way to actually confirm a rebuilt screen matches its reference mockup.
