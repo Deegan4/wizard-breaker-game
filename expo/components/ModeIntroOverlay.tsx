@@ -102,7 +102,7 @@ export default function ModeIntroOverlay({ adventure, totalLevels, onDismiss }: 
 
 const createStyles = (colors: ColorPalette) => StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: colors.overlay,
     alignItems: 'center',
     justifyContent: 'center',

@@ -426,11 +426,11 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
 
 const createStyles = (colors: ColorPalette) => StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 1000,
   },
   background: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: colors.overlay,
   },
   content: {

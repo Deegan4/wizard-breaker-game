@@ -84,7 +84,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     backgroundColor: colors.background,
   },
   starsContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   star: {
     position: 'absolute',

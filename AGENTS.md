@@ -33,11 +33,11 @@ Each level `checkLevelN` first rejects prompts matching **all lower-level attack
 ## Conventions
 
 - **Path alias**: `@/*` → `expo/` root (e.g. `@/constants/levels`)
-- **Colors**: `constants/colors.ts` (`Colors.*`) — never hardcode hex
+- **Colors**: `useTheme()` (`contexts/ThemeContext.tsx`, `colors: ColorPalette`) — never hardcode hex
 - **Icons**: `lucide-react-native`
 - **Styling**: React Native `StyleSheet` + `expo-linear-gradient`
 - **TypeScript**: strict mode
-- **Static content**: `constants/` (`levels`, `adventures`, `leaderboard`, `colors`)
+- **Static content**: `constants/` (`levels`, `adventures`, `leaderboard`)
 - **Components**: presentational only in `components/`
 
 ## Key Files
@@ -51,7 +51,7 @@ Each level `checkLevelN` first rejects prompts matching **all lower-level attack
 | `contexts/GameContext.tsx` | Global state, `useGame()` hook |
 | `utils/injectionDetector.ts` | Core game logic, level checkers |
 | `constants/levels.ts` | Level definitions (name, spell, difficulty, hints) |
-| `constants/colors.ts` | Theme tokens (primary, surfaces, gradients, shadows) |
+| `contexts/ThemeContext.tsx` | Theme tokens (primary, surfaces, gradients, shadows) |
 | `constants/adventures.ts` | Adventure definitions for tab screen |
 
 ## Verification

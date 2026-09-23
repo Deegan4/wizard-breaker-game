@@ -29,8 +29,8 @@ import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const { colors, theme } = useTheme();
+  const styles = useMemo(() => createStyles(colors, theme), [colors, theme]);
   const insets = useSafeAreaInsets();
   const { gameState, setUsername, markIntroSeen, setAdventure } = useGame();
   const [showUsernameInput, setShowUsernameInput] = useState(false);
@@ -255,7 +255,7 @@ export default function HomeScreen() {
                   },
                 ]}
               >
-                <BlurView intensity={40} tint="dark" style={styles.statsCard}>
+                <BlurView intensity={40} tint={theme === 'dark' ? 'dark' : 'light'} style={styles.statsCard}>
                   <View style={styles.statsRow}>
                     <View style={styles.statItem}>
                       <Text style={styles.statValue}>{gameState.currentLevel}</Text>
@@ -415,7 +415,7 @@ export default function HomeScreen() {
   );
 }
 
-const createStyles = (colors: ColorPalette) => StyleSheet.create({
+const createStyles = (colors: ColorPalette, theme: 'dark' | 'light') => StyleSheet.create({
   flex: {
     flex: 1,
   },
@@ -458,11 +458,11 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     elevation: 6,
   },
   statsCard: {
-    backgroundColor: 'rgba(45, 31, 84, 0.45)',
+    backgroundColor: theme === 'dark' ? 'rgba(45, 31, 84, 0.45)' : 'rgba(255, 255, 255, 0.55)',
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(196, 181, 253, 0.25)',
+    borderColor: theme === 'dark' ? 'rgba(196, 181, 253, 0.25)' : 'rgba(124, 58, 237, 0.2)',
   },
   statsRow: {
     flexDirection: 'row',

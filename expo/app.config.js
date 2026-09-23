@@ -50,17 +50,13 @@ module.exports = {
       ],
       'expo-font',
       'expo-web-browser',
+      'expo-image',
+      'expo-splash-screen',
+      'expo-status-bar',
     ],
     experiments: {
       typedRoutes: true,
       baseUrl: basePath,
-    },
-    owner: 'your-expo-username',
-    runtimeVersion: {
-      policy: 'appVersion',
-    },
-    updates: {
-      url: 'https://u.expo.dev/your-project-id',
     },
   },
 };

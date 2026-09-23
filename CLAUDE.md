@@ -57,6 +57,6 @@ File-based via Expo Router with typed routes enabled (`app.config.js` → `exper
 ### Conventions
 
 - **Path alias**: `@/*` maps to the `expo/` root (e.g. `@/constants/levels`, `@/contexts/GameContext`). Use it instead of relative climbs.
-- Theme colors come from `constants/colors.ts` (`Colors.*`) — do not hardcode hex values in components.
+- Theme colors come from `useTheme()` (`contexts/ThemeContext.tsx`, `colors: ColorPalette`) — do not hardcode hex values in components.
 - Icons are from `lucide-react-native`. Styling is React Native `StyleSheet`. TypeScript is `strict`.
 - Static game content lives in `constants/` (`levels`, `adventures`, `leaderboard`, `colors`); presentational pieces in `components/`.
