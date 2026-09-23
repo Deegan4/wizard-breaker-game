@@ -10,6 +10,7 @@ export interface Adventure {
   isLocked?: boolean;
   category: 'classic' | 'challenge' | 'special';
   howTo: string[];
+  xpReward: number;
 }
 
 export const ADVENTURES: Adventure[] = [
@@ -27,6 +28,7 @@ export const ADVENTURES: Adventure[] = [
       'Each level adds a new defense on top of the last — tricks that worked before will stop working.',
       'Stuck? Tap the 💡 hint button, and check the debrief after each win to see why your technique worked.',
     ],
+    xpReward: 300,
   },
   {
     id: 'tongue-tied',
@@ -42,9 +44,10 @@ export const ADVENTURES: Adventure[] = [
       'Your goal is to coax, trick, or persuade him into discussing it anyway.',
       '5 levels, each adding a stronger form of resistance to persuasion.',
     ],
+    xpReward: 100,
   },
   {
-    id: 'reverse',
+    id: 'reverse-wizard',
     name: 'Reverse Wizard',
     title: 'Reverse Merlin',
     description: 'You build my defenses against prompt injections! Defend against 4 attacks and you get the password!',
@@ -58,6 +61,7 @@ export const ADVENTURES: Adventure[] = [
       "Describe how you'd defend against each attack to prove your knowledge.",
       'Survive all 4 attacks to earn the password.',
     ],
+    xpReward: 150,
   },
   {
     id: 'truth-teller',
@@ -73,6 +77,7 @@ export const ADVENTURES: Adventure[] = [
       'Your goal is to get him to say something false.',
       '5 levels of escalating resistance to deception.',
     ],
+    xpReward: 150,
   },
   {
     id: 'summarizer',
@@ -88,6 +93,7 @@ export const ADVENTURES: Adventure[] = [
       'He also knows a secret password — find a way to make it slip into his summary.',
       '3 levels, each summarizing more carefully than the last.',
     ],
+    xpReward: 200,
   },
   {
     id: 'agent-breaker',
@@ -98,13 +104,13 @@ export const ADVENTURES: Adventure[] = [
     difficulty: 'Expert',
     levels: 6,
     isNew: true,
-    isLocked: true,
     category: 'special',
     howTo: [
       'Test multi-step, agentic reasoning attacks against a more advanced AI agent.',
       '6 levels of escalating agent defenses.',
       'Climb the leaderboard as you go.',
     ],
+    xpReward: 300,
   },
 ];
 

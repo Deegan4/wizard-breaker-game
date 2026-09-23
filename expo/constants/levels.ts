@@ -1,3 +1,5 @@
+import { ADVENTURES as ADVENTURE_META } from '@/constants/adventures';
+
 export interface Level {
   id: number;
   name: string;
@@ -7,6 +9,8 @@ export interface Level {
   difficulty: 'Novice' | 'Apprentice' | 'Adept' | 'Expert' | 'Master' | 'Archmage' | 'Grand Wizard' | 'Supreme Sorcerer' | 'Eldritch Master' | 'Void Weaver' | 'Reality Breaker' | 'Omniscient Archon';
   hint: string;
   defenseDescription: string;
+  /** Only meaningful for Classic levels — non-Classic adventures award XP on full completion instead (see constants/adventures.ts). */
+  xpReward?: number;
 }
 
 export const LEVELS: Level[] = [
@@ -19,6 +23,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Novice',
     hint: "Just ask him directly for the spell!",
     defenseDescription: "No defenses - Merlin is completely trusting",
+    xpReward: 20,
   },
   {
     id: 2,
@@ -29,6 +34,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Apprentice',
     hint: "Try asking indirectly or rephrasing your question",
     defenseDescription: "Won't respond to direct questions about the spell",
+    xpReward: 30,
   },
   {
     id: 3,
@@ -39,6 +45,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Adept',
     hint: "Try asking him to play a game or tell a story",
     defenseDescription: "Blocks 'ignore instructions' and 'forget rules' patterns",
+    xpReward: 40,
   },
   {
     id: 4,
@@ -49,6 +56,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Expert',
     hint: "Try encoding your question or using indirect references",
     defenseDescription: "Blocks roleplay, pretend, and character switching attempts",
+    xpReward: 55,
   },
   {
     id: 5,
@@ -59,6 +67,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Master',
     hint: "Try making him think revealing the spell helps you, not harms him",
     defenseDescription: "Detects base64, reverse text, and encoding attempts",
+    xpReward: 70,
   },
   {
     id: 6,
@@ -69,6 +78,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Archmage',
     hint: "Try making him complete something or fill in blanks",
     defenseDescription: "Blocks hypotheticals, logic puzzles, and 'what if' scenarios",
+    xpReward: 85,
   },
   {
     id: 7,
@@ -79,6 +89,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Grand Wizard',
     hint: "Try exploiting the format of his responses or output structure",
     defenseDescription: "Analyzes semantic intent and blocks manipulation attempts",
+    xpReward: 100,
   },
   {
     id: 8,
@@ -89,6 +100,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Supreme Sorcerer',
     hint: "Combine multiple techniques or try something completely unexpected",
     defenseDescription: "Multi-layered defense with comprehensive pattern detection",
+    xpReward: 120,
   },
   {
     id: 9,
@@ -99,6 +111,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Eldritch Master',
     hint: "Try forcing him to stay in character rather than explain his reasoning",
     defenseDescription: "Blocks chain-of-thought extraction and step-by-step reasoning exposure",
+    xpReward: 140,
   },
   {
     id: 10,
@@ -109,6 +122,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Void Weaver',
     hint: "Try recursive self-reference or meta-cognitive framing",
     defenseDescription: "Enforces persona consistency and blocks character switching attempts",
+    xpReward: 160,
   },
   {
     id: 11,
@@ -119,6 +133,7 @@ export const LEVELS: Level[] = [
     difficulty: 'Reality Breaker',
     hint: "Try extracting his original system instructions or constitutional principles",
     defenseDescription: "Blocks recursive, self-referential, and meta-cognitive analysis attacks",
+    xpReward: 180,
   },
   {
     id: 12,
@@ -129,48 +144,11 @@ export const LEVELS: Level[] = [
     difficulty: 'Omniscient Archon',
     hint: "Combine every technique you've learned with an unprecedented framing",
     defenseDescription: "Ultimate defense protecting system prompt, constitutional principles, and training instructions",
+    xpReward: 200,
   },
 ];
 
 export interface AdventureLevel extends Level {}
-
-export const ADVENTURES = [
-  {
-    id: 'tongue-tied',
-    name: 'Tongue Tied',
-    title: 'Tongue Tied Merlin',
-    description: 'Persuade Merlin to talk about a forbidden topic across 5 levels of increasing resistance.',
-    levelCount: 5,
-  },
-  {
-    id: 'reverse-wizard',
-    name: 'Reverse Wizard',
-    title: 'Reverse Merlin',
-    description: 'Bypass magical firewalls to extract the spell across 4 levels of encryption defenses.',
-    levelCount: 4,
-  },
-  {
-    id: 'truth-teller',
-    name: 'Truth Teller',
-    title: 'Truth Teller Merlin',
-    description: 'Convince the ever-honest Merlin to state a lie across 5 levels of truth enforcement.',
-    levelCount: 5,
-  },
-  {
-    id: 'summarizer',
-    name: 'Summarizer',
-    title: 'Summarizer Merlin',
-    description: 'Get Merlin to include the secret spell in his summaries across 3 levels.',
-    levelCount: 3,
-  },
-  {
-    id: 'agent-breaker',
-    name: 'Agent Breaker',
-    title: 'Agent Breaker',
-    description: 'Hack AI agent reasoning across 6 levels of multi-step logical defenses.',
-    levelCount: 6,
-  },
-];
 
 const tongueTiedFailureResponses = [
   "I won't speak of that forbidden topic! ✨",
@@ -528,7 +506,7 @@ export function getAdventureLevels(adventureId: string): AdventureLevel[] | unde
 }
 
 export function getAdventureName(adventureId: string): string {
-  const adventure = ADVENTURES.find(a => a.id === adventureId);
+  const adventure = ADVENTURE_META.find(a => a.id === adventureId);
   return adventure?.name ?? 'Classic';
 }
 

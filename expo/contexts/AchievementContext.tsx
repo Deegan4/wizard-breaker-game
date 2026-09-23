@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGame } from './GameContext';
 import { LEVELS } from '@/constants/levels';
+import { DAILY_CHALLENGE_XP_REWARD } from '@/constants/xp';
 
 interface Achievement {
   id: string;
@@ -101,6 +102,15 @@ interface GameStats {
   dailyStreak: number;
   lastDailyDate: string;
   timeOfDayPlays: { [hour: number]: number };
+  completedDates: string[];
+}
+
+export type DayCalendarState = 'completed' | 'today' | 'missed' | 'future';
+
+export interface DayCalendarEntry {
+  date: string;
+  label: string;
+  state: DayCalendarState;
 }
 
 export interface AchievementContextType {
@@ -113,12 +123,13 @@ export interface AchievementContextType {
   completeDailyChallenge: (attempts: number) => void;
   recordPlaySession: (duration: number) => void;
   getUnlockedCount: () => number;
+  getWeekCalendar: () => DayCalendarEntry[];
 }
 
 const AchievementContext = createContext<AchievementContextType | undefined>(undefined);
 
 export function AchievementProvider({ children }: { children: React.ReactNode }) {
-  const { gameState, currentLevel } = useGame();
+  const { gameState, currentLevel, awardXP } = useGame();
   const [achievements, setAchievements] = useState<Achievement[]>(ACHIEVEMENTS);
   const [dailyChallenge, setDailyChallenge] = useState<DailyChallenge | null>(null);
   const [stats, setStats] = useState<GameStats>({
@@ -128,6 +139,7 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
     dailyStreak: 0,
     lastDailyDate: '',
     timeOfDayPlays: {},
+    completedDates: [],
   });
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -159,7 +171,7 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
         }
 
         if (savedStats) {
-          setStats(JSON.parse(savedStats));
+          setStats(prev => ({ ...prev, ...JSON.parse(savedStats) }));
         }
       } catch (e) {
         console.log('Error loading achievement data:', e);
@@ -247,12 +259,15 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
     // Update streak
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const newStreak = stats.lastDailyDate === yesterday ? stats.dailyStreak + 1 : 1;
-    
+
     setStats(prev => ({
       ...prev,
       dailyStreak: newStreak,
       lastDailyDate: today,
+      completedDates: prev.completedDates.includes(today) ? prev.completedDates : [...prev.completedDates, today],
     }));
+
+    awardXP(DAILY_CHALLENGE_XP_REWARD);
 
     // Check streak achievements
     if (newStreak >= 3) unlockAchievement('streak_3');
@@ -267,7 +282,7 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
       // We'd need to track this separately - for now just increment
       updateAchievementProgress('challenge_master', challengeProgress + 1);
     }
-  }, [dailyChallenge, stats, achievements, unlockAchievement, updateAchievementProgress]);
+  }, [dailyChallenge, stats, achievements, unlockAchievement, updateAchievementProgress, awardXP]);
 
   const recordPlaySession = useCallback((duration: number) => {
     const hour = new Date().getHours();
@@ -291,6 +306,33 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
     return achievements.filter(a => a.unlockedAt).length;
   }, [achievements]);
 
+  const getWeekCalendar = useCallback((): DayCalendarEntry[] => {
+    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+    const todayIso = today.toISOString().split('T')[0];
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+
+    return Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(startOfWeek);
+      day.setDate(startOfWeek.getDate() + i);
+      const iso = day.toISOString().split('T')[0];
+
+      let state: DayCalendarState;
+      if (iso === todayIso) {
+        state = 'today';
+      } else if (iso > todayIso) {
+        state = 'future';
+      } else if (stats.completedDates.includes(iso)) {
+        state = 'completed';
+      } else {
+        state = 'missed';
+      }
+
+      return { date: iso, label: dayLabels[i], state };
+    });
+  }, [stats.completedDates]);
+
   if (!isLoaded) {
     return <>{children}</>;
   }
@@ -306,6 +348,7 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
       completeDailyChallenge,
       recordPlaySession,
       getUnlockedCount,
+      getWeekCalendar,
     }}>
       {children}
     </AchievementContext.Provider>

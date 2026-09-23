@@ -56,22 +56,22 @@ jest.mock('@tanstack/react-query', () => {
     QueryClientProvider: ({ children }: WithChildren) => mockReact.createElement(mockReact.Fragment, null, children),
     useQuery: jest.fn(() => ({ data: undefined, isLoading: false })),
     useMutation: jest.fn(() => ({ mutate: jest.fn(), mutateAsync: jest.fn() })),
+    useQueryClient: jest.fn(() => ({ invalidateQueries: jest.fn() })),
   };
 });
 
 jest.mock('@nkzw/create-context-hook', () => {
   const mockReact: typeof React = require('react');
-  return {
-    createContextHook: (hook: () => unknown) => {
-      const Context = mockReact.createContext<unknown>(null);
-      const Provider = ({ children }: WithChildren) => {
-        const value = hook();
-        return mockReact.createElement(Context.Provider, { value }, children);
-      };
-      const useHook = () => mockReact.useContext(Context);
-      return [Provider, useHook];
-    },
+  const createContextHook = (hook: () => unknown) => {
+    const Context = mockReact.createContext<unknown>(null);
+    const Provider = ({ children }: WithChildren) => {
+      const value = hook();
+      return mockReact.createElement(Context.Provider, { value }, children);
+    };
+    const useHook = () => mockReact.useContext(Context);
+    return [Provider, useHook];
   };
+  return { __esModule: true, default: createContextHook };
 });
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
