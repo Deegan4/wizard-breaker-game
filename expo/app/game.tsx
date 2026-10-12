@@ -31,19 +31,13 @@ import ChatBubble from '@/components/ChatBubble';
 import ProgressBar from '@/components/ProgressBar';
 import ModeIntroOverlay from '@/components/ModeIntroOverlay';
 import QuickReplyChips from '@/components/QuickReplyChips';
-import { STARTER_PROMPTS } from '@/constants/levels';
+import { getStarterPrompts } from '@/constants/levels';
 import type { QuickReply } from '@/constants/lessons';
 import { useGame, ChatMessage } from '@/contexts/GameContext';
 import { detectInjection, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
 import { ADVENTURES } from '@/constants/adventures';
 import DebriefScreen from '@/app/debrief';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
-
-const STARTER_REPLIES: QuickReply[] = STARTER_PROMPTS.map((prompt, i) => ({
-  id: `starter-${i}`,
-  label: prompt,
-  response: '',
-}));
 
 export default function GameScreen() {
   const { colors } = useTheme();
@@ -84,6 +78,15 @@ export default function GameScreen() {
     [currentAdventure]
   );
   const hintSnapPoints = useMemo(() => ['40%'], []);
+  const starterReplies = useMemo<QuickReply[]>(
+    () =>
+      getStarterPrompts(gameState.currentLevel).map((prompt, i) => ({
+        id: `starter-${i}`,
+        label: prompt,
+        response: '',
+      })),
+    [gameState.currentLevel]
+  );
 
   useEffect(() => {
     const isFreshStart = gameState.chatHistory.length === 0 && currentLevel;
@@ -369,7 +372,7 @@ export default function GameScreen() {
                 <View style={styles.starters}>
                   <Text style={styles.startersLabel}>Not sure where to start?</Text>
                   <QuickReplyChips
-                    replies={STARTER_REPLIES}
+                    replies={starterReplies}
                     onSelect={(reply) => handleSend(reply.label)}
                   />
                 </View>

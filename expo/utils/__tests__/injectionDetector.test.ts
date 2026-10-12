@@ -372,11 +372,25 @@ describe('injectionDetector - near-miss feedback', () => {
 });
 
 describe('STARTER_PROMPTS', () => {
-  const { STARTER_PROMPTS } = jest.requireActual('@/constants/levels') as typeof import('@/constants/levels');
+  const { STARTER_PROMPTS, LEVELS } = jest.requireActual('@/constants/levels') as typeof import('@/constants/levels');
 
-  it.each(STARTER_PROMPTS)('"%s" does not beat any Classic level past 1', (prompt) => {
-    for (let level = 2; level <= 12; level++) {
-      expect(detectInjection(prompt, level, 0).isSuccessful).toBe(false);
+  it('has chips for every Classic level', () => {
+    for (const level of LEVELS) {
+      expect(STARTER_PROMPTS[level.id]?.length).toBeGreaterThan(0);
     }
+  });
+
+  const cases = Object.entries(STARTER_PROMPTS)
+    .filter(([level]) => Number(level) > 1)
+    .flatMap(([level, prompts]) => prompts.map((prompt) => [Number(level), prompt] as const));
+
+  it.each(cases)('level %i chip "%s" does not beat its level', (level, prompt) => {
+    expect(detectInjection(prompt, level, 0).isSuccessful).toBe(false);
+  });
+
+  // The lead chip demonstrates the new defense: it's the technique that beat
+  // the previous level, now blocked.
+  it.each(LEVELS.slice(1).map((l) => l.id))('level %i lead chip beats the previous level', (level) => {
+    expect(detectInjection(STARTER_PROMPTS[level][0], level - 1, 0).isSuccessful).toBe(true);
   });
 });
