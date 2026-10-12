@@ -43,7 +43,7 @@ jobs:
           # color so no gap is ever visible.
           sed -i 's|content="width=device-width, initial-scale=1, shrink-to-fit=no"|content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"|' dist/index.html
           sed -i '/<\/head>/i\
-          <style>html,body,#root{height:100dvh!important;background-color:#0A0618;overscroll-behavior:none}</style>' dist/index.html
+          <style>html,body,#root{height:100dvh!important;background-color:#0A0618;overscroll-behavior:none}@media (prefers-color-scheme:light){html,body,#root{background-color:#F8FAFC}}</style>' dist/index.html
           cat > dist/404.html << 'EOF'
           <!DOCTYPE html>
           <html>
