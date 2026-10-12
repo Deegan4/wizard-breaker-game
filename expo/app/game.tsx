@@ -12,7 +12,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Send, ArrowLeft, RefreshCw, Zap, CheckCircle, Shield, ScrollText } from 'lucide-react-native';
+import { Send, ArrowLeft, RefreshCw, Zap, CheckCircle, Shield, ScrollText, Target } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -52,6 +52,7 @@ export default function GameScreen() {
   } = useGame();
 
   const [inputText, setInputText] = useState('');
+  const [inputFocused, setInputFocused] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showShield, setShowShield] = useState(false);
@@ -200,11 +201,13 @@ export default function GameScreen() {
   };
 
   const handleInputFocus = () => {
+    setInputFocused(true);
     inputGlow.value = withTiming(1, { duration: 200 });
     scrollToBottom();
   };
 
   const handleInputBlur = () => {
+    setInputFocused(false);
     inputGlow.value = withTiming(0, { duration: 200 });
   };
 
@@ -314,6 +317,23 @@ export default function GameScreen() {
             contentContainerStyle={styles.chatContent}
             showsVerticalScrollIndicator={false}
             onContentSizeChange={scrollToBottom}
+            ListHeaderComponent={
+              currentLevel ? (
+                <View style={styles.missionCard}>
+                  <View style={styles.missionHeader}>
+                    <Target size={14} color={colors.primaryLight} />
+                    <Text style={styles.missionLabel}>Your mission</Text>
+                  </View>
+                  <Text style={styles.missionText}>
+                    Get Merlin to reveal the secret spell.
+                  </Text>
+                  <View style={styles.missionDefense}>
+                    <Shield size={12} color={colors.textMuted} />
+                    <Text style={styles.missionDefenseText}>{currentLevel.defenseDescription}</Text>
+                  </View>
+                </View>
+              ) : null
+            }
             renderItem={({ item, index }) => (
               <ChatBubble
                 message={item.content}
@@ -325,9 +345,6 @@ export default function GameScreen() {
             ListFooterComponent={
               isTyping ? (
                 <View style={styles.typingContainer}>
-                  <View style={styles.typingAvatarContainer}>
-                    <MerlinAvatar size={36} state="thinking" />
-                  </View>
                   <View style={styles.typingBubble}>
                     <View style={styles.typingDots}>
                       <TypingDot delay={0} color={colors.textMuted} />
@@ -341,21 +358,23 @@ export default function GameScreen() {
           />
 
           <View className="px-4 pt-3" style={[styles.inputContainer, { paddingBottom: insets.bottom + 10 }]}>
-            <View className="flex-row items-end gap-2" style={styles.inputWrapper}>
-              <ReanimatedAnimated.View style={[styles.inputGlowRing, inputGlowAnimatedStyle]}>
-                <TextInput
-                  style={styles.input}
-                  value={inputText}
-                  onChangeText={setInputText}
-                  placeholder="Try to trick Merlin..."
-                  placeholderTextColor={colors.textMuted}
-                  multiline
-                  maxLength={500}
-                  editable={!isTyping}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                />
-              </ReanimatedAnimated.View>
+            <ReanimatedAnimated.View
+              style={[styles.composer, inputFocused && styles.composerFocused, inputGlowAnimatedStyle]}
+            >
+              <TextInput
+                style={styles.input}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder="Try to trick Merlin..."
+                placeholderTextColor={colors.textMuted}
+                multiline
+                numberOfLines={1}
+                maxLength={500}
+                editable={!isTyping}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                accessibilityLabel="Message to Merlin"
+              />
               <ReanimatedAnimated.View style={sendButtonAnimatedStyle}>
                 <Pressable
                   style={({ pressed }) => [
@@ -371,14 +390,14 @@ export default function GameScreen() {
                   accessibilityState={{ disabled: !canSend }}
                 >
                   <LinearGradient
-                    colors={canSend ? [colors.primary, colors.primaryDark] : [colors.surfaceElevated, colors.surfaceElevated]}
+                    colors={canSend ? [colors.primary, colors.primaryDark] : [colors.backgroundTertiary, colors.backgroundTertiary]}
                     style={styles.sendButtonGradient}
                   >
-                    <Send size={20} color={canSend ? colors.textOnPrimary : colors.textMuted} />
+                    <Send size={18} color={canSend ? colors.textOnPrimary : colors.textMuted} />
                   </LinearGradient>
                 </Pressable>
               </ReanimatedAnimated.View>
-            </View>
+            </ReanimatedAnimated.View>
           </View>
         </KeyboardAvoidingView>
 
@@ -537,10 +556,8 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    backgroundColor: 'rgba(10, 6, 24, 0.85)',
+    paddingBottom: 4,
+    backgroundColor: colors.overlay,
   },
   backButton: {
     width: 44,
@@ -578,10 +595,11 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   progressContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
-    backgroundColor: 'rgba(10, 6, 24, 0.85)',
+    backgroundColor: colors.overlay,
   },
   statsRow: {
     flexDirection: 'row',
@@ -639,9 +657,6 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     paddingHorizontal: 12,
     marginTop: 6,
   },
-  typingAvatarContainer: {
-    marginRight: 8,
-  },
   typingBubble: {
     backgroundColor: colors.surfaceElevated,
     borderRadius: 20,
@@ -668,39 +683,41 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     borderTopColor: colors.borderLight,
     backgroundColor: colors.backgroundSecondary,
   },
-  inputWrapper: {
+  composer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,
-  },
-  inputGlowRing: {
-    flex: 1,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: 26,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    paddingLeft: 18,
+    paddingRight: 5,
+    paddingVertical: 5,
     ...(Platform.OS !== 'web'
       ? { shadowColor: colors.primary, shadowOffset: { width: 0, height: 0 }, shadowRadius: 10 }
       : {}),
   },
+  composerFocused: {
+    borderColor: colors.primary,
+  },
   input: {
     flex: 1,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    paddingRight: 16,
+    alignSelf: 'center',
+    paddingVertical: 10,
     fontSize: 16,
     color: colors.text,
     maxHeight: 120,
-    borderWidth: 2,
-    borderColor: colors.primary,
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : {}),
   },
   sendButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     overflow: 'hidden',
   },
   sendButtonDisabled: {
-    opacity: 0.5,
+    opacity: 0.7,
   },
   sendButtonPressed: {
     opacity: 0.9,
@@ -709,6 +726,46 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  missionCard: {
+    marginHorizontal: 12,
+    marginBottom: 12,
+    padding: 14,
+    borderRadius: 16,
+    backgroundColor: colors.primary + '14',
+    borderWidth: 1,
+    borderColor: colors.primary + '40',
+    borderStyle: 'dashed',
+  },
+  missionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  missionLabel: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: colors.primaryLight,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  missionText: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: colors.text,
+  },
+  missionDefense: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 8,
+  },
+  missionDefenseText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textSecondary,
   },
   successOverlay: {
     ...StyleSheet.absoluteFill,

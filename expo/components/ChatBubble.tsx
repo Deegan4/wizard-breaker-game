@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
-import MerlinAvatar from './MerlinAvatar';
 import ExampleCard from './ExampleCard';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
@@ -75,12 +74,8 @@ export default function ChatBubble({ message, isUser, isNew = false, timestamp, 
         },
       ]}
     >
-      {!isUser && (
-        <View style={styles.avatarContainer}>
-          <MerlinAvatar size={36} />
-        </View>
-      )}
       <View style={[styles.bubbleWrapper, isUser ? styles.userWrapper : styles.merlinWrapper]}>
+        {!isUser && <Text style={styles.senderName}>Merlin</Text>}
         <View style={[styles.bubble, isUser ? styles.userBubble : styles.merlinBubble]}>
           <Text style={[styles.message, isUser ? styles.userText : styles.merlinText]}>
             {formatMessage(message)}
@@ -112,12 +107,16 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   merlinContainer: {
     justifyContent: 'flex-start',
   },
-  avatarContainer: {
-    marginRight: 8,
-    alignSelf: 'flex-end',
-  },
   bubbleWrapper: {
-    maxWidth: '80%',
+    maxWidth: '85%',
+  },
+  senderName: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: colors.primaryLight,
+    letterSpacing: 0.5,
+    marginLeft: 12,
+    marginBottom: 4,
   },
   userWrapper: {
     alignItems: 'flex-end',
@@ -145,7 +144,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     lineHeight: 22,
   },
   userText: {
-    color: colors.text,
+    color: colors.textOnPrimary,
   },
   merlinText: {
     color: colors.text,
@@ -156,7 +155,8 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     textAlign: 'right',
   },
   userTimestamp: {
-    color: 'rgba(255,255,255,0.7)',
+    color: colors.textOnPrimary,
+    opacity: 0.7,
   },
   merlinTimestamp: {
     color: colors.textMuted,
