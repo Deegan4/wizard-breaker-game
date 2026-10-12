@@ -80,6 +80,7 @@ export default function ModeIntroOverlay({ adventure, totalLevels, onDismiss }: 
           </View>
 
           <Pressable
+            accessibilityRole="button"
             style={({ pressed }) => [
               styles.startButton,
               pressed && styles.startButtonPressed,
@@ -219,7 +220,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     gap: 10,
   },
   startButtonText: {
-    color: colors.text,
+    color: colors.textOnPrimary,
     fontSize: 16,
     fontWeight: '700' as const,
   },

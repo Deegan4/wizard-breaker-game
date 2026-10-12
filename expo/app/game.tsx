@@ -234,6 +234,8 @@ export default function GameScreen() {
             style={styles.backButton}
             onPress={() => router.replace('/(tabs)')}
             hitSlop={20}
+            accessibilityRole="button"
+            accessibilityLabel="Leave level"
           >
             <ArrowLeft size={24} color={colors.textSecondary} />
           </Pressable>
@@ -249,6 +251,7 @@ export default function GameScreen() {
           </View>
 
           <Pressable
+            accessibilityRole="button"
             style={styles.resetButton}
             onPress={handleOpenHint}
             hitSlop={20}
@@ -258,6 +261,7 @@ export default function GameScreen() {
           </Pressable>
 
           <Pressable
+            accessibilityRole="button"
             style={styles.resetButton}
             onPress={handleReset}
             hitSlop={20}
@@ -361,12 +365,16 @@ export default function GameScreen() {
                   ]}
                   onPress={handleSend}
                   disabled={!canSend}
+                  hitSlop={6}
+                  accessibilityRole="button"
+                  accessibilityLabel="Send message"
+                  accessibilityState={{ disabled: !canSend }}
                 >
                   <LinearGradient
                     colors={canSend ? [colors.primary, colors.primaryDark] : [colors.surfaceElevated, colors.surfaceElevated]}
                     style={styles.sendButtonGradient}
                   >
-                    <Send size={20} color={canSend ? colors.text : colors.textMuted} />
+                    <Send size={20} color={canSend ? colors.textOnPrimary : colors.textMuted} />
                   </LinearGradient>
                 </Pressable>
               </ReanimatedAnimated.View>
@@ -535,8 +543,8 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     backgroundColor: 'rgba(10, 6, 24, 0.85)',
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -563,8 +571,8 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     marginTop: 2,
   },
   resetButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center',
   },

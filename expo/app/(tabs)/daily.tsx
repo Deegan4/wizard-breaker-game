@@ -262,6 +262,7 @@ export default function DailyScreen() {
         >
           {!isCompleted ? (
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.playButton,
                 pressed && styles.buttonPressed,
@@ -280,6 +281,7 @@ export default function DailyScreen() {
             </Pressable>
           ) : (
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.playButtonCompleted,
                 pressed && styles.buttonPressed,
@@ -299,6 +301,7 @@ export default function DailyScreen() {
           )}
 
           <Pressable
+            accessibilityRole="button"
             style={({ pressed }) => [
               styles.secondaryButton,
               pressed && styles.buttonPressed,
@@ -625,7 +628,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     gap: 10,
   },
   playButtonText: {
-    color: colors.text,
+    color: colors.textOnPrimary,
     fontSize: 18,
     fontWeight: '700' as const,
   },

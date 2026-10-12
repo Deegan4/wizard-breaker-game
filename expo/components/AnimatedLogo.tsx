@@ -1,3 +1,4 @@
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Easing, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -86,7 +87,10 @@ export default function AnimatedLogo({ size = 140 }: AnimatedLogoProps) {
     scale: new Animated.Value(0.5),
   }))).current;
 
+  const reduceMotion = useReduceMotion();
+
   useEffect(() => {
+    if (reduceMotion) return;
     Animated.loop(
       Animated.timing(mainRotation, {
         toValue: 1,
@@ -299,7 +303,7 @@ export default function AnimatedLogo({ size = 140 }: AnimatedLogoProps) {
       setTimeout(animate, runePositions[index].delay + Math.random() * 1000);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reduceMotion]);
 
   const spin = mainRotation.interpolate({
     inputRange: [0, 1],

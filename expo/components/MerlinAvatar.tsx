@@ -1,3 +1,4 @@
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Circle, Path, G, Polygon } from 'react-native-svg';
@@ -29,8 +30,13 @@ export default function MerlinAvatar({ size = 60, state, isThinking = false }: M
   const pulse = useSharedValue(1);
   const bob = useSharedValue(0);
   const sparkleSpin = useSharedValue(0);
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
+    if (reduceMotion) {
+      glow.value = 0.5;
+      return;
+    }
     glow.value = withRepeat(
       withSequence(
         withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.quad) }),
@@ -38,10 +44,10 @@ export default function MerlinAvatar({ size = 60, state, isThinking = false }: M
       ),
       -1
     );
-  }, [glow]);
+  }, [glow, reduceMotion]);
 
   useEffect(() => {
-    if (resolvedState === 'thinking') {
+    if (resolvedState === 'thinking' && !reduceMotion) {
       pulse.value = withRepeat(
         withSequence(
           withTiming(1.1, { duration: 450, easing: Easing.inOut(Easing.quad) }),
@@ -68,7 +74,7 @@ export default function MerlinAvatar({ size = 60, state, isThinking = false }: M
       bob.value = withTiming(0, { duration: 200 });
       sparkleSpin.value = withTiming(0, { duration: 200 });
     }
-  }, [resolvedState, pulse, bob, sparkleSpin]);
+  }, [resolvedState, pulse, bob, sparkleSpin, reduceMotion]);
 
   const bodyStyle = useAnimatedStyle(() => ({
     transform: [{ scale: pulse.value }, { translateY: bob.value }],

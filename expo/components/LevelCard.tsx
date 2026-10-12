@@ -48,6 +48,7 @@ export default function LevelCard({
 
   return (
     <Pressable
+      accessibilityRole="button"
       onPress={handlePress}
       style={({ pressed }) => [
         styles.container,

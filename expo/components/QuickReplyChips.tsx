@@ -18,6 +18,7 @@ export default function QuickReplyChips({ replies, onSelect, disabled = false }:
     <View style={styles.row}>
       {replies.map(reply => (
         <Pressable
+          accessibilityRole="button"
           key={reply.id}
           disabled={disabled}
           onPress={() => {

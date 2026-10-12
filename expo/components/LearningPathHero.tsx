@@ -48,6 +48,7 @@ export default function LearningPathHero({
       <ProgressBar current={completed} total={total} showLabel={false} />
 
       <Pressable
+        accessibilityRole="button"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           onContinue();
@@ -57,7 +58,7 @@ export default function LearningPathHero({
         <Text style={styles.buttonText}>
           {isDone ? 'Review lessons' : nextLessonTitle ? `Continue: ${nextLessonTitle}` : 'Continue'}
         </Text>
-        <ArrowRight size={16} color={colors.text} />
+        <ArrowRight size={16} color={colors.textOnPrimary} />
       </Pressable>
     </View>
   );
@@ -126,6 +127,6 @@ const createStyles = (colors: ColorPalette) =>
       flexShrink: 1,
       fontSize: 15,
       fontWeight: '700' as const,
-      color: colors.text,
+      color: colors.textOnPrimary,
     },
   });

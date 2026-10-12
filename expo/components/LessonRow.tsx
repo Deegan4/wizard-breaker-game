@@ -30,6 +30,7 @@ export default function LessonRow({ lesson, status, onPress }: LessonRowProps) {
 
   return (
     <Pressable
+      accessibilityRole="button"
       onPress={handlePress}
       style={({ pressed }) => [
         styles.row,

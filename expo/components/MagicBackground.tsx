@@ -1,3 +1,4 @@
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,8 +28,10 @@ export default function MagicBackground({ children }: { children: React.ReactNod
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const stars = useRef<Star[]>(generateStars(40)).current;
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
+    if (reduceMotion) return;
     stars.forEach((star) => {
       const twinkle = () => {
         Animated.sequence([
@@ -46,7 +49,7 @@ export default function MagicBackground({ children }: { children: React.ReactNod
       };
       setTimeout(twinkle, star.delay);
     });
-  }, [stars]);
+  }, [stars, reduceMotion]);
 
   return (
     <View style={styles.container}>

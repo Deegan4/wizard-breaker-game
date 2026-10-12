@@ -182,6 +182,7 @@ export default function LeaderboardScreen() {
         </View>
 
         <Pressable
+          accessibilityRole="button"
           style={({ pressed }) => [
             styles.shareButton,
             pressed && styles.buttonPressed,
@@ -406,7 +407,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     gap: 8,
   },
   shareButtonText: {
-    color: colors.text,
+    color: colors.textOnPrimary,
     fontSize: 16,
     fontWeight: '600' as const,
   },

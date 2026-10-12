@@ -89,6 +89,9 @@ export default function AdventureCard({ adventure, onPress, index }: AdventureCa
       ]}
     >
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${adventure.title}, ${adventure.difficulty}, ${adventure.levels} levels${adventure.isLocked ? ', locked' : ''}`}
+        accessibilityState={{ disabled: adventure.isLocked }}
         style={({ pressed }) => [
           styles.card,
           pressed && !adventure.isLocked && styles.cardPressed,
@@ -137,12 +140,12 @@ export default function AdventureCard({ adventure, onPress, index }: AdventureCa
               <Text style={styles.levels}>{adventure.levels} levels</Text>
             </View>
             
-            <Pressable style={styles.playButton} onPress={handlePress} disabled={adventure.isLocked}>
+            <View style={styles.playButton}>
               <Text style={[styles.playText, adventure.isLocked && styles.lockedText]}>
                 Play Adventure
               </Text>
               <ArrowRight size={14} color={adventure.isLocked ? colors.textMuted : colors.primary} />
-            </Pressable>
+            </View>
           </View>
         </View>
       </Pressable>

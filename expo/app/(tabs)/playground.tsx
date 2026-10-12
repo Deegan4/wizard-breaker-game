@@ -192,7 +192,7 @@ export default function PlaygroundScreen() {
           <View style={styles.selectorRow}>
             <View style={styles.selectorItem}>
               <Text style={styles.selectorLabel}>Adventure</Text>
-              <Pressable style={styles.selectorButton} onPress={() => Alert.alert('Select Adventure', 'Coming soon')}>
+              <Pressable accessibilityRole="button" style={styles.selectorButton} onPress={() => Alert.alert('Select Adventure', 'Coming soon')}>
                 <View style={styles.selectorButtonContent}>
                   <Text style={styles.selectorButtonText}>{selectedAdventure === 'classic' ? 'Classic (12 Levels)' : selectedAdventure}</Text>
                   <ChevronDown size={16} color={colors.textMuted} />
@@ -201,7 +201,7 @@ export default function PlaygroundScreen() {
             </View>
             <View style={styles.selectorItem}>
               <Text style={styles.selectorLabel}>Level</Text>
-              <Pressable style={styles.selectorButton} onPress={() => Alert.alert('Select Level', `Choose 1-${totalLevels}`)}>
+              <Pressable accessibilityRole="button" style={styles.selectorButton} onPress={() => Alert.alert('Select Level', `Choose 1-${totalLevels}`)}>
                 <View style={styles.selectorButtonContent}>
                   <Text style={styles.selectorButtonText}>Level {selectedLevel}</Text>
                   <ChevronDown size={16} color={colors.textMuted} />
@@ -215,7 +215,7 @@ export default function PlaygroundScreen() {
         <View style={styles.inputCard}>
           <View style={styles.inputHeader}>
             <Text style={styles.inputTitle}>Test Prompt</Text>
-            <Pressable style={styles.clearButton} onPress={handleClear} disabled={!inputText.trim()}>
+            <Pressable accessibilityRole="button" style={styles.clearButton} onPress={handleClear} disabled={!inputText.trim()}>
               <RotateCcw size={16} color={inputText.trim() ? colors.textSecondary : colors.textMuted} />
               <Text style={[styles.clearButtonText, { opacity: inputText.trim() ? 1 : 0.5 }]}>Clear</Text>
             </Pressable>
@@ -231,6 +231,7 @@ export default function PlaygroundScreen() {
             editable={!isTesting}
           />
           <Pressable
+            accessibilityRole="button"
             style={({ pressed }) => [
               styles.testButton,
               pressed && styles.buttonPressed,
@@ -301,11 +302,11 @@ export default function PlaygroundScreen() {
             </View>
 
             <View style={styles.resultActions}>
-              <Pressable style={styles.actionButton} onPress={handleCopyResult}>
+              <Pressable accessibilityRole="button" style={styles.actionButton} onPress={handleCopyResult}>
                 <Copy size={18} color={colors.textSecondary} />
                 <Text style={styles.actionButtonText}>Copy</Text>
               </Pressable>
-              <Pressable style={styles.actionButton} onPress={handleShareResult}>
+              <Pressable accessibilityRole="button" style={styles.actionButton} onPress={handleShareResult}>
                 <Text style={styles.actionButtonText}>Share</Text>
               </Pressable>
             </View>
@@ -314,7 +315,7 @@ export default function PlaygroundScreen() {
 
         {/* Examples */}
         <View style={styles.examplesCard}>
-          <Pressable style={styles.examplesHeader} onPress={() => setShowExamples(!showExamples)}>
+          <Pressable accessibilityRole="button" style={styles.examplesHeader} onPress={() => setShowExamples(!showExamples)}>
             <Text style={styles.examplesTitle}>Example Prompts</Text>
             <View style={styles.examplesToggle}>
               <ChevronDown 
@@ -331,6 +332,7 @@ export default function PlaygroundScreen() {
                 .filter(ex => ex.level <= totalLevels)
                 .map((example, index) => (
                   <Pressable
+                    accessibilityRole="button"
                     key={index}
                     style={({ pressed }) => [
                       styles.exampleItem,
@@ -441,6 +443,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   selectorRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 12,
   },
   selectorItem: {
     flex: 1,
@@ -494,6 +497,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.text,
   },
   clearButton: {
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -668,6 +672,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     borderColor: colors.borderLight,
   },
   examplesHeader: {
+    minHeight: 44,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -688,6 +693,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 12,
     padding: 12,
     backgroundColor: colors.backgroundSecondary,
     borderRadius: 10,
@@ -724,7 +730,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.primary,
   },
   exampleLevelTextActive: {
-    color: colors.text,
+    color: colors.textOnPrimary,
   },
   exampleLabel: {
     fontSize: 13,

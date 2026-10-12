@@ -243,7 +243,13 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
         ]}
       >
         {/* Close Button */}
-        <Pressable style={styles.closeButton} onPress={skipOnboarding} hitSlop={20}>
+        <Pressable
+          style={styles.closeButton}
+          onPress={skipOnboarding}
+          hitSlop={20}
+          accessibilityRole="button"
+          accessibilityLabel="Skip tutorial"
+        >
           <X size={24} color={colors.textMuted} />
         </Pressable>
 
@@ -351,6 +357,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
           ]}
         >
           <Pressable
+            accessibilityRole="button"
             style={[
               styles.navButton,
               currentStep === 0 && styles.navButtonDisabled,
@@ -389,6 +396,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
 
           {currentStep === ONBOARDING_STEPS.length - 1 ? (
             <Pressable
+              accessibilityRole="button"
               style={styles.navButtonPrimary}
               onPress={goNext}
             >
@@ -402,6 +410,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
             </Pressable>
           ) : (
             <Pressable
+              accessibilityRole="button"
               style={styles.navButtonPrimary}
               onPress={goNext}
             >
@@ -416,7 +425,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
           )}
         </Animated.View>
 
-        <Pressable style={styles.skipButton} onPress={skipOnboarding}>
+        <Pressable accessibilityRole="button" style={styles.skipButton} onPress={skipOnboarding}>
           <Text style={styles.skipText}>Skip Tutorial</Text>
         </Pressable>
       </Animated.View>
@@ -567,7 +576,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     gap: 8,
   },
   navButtonPrimaryText: {
-    color: colors.text,
+    color: colors.textOnPrimary,
     fontSize: 16,
     fontWeight: '700' as const,
   },

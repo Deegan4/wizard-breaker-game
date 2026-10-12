@@ -142,7 +142,7 @@ export default function LessonScreen() {
       <MagicBackground>
         <View style={[styles.notFound, { paddingTop: insets.top + 20 }]}>
           <Text style={styles.notFoundText}>Lesson not found.</Text>
-          <Pressable onPress={() => router.back()} style={styles.doneButton}>
+          <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.doneButton}>
             <Text style={styles.doneButtonText}>Back</Text>
           </Pressable>
         </View>
@@ -158,7 +158,13 @@ export default function LessonScreen() {
       >
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
           <View style={styles.headerRow}>
-            <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backButton}>
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={12}
+              style={styles.backButton}
+              accessibilityRole="button"
+              accessibilityLabel="Back"
+            >
               <ArrowLeft size={22} color={colors.text} />
             </Pressable>
             <View style={styles.headerTitleWrap}>
@@ -218,6 +224,7 @@ export default function LessonScreen() {
                 <Text style={styles.doneXp}>+{lesson.xpReward} XP</Text>
               ) : null}
               <Pressable
+                accessibilityRole="button"
                 onPress={() => router.back()}
                 style={({ pressed }) => [styles.doneButton, pressed && styles.pressed]}
               >
@@ -245,9 +252,13 @@ export default function LessonScreen() {
           <Pressable
             onPress={handleSend}
             disabled={!draft.trim() || busy || finished}
+            hitSlop={6}
+            accessibilityRole="button"
+            accessibilityLabel="Send message"
+            accessibilityState={{ disabled: !draft.trim() || busy || finished }}
             style={[styles.sendButton, (!draft.trim() || busy || finished) && styles.sendDisabled]}
           >
-            <Send size={18} color={colors.text} />
+            <Send size={18} color={colors.textOnPrimary} />
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -349,7 +360,7 @@ const createStyles = (colors: ColorPalette) =>
     doneButtonText: {
       fontSize: 15,
       fontWeight: '700' as const,
-      color: colors.text,
+      color: colors.textOnPrimary,
     },
     pressed: {
       opacity: 0.9,

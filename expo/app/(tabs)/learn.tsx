@@ -285,6 +285,7 @@ export default function LearnScreen() {
           
           {RESOURCES.map((resource, index) => (
             <Pressable
+              accessibilityRole="button"
               key={index}
               style={({ pressed }) => [
                 styles.resourceCard,

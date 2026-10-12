@@ -281,6 +281,7 @@ export default function DebriefScreen({
           ]}
         >
           <Pressable
+            accessibilityRole="button"
             style={({ pressed }) => [
               styles.continueButton,
               pressed && styles.buttonPressed,
@@ -530,7 +531,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     gap: 10,
   },
   continueButtonText: {
-    color: colors.text,
+    color: colors.textOnPrimary,
     fontSize: 18,
     fontWeight: '700' as const,
   },

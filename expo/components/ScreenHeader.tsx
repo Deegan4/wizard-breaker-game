@@ -22,7 +22,7 @@ export default function ScreenHeader({ title, subtitle }: ScreenHeaderProps) {
           start={{ x: 0.2, y: 0.2 }}
           end={{ x: 1, y: 1 }}
         >
-          <Sparkles size={16} color={colors.text} />
+          <Sparkles size={16} color={colors.textOnPrimary} />
         </LinearGradient>
         <View>
           <Text style={styles.title}>{title}</Text>
@@ -32,6 +32,9 @@ export default function ScreenHeader({ title, subtitle }: ScreenHeaderProps) {
       <Pressable
         style={styles.avatar}
         onPress={() => Alert.alert('Coming Soon', 'Profiles are on the way!')}
+        accessibilityRole="button"
+        accessibilityLabel="Profile"
+        hitSlop={8}
       >
         <User size={18} color={colors.textMuted} />
       </Pressable>

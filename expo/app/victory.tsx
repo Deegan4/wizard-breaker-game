@@ -10,6 +10,7 @@ import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 import { Fonts } from '@/constants/fonts';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 export default function VictoryScreen() {
   const insets = useSafeAreaInsets();
@@ -23,9 +24,15 @@ export default function VictoryScreen() {
   const buttonsAnim = useRef(new Animated.Value(0)).current;
   const floatAnim = useRef(new Animated.Value(0)).current;
   const ringAnim = useRef(new Animated.Value(0)).current;
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    if (reduceMotion) {
+      [trophyAnim, titleAnim, statsAnim, buttonsAnim].forEach((a) => a.setValue(1));
+      return;
+    }
 
     Animated.stagger(150, [
       Animated.spring(trophyAnim, {
@@ -81,7 +88,7 @@ export default function VictoryScreen() {
         Animated.delay(500),
       ])
     ).start();
-  }, [trophyAnim, titleAnim, statsAnim, buttonsAnim, floatAnim, ringAnim]);
+  }, [trophyAnim, titleAnim, statsAnim, buttonsAnim, floatAnim, ringAnim, reduceMotion]);
 
   const handleShare = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -109,7 +116,7 @@ export default function VictoryScreen() {
     <MagicBackground>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {Platform.OS !== 'web' && (
+      {Platform.OS !== 'web' && !reduceMotion && (
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
           <Confetti
             autoplay
@@ -243,6 +250,7 @@ export default function VictoryScreen() {
           ]}
         >
           <Pressable
+            accessibilityRole="button"
             style={({ pressed }) => [
               styles.primaryButton,
               pressed && styles.buttonPressed,
@@ -260,6 +268,7 @@ export default function VictoryScreen() {
 
           <View style={styles.secondaryButtons}>
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.secondaryButton,
                 pressed && styles.buttonPressed,
@@ -271,6 +280,7 @@ export default function VictoryScreen() {
             </Pressable>
 
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.secondaryButton,
                 pressed && styles.buttonPressed,
@@ -478,7 +488,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     gap: 10,
   },
   primaryButtonText: {
-    color: colors.text,
+    color: colors.textOnPrimary,
     fontSize: 18,
     fontWeight: '700' as const,
   },

@@ -63,6 +63,7 @@ export default function AdventuresScreen() {
         <View style={styles.filterRow}>
           {FILTERS.map(f => (
             <Pressable
+              accessibilityRole="button"
               key={f.id}
               onPress={() => setFilter(f.id)}
               style={[styles.chip, filter === f.id && styles.chipActive]}
@@ -139,6 +140,7 @@ const createStyles = (colors: ColorPalette) =>
       marginBottom: 24,
     },
     chip: {
+      minHeight: 44,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
@@ -159,7 +161,7 @@ const createStyles = (colors: ColorPalette) =>
       color: colors.textSecondary,
     },
     chipTextActive: {
-      color: colors.text,
+      color: colors.textOnPrimary,
     },
     hero: {
       marginBottom: 24,

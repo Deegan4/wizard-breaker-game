@@ -1,3 +1,4 @@
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
@@ -58,7 +59,10 @@ export default function HomeScreen() {
     checkDailyChallenge();
   }, [checkDailyChallenge]);
 
+  const reduceMotion = useReduceMotion();
+
   useEffect(() => {
+    if (reduceMotion) return;
     Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, {
@@ -73,7 +77,7 @@ export default function HomeScreen() {
         }),
       ])
     ).start();
-  }, [floatAnim]);
+  }, [floatAnim, reduceMotion]);
 
   const handlePlayPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -149,6 +153,7 @@ export default function HomeScreen() {
               />
 
               <Pressable
+                accessibilityRole="button"
                 style={({ pressed }) => [
                   styles.submitButton,
                   pressed && styles.buttonPressed,
@@ -164,11 +169,11 @@ export default function HomeScreen() {
                   end={{ x: 1, y: 1 }}
                 >
                   <Text style={styles.submitButtonText}>Begin Journey</Text>
-                  <Wand2 size={20} color={colors.text} />
+                  <Wand2 size={20} color={colors.textOnPrimary} />
                 </LinearGradient>
               </Pressable>
 
-              <Pressable onPress={handleSkipUsername} style={styles.skipButton}>
+              <Pressable accessibilityRole="button" onPress={handleSkipUsername} style={styles.skipButton}>
                 <Text style={styles.skipButtonText}>Skip for now</Text>
               </Pressable>
             </View>
@@ -182,7 +187,7 @@ export default function HomeScreen() {
                     start={{ x: 0.2, y: 0.2 }}
                     end={{ x: 1, y: 1 }}
                   >
-                    <Sparkles size={16} color={colors.text} />
+                    <Sparkles size={16} color={colors.textOnPrimary} />
                   </LinearGradient>
                   <Text style={styles.brandTitle}>WIZARD BREAKER</Text>
                 </View>
@@ -192,6 +197,9 @@ export default function HomeScreen() {
                 <Pressable
                   style={styles.avatar}
                   onPress={() => Alert.alert('Coming Soon', 'Profiles are on the way!')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Profile"
+                  hitSlop={8}
                 >
                   <User size={18} color={colors.textMuted} />
                 </Pressable>
@@ -218,13 +226,14 @@ export default function HomeScreen() {
                     />
                   </View>
                   <Pressable
+                    accessibilityRole="button"
                     style={({ pressed }) => [styles.continueButton, pressed && styles.buttonPressed]}
                     onPress={handlePlayPress}
                   >
                     <Text style={styles.continueButtonText}>
                       {gameState.levelsCompleted === 0 ? 'Start quest' : 'Continue quest'}
                     </Text>
-                    <ArrowRight size={18} color={colors.text} />
+                    <ArrowRight size={18} color={colors.textOnPrimary} />
                   </Pressable>
                 </View>
               )}
@@ -248,6 +257,7 @@ export default function HomeScreen() {
                       {challengeLevel.description}
                     </Text>
                     <Pressable
+                      accessibilityRole="button"
                       style={({ pressed }) => [
                         styles.dailyButton,
                         dailyChallenge.completed && styles.dailyButtonDisabled,
@@ -268,7 +278,8 @@ export default function HomeScreen() {
               <View style={styles.progressSectionHeader}>
                 <Text style={styles.progressSectionLabel}>Your progress</Text>
                 <Pressable
-                  style={styles.viewDetailsButton}
+                  accessibilityRole="button"
+                  style={styles.viewDetailsButton} hitSlop={{ top: 14, bottom: 14, left: 10, right: 10 }}
                   onPress={() => router.push('/leaderboard')}
                 >
                   <Text style={styles.viewDetailsText}>View details</Text>
@@ -292,6 +303,7 @@ export default function HomeScreen() {
               <Text style={styles.exploreLabel}>Explore</Text>
 
               <Pressable
+                accessibilityRole="button"
                 style={({ pressed }) => [styles.exploreRow, pressed && { opacity: 0.85 }]}
                 onPress={() => router.push('/learn')}
               >
@@ -306,6 +318,7 @@ export default function HomeScreen() {
               </Pressable>
 
               <Pressable
+                accessibilityRole="button"
                 style={({ pressed }) => [styles.exploreRow, pressed && { opacity: 0.85 }]}
                 onPress={() => router.push('/leaderboard')}
               >
@@ -431,7 +444,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   continueButtonText: {
     fontSize: 15,
     fontWeight: '700' as const,
-    color: colors.text,
+    color: colors.textOnPrimary,
   },
   dailyCard: {
     backgroundColor: colors.surface,
@@ -490,6 +503,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.textSecondary,
   },
   dailyButton: {
+    minHeight: 44,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -620,7 +634,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     gap: 8,
   },
   submitButtonText: {
-    color: colors.text,
+    color: colors.textOnPrimary,
     fontSize: 18,
     fontWeight: '700' as const,
   },

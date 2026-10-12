@@ -31,6 +31,7 @@ export interface ColorPalette {
   surfaceElevated: string;
 
   text: string;
+  textOnPrimary: string;
   textSecondary: string;
   textMuted: string;
 
@@ -78,6 +79,7 @@ const darkColors: ColorPalette = {
   surfaceElevated: '#382663',
 
   text: '#FFFFFF',
+  textOnPrimary: '#FFFFFF',
   textSecondary: '#C4B5FD',
   textMuted: '#8B7FB3',
 
@@ -125,6 +127,7 @@ const lightColors: ColorPalette = {
   surfaceElevated: '#F1F5F9',
 
   text: '#0F172A',
+  textOnPrimary: '#FFFFFF',
   textSecondary: '#475569',
   textMuted: '#94A3B8',
 

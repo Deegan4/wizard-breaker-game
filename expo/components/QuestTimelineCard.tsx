@@ -49,7 +49,7 @@ export default function QuestTimelineCard({
             ]}
           >
             {isCompleted ? (
-              <Check size={16} color={colors.text} />
+              <Check size={16} color={colors.textOnPrimary} />
             ) : isLocked ? (
               <Lock size={14} color={colors.textMuted} />
             ) : (
@@ -60,6 +60,7 @@ export default function QuestTimelineCard({
         </View>
 
         <Pressable
+          accessibilityRole="button"
           onPress={handlePress}
           style={({ pressed }) => [
             styles.card,
@@ -114,11 +115,12 @@ export default function QuestTimelineCard({
 
       {isCurrent && (
         <Pressable
+          accessibilityRole="button"
           onPress={handlePress}
           style={({ pressed }) => [styles.continueButton, pressed && styles.continueButtonPressed]}
         >
           <Text style={styles.continueButtonText}>Continue</Text>
-          <ArrowRight size={16} color={colors.text} />
+          <ArrowRight size={16} color={colors.textOnPrimary} />
         </Pressable>
       )}
     </View>
@@ -159,7 +161,7 @@ const createStyles = (colors: ColorPalette) =>
     iconCircleNumber: {
       fontSize: 12,
       fontWeight: '700' as const,
-      color: colors.text,
+      color: colors.textOnPrimary,
     },
     line: {
       width: 2,
@@ -261,6 +263,6 @@ const createStyles = (colors: ColorPalette) =>
     continueButtonText: {
       fontSize: 15,
       fontWeight: '700' as const,
-      color: colors.text,
+      color: colors.textOnPrimary,
     },
   });
