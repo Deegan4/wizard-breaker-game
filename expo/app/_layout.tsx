@@ -42,8 +42,15 @@ function RootLayoutNav() {
           animation: 'slide_from_right',
         }} 
       />
-      <Stack.Screen 
-        name="victory" 
+      <Stack.Screen
+        name="lesson/[id]"
+        options={{
+          headerShown: false,
+          animation: 'slide_from_right',
+        }}
+      />
+      <Stack.Screen
+        name="victory"
         options={{ 
           headerShown: false,
           animation: 'fade',

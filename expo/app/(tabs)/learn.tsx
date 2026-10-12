@@ -1,17 +1,22 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { 
-  BookOpen, 
-  Shield, 
-  AlertTriangle, 
+import { router } from 'expo-router';
+import {
+  Shield,
+  AlertTriangle,
   Lightbulb,
   ExternalLink,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as Linking from 'expo-linking';
 import MagicBackground from '@/components/MagicBackground';
+import ScreenHeader from '@/components/ScreenHeader';
+import LearningPathHero from '@/components/LearningPathHero';
+import LessonRow, { type LessonStatus } from '@/components/LessonRow';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { useLessons } from '@/contexts/LessonContext';
+import { LEARNING_MODULES, getLessonsForModule, type Lesson } from '@/constants/lessons';
 
 const getTechniqueColors = (colors: ColorPalette) => [
   colors.primary,
@@ -90,6 +95,26 @@ export default function LearnScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const TECHNIQUE_COLORS = useMemo(() => getTechniqueColors(colors), [colors]);
   const insets = useSafeAreaInsets();
+  const { progress, isLessonUnlocked, getModuleProgress } = useLessons();
+
+  const learningModule = LEARNING_MODULES[0];
+  const lessons = useMemo(() => getLessonsForModule(learningModule.id), [learningModule.id]);
+  const moduleProgress = getModuleProgress(learningModule.id);
+
+  const getStatus = (lesson: Lesson): LessonStatus => {
+    if (progress[lesson.id]?.completed) return 'completed';
+    return isLessonUnlocked(lesson.id) ? 'current' : 'locked';
+  };
+
+  const nextLesson = lessons.find(l => getStatus(l) === 'current');
+
+  const openLesson = (lessonId: string) => {
+    router.push({ pathname: '/lesson/[id]', params: { id: lessonId } });
+  };
+
+  const handleContinue = () => {
+    openLesson((nextLesson ?? lessons[0]).id);
+  };
 
   const handleLinkPress = async (url: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -105,14 +130,38 @@ export default function LearnScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }
+          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 110 }
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <BookOpen size={32} color={colors.secondary} />
-          <Text style={styles.title}>Learn</Text>
-          <Text style={styles.subtitle}>Understanding AI Security</Text>
+        <ScreenHeader title="Learn" subtitle="Guided lessons with Wizard, your AI tutor" />
+
+        <LearningPathHero
+          title={learningModule.title}
+          completed={moduleProgress.completed}
+          total={moduleProgress.total}
+          nextLessonTitle={nextLesson?.title}
+          onContinue={handleContinue}
+        />
+
+        <Text style={styles.sectionTitle}>Lessons</Text>
+        <View style={styles.lessonList}>
+          {lessons.map(lesson => {
+            const status = getStatus(lesson);
+            return (
+              <LessonRow
+                key={lesson.id}
+                lesson={lesson}
+                status={status}
+                onPress={() => openLesson(lesson.id)}
+              />
+            );
+          })}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Explore more topics</Text>
+          <Text style={styles.sectionSubtitle}>Background reading on prompt injection</Text>
         </View>
 
         <View style={styles.infoCard}>
@@ -272,20 +321,8 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 20,
   },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700' as const,
-    color: colors.text,
-    marginTop: 12,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 4,
+  lessonList: {
+    gap: 10,
   },
   infoCard: {
     backgroundColor: colors.surface,

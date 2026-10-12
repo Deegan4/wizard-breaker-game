@@ -60,6 +60,7 @@ export function LessonProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const completeLesson = useCallback((lessonId: string) => {
+    if (progress[lessonId]?.completed) return;
     const lesson = getLessonById(lessonId);
     setProgress(prev => {
       const existing = prev[lessonId];
@@ -75,7 +76,7 @@ export function LessonProvider({ children }: { children: React.ReactNode }) {
       };
     });
     awardXP(lesson?.xpReward ?? LESSON_XP_REWARD);
-  }, [awardXP]);
+  }, [awardXP, progress]);
 
   const getModuleProgress = useCallback((moduleId: string) => {
     const lessons = getLessonsForModule(moduleId);

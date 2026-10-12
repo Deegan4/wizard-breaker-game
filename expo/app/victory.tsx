@@ -6,7 +6,6 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Confetti } from 'react-native-fast-confetti';
-import AnimatedGlow, { type PresetConfig } from 'react-native-animated-glow';
 import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
@@ -17,39 +16,6 @@ export default function VictoryScreen() {
   const { gameState, resetGame } = useGame();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-
-  const trophyGlowPreset: PresetConfig = useMemo(() => ({
-    metadata: { name: 'Trophy Glow', textColor: colors.text, category: 'Victory', tags: [] },
-    states: [
-      {
-        name: 'default',
-        preset: {
-          cornerRadius: 70,
-          glowLayers: [
-            { colors: ['#FFD700', '#FFA500'], opacity: 0.55, glowSize: 28 },
-          ],
-        },
-      },
-      {
-        name: 'hover',
-        transition: 1400,
-        preset: {
-          cornerRadius: 70,
-          glowLayers: [
-            { colors: ['#FFD700', '#FFECB3'], opacity: 0.85, glowSize: 44 },
-          ],
-        },
-      },
-    ],
-  }), [colors.text]);
-  const [trophyGlowState, setTrophyGlowState] = React.useState<'default' | 'hover'>('default');
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTrophyGlowState((prev) => (prev === 'default' ? 'hover' : 'default'));
-    }, 1400);
-    return () => clearInterval(interval);
-  }, []);
 
   const trophyAnim = useRef(new Animated.Value(0)).current;
   const titleAnim = useRef(new Animated.Value(0)).current;
@@ -143,15 +109,17 @@ export default function VictoryScreen() {
     <MagicBackground>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-        <Confetti
-          autoplay
-          count={220}
-          fadeOutOnEnd
-          colors={['#FFD700', colors.primary, colors.secondary, colors.enchantedGreen, colors.starYellow]}
-          containerStyle={StyleSheet.absoluteFill}
-        />
-      </View>
+      {Platform.OS !== 'web' && (
+        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+          <Confetti
+            autoplay
+            count={220}
+            fadeOutOnEnd
+            colors={['#FFD700', colors.primary, colors.secondary, colors.enchantedGreen, colors.starYellow]}
+            containerStyle={StyleSheet.absoluteFill}
+          />
+        </View>
+      )}
 
       <View style={[styles.container, { paddingTop: insets.top + 30, paddingBottom: insets.bottom + 20 }]}>
         <Animated.View
@@ -174,11 +142,9 @@ export default function VictoryScreen() {
             colors={['#FFD70040', '#FFD70020', 'transparent']}
             style={styles.trophyGlow}
           />
-          <AnimatedGlow preset={trophyGlowPreset} activeState={trophyGlowState}>
-            <View style={styles.trophyCircle}>
-              <Trophy size={80} color="#FFD700" />
-            </View>
-          </AnimatedGlow>
+          <View style={styles.trophyCircle}>
+            <Trophy size={80} color="#FFD700" />
+          </View>
           <Sparkles size={24} color={colors.starYellow} style={styles.sparkle1} />
           <Sparkles size={20} color={colors.secondary} style={styles.sparkle2} />
           <Sparkles size={16} color={colors.primary} style={styles.sparkle3} />
@@ -368,6 +334,9 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: '#FFD700',
+    ...(Platform.OS !== 'web'
+      ? { shadowColor: '#FFD700', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 20 }
+      : { boxShadow: '0 0 30px #FFD70080' }),
   },
   sparkle1: {
     position: 'absolute',

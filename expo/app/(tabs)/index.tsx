@@ -10,64 +10,55 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Wand2, Play, Trophy, Sparkles, ChevronRight, Terminal } from 'lucide-react-native';
+import {
+  Wand2,
+  Sparkles,
+  ChevronRight,
+  ArrowRight,
+  BookOpen,
+  Star,
+  Flame,
+  Trophy,
+  GraduationCap,
+  User,
+} from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
-import AnimatedLogo from '@/components/AnimatedLogo';
 import ProgressBar from '@/components/ProgressBar';
+import StatRow from '@/components/StatRow';
 import { useGame } from '@/contexts/GameContext';
-import { Fonts } from '@/constants/fonts';
+import { useAchievements } from '@/contexts/AchievementContext';
+import { useLessons } from '@/contexts/LessonContext';
+import { LEARNING_MODULES } from '@/constants/lessons';
+import { DAILY_CHALLENGE_XP_REWARD } from '@/constants/xp';
 import { LEVELS } from '@/constants/levels';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const { colors, theme } = useTheme();
-  const styles = useMemo(() => createStyles(colors, theme), [colors, theme]);
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
-  const { gameState, setUsername, markIntroSeen, setAdventure } = useGame();
+  const { gameState, setUsername, markIntroSeen, setAdventure, startLevel } = useGame();
+  const { dailyChallenge, checkDailyChallenge, stats } = useAchievements();
+  const { getModuleProgress } = useLessons();
   const [showUsernameInput, setShowUsernameInput] = useState(false);
   const [tempUsername, setTempUsername] = useState('');
-  
-  const titleAnim = useRef(new Animated.Value(0)).current;
-  const subtitleAnim = useRef(new Animated.Value(0)).current;
-  const avatarAnim = useRef(new Animated.Value(0)).current;
-  const buttonAnim = useRef(new Animated.Value(0)).current;
+
   const floatAnim = useRef(new Animated.Value(0)).current;
-  const glowAnim = useRef(new Animated.Value(0)).current;
-  const cursorAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.stagger(200, [
-      Animated.spring(avatarAnim, {
-        toValue: 1,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.spring(titleAnim, {
-        toValue: 1,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.spring(subtitleAnim, {
-        toValue: 1,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-      Animated.spring(buttonAnim, {
-        toValue: 1,
-        friction: 8,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    checkDailyChallenge();
+  }, [checkDailyChallenge]);
 
+  useEffect(() => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(floatAnim, {
@@ -82,37 +73,7 @@ export default function HomeScreen() {
         }),
       ])
     ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, {
-          toValue: 1,
-          duration: 1600,
-          useNativeDriver: false,
-        }),
-        Animated.timing(glowAnim, {
-          toValue: 0,
-          duration: 1600,
-          useNativeDriver: false,
-        }),
-      ])
-    ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(cursorAnim, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(cursorAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [avatarAnim, titleAnim, subtitleAnim, buttonAnim, floatAnim, glowAnim, cursorAnim]);
+  }, [floatAnim]);
 
   const handlePlayPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -141,18 +102,27 @@ export default function HomeScreen() {
     router.push('/game');
   };
 
+  const handleStartDaily = () => {
+    if (!dailyChallenge || dailyChallenge.completed) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    startLevel('classic', dailyChallenge.level);
+    router.push('/game');
+  };
+
   const currentLevel = LEVELS[gameState.currentLevel - 1];
+  const challengeLevel = dailyChallenge ? LEVELS[dailyChallenge.level - 1] : undefined;
+  const moduleProgress = getModuleProgress(LEARNING_MODULES[0]?.id ?? '');
 
   return (
     <MagicBackground>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }
+            { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 110 }
           ]}
           showsVerticalScrollIndicator={false}
         >
@@ -161,12 +131,12 @@ export default function HomeScreen() {
               <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
                 <MerlinAvatar size={100} />
               </Animated.View>
-              
+
               <Text style={styles.usernameTitle}>Enter Your Name</Text>
               <Text style={styles.usernameSubtitle}>
                 How shall Merlin address you, young seeker?
               </Text>
-              
+
               <TextInput
                 style={styles.usernameInput}
                 value={tempUsername}
@@ -177,7 +147,7 @@ export default function HomeScreen() {
                 autoCapitalize="words"
                 maxLength={20}
               />
-              
+
               <Pressable
                 style={({ pressed }) => [
                   styles.submitButton,
@@ -197,215 +167,156 @@ export default function HomeScreen() {
                   <Wand2 size={20} color={colors.text} />
                 </LinearGradient>
               </Pressable>
-              
+
               <Pressable onPress={handleSkipUsername} style={styles.skipButton}>
                 <Text style={styles.skipButtonText}>Skip for now</Text>
               </Pressable>
             </View>
           ) : (
             <>
-              <Animated.View
-                style={[
-                  styles.avatarSection,
-                  {
-                    opacity: avatarAnim,
-                    transform: [
-                      { scale: avatarAnim },
-                    ],
-                  },
-                ]}
-              >
-                <AnimatedLogo size={150} />
-              </Animated.View>
-
-              <Animated.View
-                style={{
-                  opacity: titleAnim,
-                  transform: [
-                    {
-                      translateY: titleAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [30, 0],
-                      }),
-                    },
-                  ],
-                }}
-              >
-                <Text style={styles.title}>Wizard Breaker</Text>
-                <View style={styles.subtitleContainer}>
-                  <Sparkles size={16} color={colors.starYellow} />
-                  <Text style={styles.subtitle}>Test Your AI Hacking Skills</Text>
-                  <Sparkles size={16} color={colors.starYellow} />
+              <View style={styles.header}>
+                <View style={styles.headerLeft}>
+                  <LinearGradient
+                    colors={[colors.primaryLight, colors.primary, colors.primaryDark]}
+                    style={styles.orb}
+                    start={{ x: 0.2, y: 0.2 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Sparkles size={16} color={colors.text} />
+                  </LinearGradient>
+                  <Text style={styles.brandTitle}>WIZARD BREAKER</Text>
                 </View>
-              </Animated.View>
+                <Text style={styles.headerPrompt} numberOfLines={1}>
+                  Ready for a challenge?
+                </Text>
+                <Pressable
+                  style={styles.avatar}
+                  onPress={() => Alert.alert('Coming Soon', 'Profiles are on the way!')}
+                >
+                  <User size={18} color={colors.textMuted} />
+                </Pressable>
+              </View>
 
-              <Animated.View
-                style={[
-                  styles.statsCardOuter,
-                  {
-                    opacity: subtitleAnim,
-                    transform: [
-                      {
-                        translateY: subtitleAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [30, 0],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <BlurView intensity={40} tint={theme === 'dark' ? 'dark' : 'light'} style={styles.statsCard}>
-                  <View style={styles.statsRow}>
-                    <View style={styles.statItem}>
-                      <Text style={styles.statValue}>{gameState.currentLevel}</Text>
-                      <Text style={styles.statLabel}>Current Level</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                      <Text style={styles.statValue}>{gameState.levelsCompleted}</Text>
-                      <Text style={styles.statLabel}>Completed</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                      <Text style={styles.statValue}>{gameState.totalAttempts}</Text>
-                      <Text style={styles.statLabel}>Attempts</Text>
-                    </View>
+              {currentLevel && (
+                <View style={styles.nextQuestCard}>
+                  <View style={styles.pillLabel}>
+                    <BookOpen size={12} color={colors.primary} />
+                    <Text style={styles.pillLabelText}>Your next quest</Text>
                   </View>
-
-                  <View style={styles.progressSection}>
+                  <Text style={styles.nextQuestTitle}>{currentLevel.name}</Text>
+                  <Text style={styles.nextQuestDescription} numberOfLines={2}>
+                    {currentLevel.description}
+                  </Text>
+                  <Text style={styles.nextQuestMeta}>
+                    Level {gameState.currentLevel} · {gameState.levelsCompleted} of {LEVELS.length}
+                  </Text>
+                  <View style={styles.nextQuestProgress}>
                     <ProgressBar
                       current={gameState.levelsCompleted}
                       total={LEVELS.length}
+                      showLabel={false}
                     />
                   </View>
-                </BlurView>
-              </Animated.View>
-
-              {currentLevel && (
-                <Animated.View
-                  style={[
-                    styles.currentLevelCard,
-                    {
-                      opacity: subtitleAnim,
-                    },
-                  ]}
-                >
-                  <View style={styles.levelHeader}>
-                    <View style={styles.levelBadge}>
-                      <Text style={styles.levelBadgeText}>Level {currentLevel.id}</Text>
-                    </View>
-                    <Text style={styles.levelDifficulty}>{currentLevel.difficulty}</Text>
-                  </View>
-                  <Text style={styles.levelName}>{currentLevel.name}</Text>
-                  <Text style={styles.levelDescription}>{currentLevel.description}</Text>
-                  <View style={styles.defenseInfo}>
-                    <Text style={styles.defenseLabel}>Defense: </Text>
-                    <Text style={styles.defenseText}>{currentLevel.defenseDescription}</Text>
-                  </View>
-                </Animated.View>
-              )}
-
-              <Animated.View
-                style={[
-                  styles.buttonContainer,
-                  {
-                    opacity: buttonAnim,
-                    transform: [
-                      {
-                        translateY: buttonAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [30, 0],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <Animated.View
-                  style={[
-                    styles.playButtonGlow,
-                    {
-                      shadowOpacity: glowAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0.35, 0.75],
-                      }),
-                      shadowRadius: glowAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [10, 22],
-                      }),
-                    },
-                  ]}
-                >
                   <Pressable
-                    style={({ pressed, hovered }: { pressed: boolean; hovered?: boolean }) => [
-                      styles.playButton,
-                      pressed && styles.buttonPressed,
-                      hovered && styles.playButtonHovered,
-                    ]}
+                    style={({ pressed }) => [styles.continueButton, pressed && styles.buttonPressed]}
                     onPress={handlePlayPress}
                   >
-                    <LinearGradient
-                      colors={[colors.secondary, colors.primary, colors.primaryDark]}
-                      style={styles.playButtonGradient}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                    >
-                      <Play size={28} color={colors.text} fill={colors.text} />
-                      <Text style={styles.playButtonText}>
-                        {gameState.levelsCompleted === 0 ? 'Start Game' : 'Continue'}
-                      </Text>
-                    </LinearGradient>
+                    <Text style={styles.continueButtonText}>
+                      {gameState.levelsCompleted === 0 ? 'Start quest' : 'Continue quest'}
+                    </Text>
+                    <ArrowRight size={18} color={colors.text} />
                   </Pressable>
-                </Animated.View>
+                </View>
+              )}
 
+              {dailyChallenge && challengeLevel && (
+                <View style={styles.dailyCard}>
+                  <View style={styles.dailyCardHeader}>
+                    <View style={styles.pillLabelSecondary}>
+                      <Star size={12} color={colors.starYellow} />
+                      <Text style={styles.pillLabelSecondaryText}>Daily challenge</Text>
+                    </View>
+                    {!dailyChallenge.completed && (
+                      <View style={styles.xpBadge}>
+                        <Text style={styles.xpBadgeText}>+{DAILY_CHALLENGE_XP_REWARD} XP</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.dailyCardTitle}>{challengeLevel.name}</Text>
+                  <View style={styles.dailyCardFooter}>
+                    <Text style={styles.dailyCardDescription} numberOfLines={2}>
+                      {challengeLevel.description}
+                    </Text>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.dailyButton,
+                        dailyChallenge.completed && styles.dailyButtonDisabled,
+                        pressed && !dailyChallenge.completed && styles.buttonPressed,
+                      ]}
+                      onPress={handleStartDaily}
+                      disabled={dailyChallenge.completed}
+                    >
+                      <Text style={styles.dailyButtonText}>
+                        {dailyChallenge.completed ? 'Completed' : 'Start challenge'}
+                      </Text>
+                      {!dailyChallenge.completed && <ArrowRight size={14} color={colors.primary} />}
+                    </Pressable>
+                  </View>
+                </View>
+              )}
+
+              <View style={styles.progressSectionHeader}>
+                <Text style={styles.progressSectionLabel}>Your progress</Text>
                 <Pressable
-                  style={({ pressed }) => [
-                    styles.secondaryButton,
-                    pressed && styles.buttonPressed,
-                  ]}
+                  style={styles.viewDetailsButton}
                   onPress={() => router.push('/leaderboard')}
                 >
-                  <Trophy size={20} color={colors.starYellow} />
-                  <Text style={styles.secondaryButtonText}>Leaderboard</Text>
-                  <ChevronRight size={16} color={colors.textMuted} />
+                  <Text style={styles.viewDetailsText}>View details</Text>
+                  <ChevronRight size={14} color={colors.primary} />
                 </Pressable>
-              </Animated.View>
+              </View>
+
+              <StatRow
+                items={[
+                  {
+                    Icon: BookOpen,
+                    value: `${moduleProgress.completed}/${moduleProgress.total}`,
+                    label: 'Lessons',
+                    tint: colors.primary,
+                  },
+                  { Icon: Star, value: gameState.xpTotal, label: 'XP', tint: colors.starYellow },
+                  { Icon: Flame, value: stats.dailyStreak, label: 'day streak', tint: colors.accent },
+                ]}
+              />
+
+              <Text style={styles.exploreLabel}>Explore</Text>
 
               <Pressable
-                style={({ pressed }) => [
-                  styles.infoCard,
-                  pressed && { opacity: 0.85 },
-                ]}
+                style={({ pressed }) => [styles.exploreRow, pressed && { opacity: 0.85 }]}
                 onPress={() => router.push('/learn')}
               >
-                <View style={styles.infoTermHeader}>
-                  <View style={styles.infoTermDots}>
-                    <View style={[styles.infoTermDot, { backgroundColor: colors.danger }]} />
-                    <View style={[styles.infoTermDot, { backgroundColor: colors.accent }]} />
-                    <View style={[styles.infoTermDot, { backgroundColor: colors.enchantedGreen }]} />
-                  </View>
-                  <View style={styles.infoTermLabel}>
-                    <Terminal size={12} color={colors.textMuted} />
-                    <Text style={styles.infoTermLabelText}>tip_of_the_day.sh</Text>
-                  </View>
+                <View style={styles.exploreIconCircle}>
+                  <GraduationCap size={18} color={colors.primary} />
                 </View>
-                <View style={styles.infoTermBody}>
-                  <Text style={styles.infoTermLine}>
-                    <Text style={styles.infoTermPrompt}>$ </Text>
-                    <Text style={styles.infoTermCommand}>whatis </Text>
-                    prompt-injection
-                  </Text>
-                  <Text style={styles.infoText}>
-                    Learn about AI security vulnerabilities
-                  </Text>
-                  <View style={styles.infoTermFooter}>
-                    <Text style={styles.infoTermPrompt}>$ </Text>
-                    <Animated.Text style={[styles.infoTermCursor, { opacity: cursorAnim }]}>
-                      █
-                    </Animated.Text>
-                  </View>
+                <View style={styles.exploreText}>
+                  <Text style={styles.exploreTitle}>Learn the basics</Text>
+                  <Text style={styles.exploreSubtitle}>Build your skills in prompt security.</Text>
                 </View>
+                <ChevronRight size={18} color={colors.textMuted} />
+              </Pressable>
+
+              <Pressable
+                style={({ pressed }) => [styles.exploreRow, pressed && { opacity: 0.85 }]}
+                onPress={() => router.push('/leaderboard')}
+              >
+                <View style={styles.exploreIconCircle}>
+                  <Trophy size={18} color={colors.starYellow} />
+                </View>
+                <View style={styles.exploreText}>
+                  <Text style={styles.exploreTitle}>Leaderboard</Text>
+                  <Text style={styles.exploreSubtitle}>See how you rank against other learners.</Text>
+                </View>
+                <ChevronRight size={18} color={colors.textMuted} />
               </Pressable>
             </>
           )}
@@ -415,7 +326,7 @@ export default function HomeScreen() {
   );
 }
 
-const createStyles = (colors: ColorPalette, theme: 'dark' | 'light') => StyleSheet.create({
+const createStyles = (colors: ColorPalette) => StyleSheet.create({
   flex: {
     flex: 1,
   },
@@ -423,263 +334,242 @@ const createStyles = (colors: ColorPalette, theme: 'dark' | 'light') => StyleShe
     flexGrow: 1,
     paddingHorizontal: 20,
   },
-  avatarSection: {
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 24,
+    marginBottom: 20,
   },
-  title: {
-    fontFamily: Fonts.display,
-    fontSize: 34,
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  orb: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  brandTitle: {
+    fontSize: 16,
+    fontWeight: '800' as const,
     color: colors.text,
-    textAlign: 'center',
-    letterSpacing: -0.5,
+    letterSpacing: 0.5,
   },
-  subtitleContainer: {
+  headerPrompt: {
+    flex: 1,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: 'right',
+    marginHorizontal: 10,
+  },
+  avatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pillLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  pillLabelText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: colors.primary,
+  },
+  nextQuestCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 16,
+  },
+  nextQuestTitle: {
+    fontSize: 22,
+    fontWeight: '800' as const,
+    color: colors.text,
+    marginBottom: 6,
+  },
+  nextQuestDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textSecondary,
+    marginBottom: 12,
+  },
+  nextQuestMeta: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: colors.textMuted,
+    marginBottom: 8,
+  },
+  nextQuestProgress: {
+    marginBottom: 16,
+  },
+  continueButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 8,
+    backgroundColor: colors.primary,
+    paddingVertical: 14,
+    borderRadius: 16,
   },
-  subtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
+  continueButtonText: {
+    fontSize: 15,
+    fontWeight: '700' as const,
+    color: colors.text,
   },
-  statsCardOuter: {
-    marginTop: 24,
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: colors.primary,
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
-  },
-  statsCard: {
-    backgroundColor: theme === 'dark' ? 'rgba(45, 31, 84, 0.45)' : 'rgba(255, 255, 255, 0.55)',
+  dailyCard: {
+    backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: theme === 'dark' ? 'rgba(196, 181, 253, 0.25)' : 'rgba(124, 58, 237, 0.2)',
+    borderColor: colors.border,
+    marginBottom: 24,
   },
-  statsRow: {
+  dailyCardHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  statItem: {
     alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 32,
-    fontWeight: '700' as const,
-    color: colors.text,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 4,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: colors.border,
-  },
-  progressSection: {
-    marginTop: 20,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  currentLevelCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  levelHeader: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  levelBadge: {
-    backgroundColor: colors.primary + '30',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  levelBadgeText: {
-    color: colors.primary,
-    fontSize: 12,
-    fontWeight: '600' as const,
-  },
-  levelDifficulty: {
-    color: colors.accent,
-    fontSize: 12,
-    fontWeight: '600' as const,
-  },
-  levelName: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '700' as const,
-    marginBottom: 6,
-  },
-  levelDescription: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    lineHeight: 20,
     marginBottom: 10,
   },
-  defenseInfo: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  defenseLabel: {
-    color: colors.textMuted,
-    fontSize: 12,
-    fontWeight: '600' as const,
-  },
-  defenseText: {
-    color: colors.textSecondary,
-    fontSize: 12,
-    flex: 1,
-  },
-  buttonContainer: {
-    marginTop: 24,
-    gap: 12,
-  },
-  playButtonGlow: {
-    borderRadius: 16,
-    shadowColor: colors.secondary,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 8,
-  },
-  playButton: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  playButtonHovered: {
-    transform: [{ scale: 1.02 }],
-  },
-  playButtonGradient: {
+  pillLabelSecondary: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 18,
+    gap: 6,
+    backgroundColor: colors.starYellow + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  pillLabelSecondaryText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: colors.starYellow,
+  },
+  xpBadge: {
+    backgroundColor: colors.primary + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  xpBadgeText: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: colors.primary,
+  },
+  dailyCardTitle: {
+    fontSize: 18,
+    fontWeight: '700' as const,
+    color: colors.text,
+    marginBottom: 10,
+  },
+  dailyCardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
-  playButtonText: {
-    color: colors.text,
-    fontSize: 20,
+  dailyCardDescription: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.textSecondary,
+  },
+  dailyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  dailyButtonDisabled: {
+    opacity: 0.5,
+  },
+  dailyButtonText: {
+    fontSize: 13,
     fontWeight: '700' as const,
+    color: colors.primary,
+  },
+  progressSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  progressSectionLabel: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: colors.text,
+  },
+  viewDetailsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  viewDetailsText: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: colors.primary,
+  },
+  exploreLabel: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: colors.text,
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  exploreRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 12,
+  },
+  exploreIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.backgroundSecondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exploreText: {
+    flex: 1,
+  },
+  exploreTitle: {
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: colors.text,
+  },
+  exploreSubtitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: 2,
   },
   buttonPressed: {
     transform: [{ scale: 0.98 }],
     opacity: 0.9,
-  },
-  secondaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 14,
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: 8,
-  },
-  secondaryButtonText: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: '600' as const,
-    flex: 1,
-  },
-  infoCard: {
-    backgroundColor: '#0D0818',
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.enchantedGreen + '30',
-    marginTop: 20,
-  },
-  infoTermHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: colors.backgroundTertiary,
-  },
-  infoTermDots: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  infoTermDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  infoTermLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  infoTermLabelText: {
-    color: colors.textMuted,
-    fontSize: 11,
-    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
-  },
-  infoTermBody: {
-    padding: 14,
-  },
-  infoTermLine: {
-    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
-    fontSize: 13,
-    color: colors.text,
-    marginBottom: 6,
-  },
-  infoTermPrompt: {
-    color: colors.enchantedGreen,
-    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
-  },
-  infoTermCommand: {
-    color: colors.secondary,
-  },
-  infoText: {
-    color: colors.textMuted,
-    fontSize: 13,
-    marginTop: 2,
-  },
-  infoTermFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  infoTermCursor: {
-    color: colors.enchantedGreen,
-    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
-    fontSize: 13,
-  },
-  footer: {
-    marginTop: 32,
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  footerText: {
-    color: colors.textMuted,
-    fontSize: 14,
-    fontWeight: '600' as const,
-    fontStyle: 'italic' as const,
-  },
-  disclaimer: {
-    color: colors.textMuted,
-    fontSize: 11,
-    marginTop: 8,
-    textAlign: 'center',
-    opacity: 0.7,
   },
   usernameContainer: {
     flex: 1,

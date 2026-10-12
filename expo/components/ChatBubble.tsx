@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import MerlinAvatar from './MerlinAvatar';
+import ExampleCard from './ExampleCard';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
 interface ChatBubbleProps {
@@ -8,9 +9,11 @@ interface ChatBubbleProps {
   isUser: boolean;
   isNew?: boolean;
   timestamp?: string;
+  example?: string;
+  turnPrompt?: string;
 }
 
-export default function ChatBubble({ message, isUser, isNew = false, timestamp }: ChatBubbleProps) {
+export default function ChatBubble({ message, isUser, isNew = false, timestamp, example, turnPrompt }: ChatBubbleProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const fadeAnim = useRef(new Animated.Value(isNew ? 0 : 1)).current;
@@ -82,6 +85,8 @@ export default function ChatBubble({ message, isUser, isNew = false, timestamp }
           <Text style={[styles.message, isUser ? styles.userText : styles.merlinText]}>
             {formatMessage(message)}
           </Text>
+          {example && <ExampleCard text={example} />}
+          {turnPrompt && <Text style={styles.turnPrompt}>{turnPrompt}</Text>}
           {timestamp && (
             <Animated.View style={{ opacity: timeFade }}>
               <Text style={[styles.timestamp, isUser ? styles.userTimestamp : styles.merlinTimestamp]}>
@@ -155,6 +160,12 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   merlinTimestamp: {
     color: colors.textMuted,
+  },
+  turnPrompt: {
+    marginTop: 10,
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: colors.primary,
   },
   boldText: {
     fontWeight: '700' as const,

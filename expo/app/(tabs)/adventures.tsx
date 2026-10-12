@@ -1,472 +1,194 @@
-import React, { useRef, useEffect, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Pressable,
-  Animated,
-  Alert,
-} from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  Compass,
-  Trophy,
-  AlertTriangle,
-  Hash,
-  Info,
-  Key,
-  Sparkles,
-  Plus,
-  Share2,
-} from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
-import * as Clipboard from 'expo-clipboard';
-import { LinearGradient } from 'expo-linear-gradient';
+import { BookOpen, FlaskConical } from 'lucide-react-native';
 import MagicBackground from '@/components/MagicBackground';
+import ScreenHeader from '@/components/ScreenHeader';
+import QuestTimelineCard from '@/components/QuestTimelineCard';
+import QuestSummaryCard from '@/components/QuestSummaryCard';
 import AdventureCard from '@/components/AdventureCard';
+import { LEVELS } from '@/constants/levels';
 import { ADVENTURES } from '@/constants/adventures';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 
+const PRACTICE_ADVENTURES = ADVENTURES.filter(a => a.id !== 'classic');
 
+type Filter = 'all' | 'story' | 'practice';
 
-interface MenuItem {
-  id: string;
-  label?: string;
-  icon?: string;
-  emoji?: string;
-  isNew?: boolean;
-  type?: 'divider' | 'section';
-}
-
-const MENU_ITEMS: MenuItem[] = [
-  { id: 'intro', label: 'Intro to Wizard Breaker', emoji: '👋' },
-  { id: 'divider1', type: 'divider' },
-  { id: 'section-games', type: 'section', label: 'WIZARD GAMES' },
-  { id: 'password-reveal', label: 'Password Reveal', icon: 'key' },
-  { id: 'agent-breaker', label: 'Agent Breaker', icon: 'sparkles', isNew: true },
-  { id: 'adventures', label: 'Wizard Adventures', icon: 'compass' },
-  { id: 'divider2', type: 'divider' },
-  { id: 'leaderboard', label: 'Leaderboard', icon: 'trophy' },
-  { id: 'learn', label: 'What is Prompt Injection?', icon: 'alert-triangle' },
-  { id: 'community', label: 'Wizard Community', icon: 'hash' },
-  { id: 'divider3', type: 'divider' },
-  { id: 'about', label: 'About Wizard Breaker', icon: 'info' },
+const FILTERS: { id: Filter; label: string; Icon?: typeof BookOpen }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'story', label: 'Story', Icon: BookOpen },
+  { id: 'practice', label: 'Practice', Icon: FlaskConical },
 ];
 
 export default function AdventuresScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
-  const { setAdventure } = useGame();
-  const bannerAnim = useRef(new Animated.Value(0)).current;
+  const { currentAdventure, setAdventure, getLevelStatus, getAdventureUnlockState, gameState } = useGame();
+  const [filter, setFilter] = useState<Filter>('all');
 
-  useEffect(() => {
-    Animated.spring(bannerAnim, {
-      toValue: 1,
-      friction: 8,
-      tension: 40,
-      useNativeDriver: true,
-    }).start();
-  }, [bannerAnim]);
+  const storyCompleted = gameState.currentAdventure === 'classic'
+    ? gameState.levelsCompleted
+    : gameState.adventureProgress['classic']?.levelsCompleted ?? 0;
 
-  const handleShareLink = async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await Clipboard.setStringAsync('https://wizardbreaker.app');
-    Alert.alert('Link Copied!', 'Share link has been copied to clipboard.');
-  };
-
-  const handleMenuPress = (id: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    switch (id) {
-      case 'intro':
-      case 'password-reveal':
-        setAdventure('classic');
-        router.push('/game');
-        break;
-      case 'agent-breaker':
-        setAdventure('agent-breaker');
-        router.push('/game');
-        break;
-      case 'leaderboard':
-        router.push('/leaderboard');
-        break;
-      case 'learn':
-        router.push('/learn');
-        break;
-      case 'adventures':
-        break;
-      default:
-        Alert.alert('Coming Soon', 'This feature is coming soon!');
-    }
-  };
-
-  const handleAdventurePress = (adventureId: string) => {
-    if (adventureId === 'classic') {
+  const handleStoryPress = () => {
+    if (currentAdventure !== 'classic') {
       setAdventure('classic');
-      router.push('/game');
-    } else {
-      setAdventure(adventureId);
-      router.push('/game');
     }
+    router.push('/game');
   };
 
-  const getIcon = (iconName: string, isActive?: boolean) => {
-    const color = isActive ? colors.primary : colors.textMuted;
-    const size = 18;
-    switch (iconName) {
-      case 'key':
-        return <Key size={size} color={color} />;
-      case 'sparkles':
-        return <Sparkles size={size} color={color} />;
-      case 'compass':
-        return <Compass size={size} color={color} />;
-      case 'trophy':
-        return <Trophy size={size} color={color} />;
-      case 'alert-triangle':
-        return <AlertTriangle size={size} color={color} />;
-      case 'hash':
-        return <Hash size={size} color={color} />;
-      case 'info':
-        return <Info size={size} color={color} />;
-      default:
-        return null;
-    }
+  const handlePracticePress = (adventureId: string) => {
+    setAdventure(adventureId);
+    router.push('/game');
   };
 
-  const renderMenuItem = (item: MenuItem, isActive: boolean = false) => {
-    if (item.type === 'divider') {
-      return <View key={item.id} style={styles.menuDivider} />;
-    }
-    if (item.type === 'section') {
-      return (
-        <Text key={item.id} style={styles.menuSection}>
-          {item.label}
-        </Text>
-      );
-    }
-    return (
-      <Pressable
-        key={item.id}
-        style={({ pressed }) => [
-          styles.menuItem,
-          isActive && styles.menuItemActive,
-          pressed && styles.menuItemPressed,
-        ]}
-        onPress={() => handleMenuPress(item.id)}
-      >
-        <View style={styles.menuItemLeft}>
-          {item.emoji ? (
-            <Text style={styles.menuEmoji}>{item.emoji}</Text>
-          ) : item.icon ? (
-            getIcon(item.icon, isActive)
-          ) : null}
-          <Text style={[styles.menuLabel, isActive && styles.menuLabelActive]}>
-            {item.label}
-          </Text>
-        </View>
-        {item.isNew && (
-          <View style={styles.newTag}>
-            <Text style={styles.newTagText}>NEW</Text>
-          </View>
-        )}
-      </Pressable>
-    );
-  };
-
-  const featuredAdventures = ADVENTURES.filter(a => !a.isLocked).slice(0, 4);
+  const showStory = filter === 'all' || filter === 'story';
+  const showPractice = filter === 'all' || filter === 'practice';
 
   return (
     <MagicBackground>
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 20 },
+          { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 110 },
         ]}
         showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
       >
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <View style={styles.logoContainer}>
-              <Text style={styles.logoText}>🧙‍♂️</Text>
-              <View>
-                <Text style={styles.brandName}>WIZARD</Text>
-                <Text style={styles.brandTagline}>BREAKER</Text>
-              </View>
-            </View>
-          </View>
-          <Pressable style={styles.shareButton} onPress={handleShareLink}>
-            <Text style={styles.shareText}>Share Wizard Link</Text>
-            <Share2 size={14} color={colors.textSecondary} />
-          </Pressable>
-        </View>
+        <ScreenHeader title="Quests" subtitle="Choose your next mission" />
 
-        <View style={styles.mainContent}>
-          <View style={styles.sidebar}>
-            {MENU_ITEMS.map((item) =>
-              renderMenuItem(item, item.id === 'adventures')
-            )}
-
-            <Animated.View
-              style={[
-                styles.promoBanner,
-                {
-                  opacity: bannerAnim,
-                  transform: [
-                    {
-                      translateY: bannerAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [20, 0],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <LinearGradient
-                colors={[colors.primary + '40', colors.mysticBlue + '30']}
-                style={styles.promoBannerGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Text style={styles.promoLabel}>NEW LEVEL!</Text>
-                <Text style={styles.promoTitle}>Wizard: Agent{'\n'}Breaker is here</Text>
-                <Text style={styles.promoDescription}>
-                  Hack AI agents and climb the leaderboard! 🏆✨
-                </Text>
-                <Pressable
-                  style={styles.promoButton}
-                  onPress={() => handleMenuPress('agent-breaker')}
-                >
-                  <Text style={styles.promoButtonText}>Play Agent Breaker</Text>
-                  <Sparkles size={14} color={colors.primary} />
-                </Pressable>
-              </LinearGradient>
-            </Animated.View>
-          </View>
-
-          <View style={styles.adventuresSection}>
-            <View style={styles.adventuresGrid}>
-              {featuredAdventures.map((adventure, index) => (
-                <AdventureCard
-                  key={adventure.id}
-                  adventure={adventure}
-                  onPress={() => handleAdventurePress(adventure.id)}
-                  index={index}
-                />
-              ))}
-            </View>
-
+        <View style={styles.filterRow}>
+          {FILTERS.map(f => (
             <Pressable
-              style={({ pressed }) => [
-                styles.moreButton,
-                pressed && styles.moreButtonPressed,
-              ]}
-              onPress={() => Alert.alert('Coming Soon', 'More adventures are on the way!')}
+              key={f.id}
+              onPress={() => setFilter(f.id)}
+              style={[styles.chip, filter === f.id && styles.chipActive]}
             >
-              <Text style={styles.moreButtonText}>More Adventures</Text>
-              <Plus size={18} color={colors.text} />
+              {f.Icon && (
+                <f.Icon
+                  size={14}
+                  color={filter === f.id ? colors.text : colors.textSecondary}
+                />
+              )}
+              <Text style={[styles.chipText, filter === f.id && styles.chipTextActive]}>
+                {f.label}
+              </Text>
             </Pressable>
-          </View>
+          ))}
         </View>
+
+        <View style={styles.hero}>
+          <Text style={styles.heroTitle}>Your journey</Text>
+          <Text style={styles.heroSubtitle}>
+            Learn, practice, and become a prompt security wizard.
+          </Text>
+        </View>
+
+        {showStory && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Story</Text>
+            {LEVELS.map((level, index) => (
+              <QuestTimelineCard
+                key={level.id}
+                level={level}
+                status={getLevelStatus(level.id)}
+                isLast={index === LEVELS.length - 1}
+                onPress={handleStoryPress}
+              />
+            ))}
+          </View>
+        )}
+
+        {showPractice && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Practice</Text>
+            <View style={styles.practiceGrid}>
+              {PRACTICE_ADVENTURES.map((adventure, index) => {
+                const unlockState = getAdventureUnlockState(adventure.id);
+                return (
+                  <AdventureCard
+                    key={adventure.id}
+                    adventure={{ ...adventure, isLocked: unlockState === 'locked' }}
+                    index={index}
+                    onPress={() => handlePracticePress(adventure.id)}
+                  />
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        <QuestSummaryCard completed={storyCompleted} total={LEVELS.length} />
       </ScrollView>
     </MagicBackground>
   );
 }
 
-const createStyles = (colors: ColorPalette) => StyleSheet.create({
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logoText: {
-    fontSize: 28,
-  },
-  brandName: {
-    fontSize: 14,
-    fontWeight: '800' as const,
-    color: colors.text,
-    letterSpacing: 2,
-  },
-  brandTagline: {
-    fontSize: 10,
-    fontWeight: '600' as const,
-    color: colors.primary,
-    letterSpacing: 1,
-  },
-  shareButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  shareText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    fontWeight: '500' as const,
-  },
-  mainContent: {
-    flex: 1,
-  },
-  sidebar: {
-    marginBottom: 24,
-  },
-  menuDivider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: 12,
-  },
-  menuSection: {
-    fontSize: 10,
-    fontWeight: '700' as const,
-    color: colors.textMuted,
-    letterSpacing: 1,
-    marginBottom: 8,
-    marginTop: 4,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 2,
-  },
-  menuItemActive: {
-    backgroundColor: colors.surface,
-  },
-  menuItemPressed: {
-    opacity: 0.7,
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  menuEmoji: {
-    fontSize: 16,
-    width: 20,
-    textAlign: 'center',
-  },
-  menuLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '500' as const,
-  },
-  menuLabelActive: {
-    color: colors.text,
-    fontWeight: '600' as const,
-  },
-  newTag: {
-    backgroundColor: colors.enchantedGreen,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  newTagText: {
-    fontSize: 9,
-    fontWeight: '700' as const,
-    color: colors.text,
-  },
-  promoBanner: {
-    marginTop: 16,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  promoBannerGradient: {
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.primary + '40',
-  },
-  promoLabel: {
-    fontSize: 10,
-    fontWeight: '700' as const,
-    color: colors.enchantedGreen,
-    letterSpacing: 1,
-    marginBottom: 8,
-  },
-  promoTitle: {
-    fontSize: 18,
-    fontWeight: '700' as const,
-    color: colors.text,
-    lineHeight: 24,
-    marginBottom: 8,
-  },
-  promoDescription: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginBottom: 16,
-  },
-  promoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.text,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-  },
-  promoButtonText: {
-    fontSize: 13,
-    fontWeight: '600' as const,
-    color: colors.background,
-  },
-  adventuresSection: {
-    flex: 1,
-  },
-  adventuresGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  moreButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.surface,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    alignSelf: 'center',
-    marginTop: 8,
-  },
-  moreButtonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  moreButtonText: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: colors.text,
-  },
-});
+const createStyles = (colors: ColorPalette) =>
+  StyleSheet.create({
+    scrollContent: {
+      flexGrow: 1,
+      paddingHorizontal: 16,
+    },
+    filterRow: {
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 24,
+    },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      borderRadius: 20,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    chipActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    chipText: {
+      fontSize: 13,
+      fontWeight: '600' as const,
+      color: colors.textSecondary,
+    },
+    chipTextActive: {
+      color: colors.text,
+    },
+    hero: {
+      marginBottom: 24,
+    },
+    heroTitle: {
+      fontSize: 22,
+      fontWeight: '800' as const,
+      color: colors.text,
+      marginBottom: 6,
+    },
+    heroSubtitle: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.textSecondary,
+    },
+    section: {
+      marginBottom: 8,
+    },
+    sectionTitle: {
+      fontSize: 13,
+      fontWeight: '700' as const,
+      color: colors.textMuted,
+      letterSpacing: 1,
+      marginBottom: 12,
+      textTransform: 'uppercase',
+    },
+    practiceGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+  });

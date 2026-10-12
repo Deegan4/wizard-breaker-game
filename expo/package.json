@@ -45,7 +45,6 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
-    "react-native-animated-glow": "^3.2.0",
     "react-native-fast-confetti": "^2.0.2",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-reanimated": "4.5.1",
@@ -73,6 +72,7 @@
     "jest-environment-jsdom": "^30.5.1",
     "jest-expo": "^57.0.5",
     "jest-extended": "^7.0.0",
+    "playwright": "^1.63.0",
     "ts-jest": "^29.4.12",
     "typescript": "~5.9.2"
   },

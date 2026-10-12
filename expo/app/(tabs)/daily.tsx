@@ -1,18 +1,22 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { 
-  Calendar, 
-  Trophy, 
-  Flame, 
-  Sparkles, 
+import { router } from 'expo-router';
+import {
+  Calendar,
+  Trophy,
+  Flame,
+  Sparkles,
   Target,
   Star,
+  History,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
+import DailyStreakCalendar from '@/components/DailyStreakCalendar';
+import { DAILY_CHALLENGE_XP_REWARD } from '@/constants/xp';
 import { useGame } from '@/contexts/GameContext';
 import { useAchievements } from '@/contexts/AchievementContext';
 import { LEVELS } from '@/constants/levels';
@@ -22,7 +26,7 @@ export default function DailyScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
-  const { gameState, setAdventure } = useGame();
+  const { gameState, startLevel } = useGame();
   const { dailyChallenge, checkDailyChallenge, stats, achievements } = useAchievements();
   
   const [isLoading, setIsLoading] = useState(true);
@@ -57,13 +61,12 @@ export default function DailyScreen() {
   const handlePlayDaily = () => {
     if (!dailyChallenge) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-    setAdventure('classic');
-    // Navigate to game with the daily challenge level
-    // The game will use the current level from gameState
+    startLevel('classic', dailyChallenge.level);
+    router.push('/game');
   };
 
-  const handleViewAchievements = () => {
-    Alert.alert('Achievements', 'Coming soon! Tap the achievements tab to see your progress.');
+  const handlePastChallenges = () => {
+    Alert.alert('Past challenges', 'Replaying earlier daily challenges is coming soon.');
   };
 
   if (isLoading) {
@@ -99,7 +102,7 @@ export default function DailyScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }
+          { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 110 }
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -170,6 +173,8 @@ export default function DailyScreen() {
           )}
         </Animated.View>
 
+        <DailyStreakCalendar />
+
         {/* Stats Row */}
         <Animated.View
           style={[
@@ -229,6 +234,22 @@ export default function DailyScreen() {
           </View>
         </Animated.View>
 
+        <View style={styles.howCard}>
+          <Text style={styles.rewardsTitle}>How it works</Text>
+          {[
+            'A new Classic level is picked for you every day.',
+            'Break the wizard to complete it and keep your streak alive.',
+            `Earn ${DAILY_CHALLENGE_XP_REWARD} XP. Replays don't change your main quest progress.`,
+          ].map((text, i) => (
+            <View key={i} style={styles.howStep}>
+              <View style={styles.howNumber}>
+                <Text style={styles.howNumberText}>{i + 1}</Text>
+              </View>
+              <Text style={styles.howText}>{text}</Text>
+            </View>
+          ))}
+        </View>
+
         {/* Play Button */}
         <Animated.View
           style={[
@@ -282,10 +303,10 @@ export default function DailyScreen() {
               styles.secondaryButton,
               pressed && styles.buttonPressed,
             ]}
-            onPress={handleViewAchievements}
+            onPress={handlePastChallenges}
           >
-            <Trophy size={20} color={colors.starYellow} />
-            <Text style={styles.secondaryButtonText}>View Achievements</Text>
+            <History size={20} color={colors.textSecondary} />
+            <Text style={styles.secondaryButtonText}>Past challenges</Text>
           </Pressable>
         </Animated.View>
 
@@ -550,6 +571,39 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   rewardHighlight: {
     color: colors.primary,
     fontWeight: '700' as const,
+  },
+  howCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    gap: 12,
+  },
+  howStep: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  howNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.primary + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  howNumberText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: '700' as const,
+  },
+  howText: {
+    flex: 1,
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 20,
   },
   buttonContainer: {
     gap: 12,

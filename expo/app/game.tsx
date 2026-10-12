@@ -25,7 +25,6 @@ import ReanimatedAnimated, {
 } from 'react-native-reanimated';
 import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { Confetti } from 'react-native-fast-confetti';
-import AnimatedGlow, { type PresetConfig } from 'react-native-animated-glow';
 import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
 import ChatBubble from '@/components/ChatBubble';
@@ -75,40 +74,6 @@ export default function GameScreen() {
     [currentAdventure]
   );
   const hintSnapPoints = useMemo(() => ['40%'], []);
-
-  const sendGlowPreset: PresetConfig = useMemo(() => ({
-    metadata: { name: 'Spellcast Glow', textColor: colors.text, category: 'Game', tags: [] },
-    states: [
-      {
-        name: 'default',
-        preset: {
-          cornerRadius: 24,
-          glowLayers: [{ colors: [colors.primary, colors.surfaceElevated], opacity: 0.15, glowSize: 8 }],
-        },
-      },
-      {
-        name: 'hover',
-        transition: 250,
-        preset: {
-          cornerRadius: 24,
-          glowLayers: [{ colors: [colors.primaryLight, colors.primary], opacity: 0.7, glowSize: 22 }],
-        },
-      },
-    ],
-  }), [colors]);
-
-  const successGlowPreset: PresetConfig = useMemo(() => ({
-    metadata: { name: 'Level Break Glow', textColor: colors.text, category: 'Game', tags: [] },
-    states: [
-      {
-        name: 'default',
-        preset: {
-          cornerRadius: 40,
-          glowLayers: [{ colors: [colors.enchantedGreen, colors.success], opacity: 0.75, glowSize: 36 }],
-        },
-      },
-    ],
-  }), [colors]);
 
   useEffect(() => {
     const isFreshStart = gameState.chatHistory.length === 0 && currentLevel;
@@ -248,8 +213,9 @@ export default function GameScreen() {
   }));
 
   const inputGlowAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: inputGlow.value,
-    ...(Platform.OS !== 'web' ? { shadowOpacity: inputGlow.value * 0.8 } : {}),
+    ...(Platform.OS !== 'web'
+      ? { shadowOpacity: inputGlow.value * 0.8 }
+      : { boxShadow: `0 0 ${inputGlow.value * 14}px ${colors.primary}` }),
   }));
 
   if (isGameComplete) {
@@ -387,24 +353,22 @@ export default function GameScreen() {
                 />
               </ReanimatedAnimated.View>
               <ReanimatedAnimated.View style={sendButtonAnimatedStyle}>
-                <AnimatedGlow preset={sendGlowPreset} activeState={canSend ? 'hover' : 'default'}>
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.sendButton,
-                      !canSend && styles.sendButtonDisabled,
-                      pressed && canSend && styles.sendButtonPressed,
-                    ]}
-                    onPress={handleSend}
-                    disabled={!canSend}
+                <Pressable
+                  style={({ pressed }) => [
+                    styles.sendButton,
+                    !canSend && styles.sendButtonDisabled,
+                    pressed && canSend && styles.sendButtonPressed,
+                  ]}
+                  onPress={handleSend}
+                  disabled={!canSend}
+                >
+                  <LinearGradient
+                    colors={canSend ? [colors.primary, colors.primaryDark] : [colors.surfaceElevated, colors.surfaceElevated]}
+                    style={styles.sendButtonGradient}
                   >
-                    <LinearGradient
-                      colors={canSend ? [colors.primary, colors.primaryDark] : [colors.surfaceElevated, colors.surfaceElevated]}
-                      style={styles.sendButtonGradient}
-                    >
-                      <Send size={20} color={canSend ? colors.text : colors.textMuted} />
-                    </LinearGradient>
-                  </Pressable>
-                </AnimatedGlow>
+                    <Send size={20} color={canSend ? colors.text : colors.textMuted} />
+                  </LinearGradient>
+                </Pressable>
               </ReanimatedAnimated.View>
             </View>
           </View>
@@ -428,26 +392,26 @@ export default function GameScreen() {
             ]}
           >
             <View style={styles.successCard}>
-              <View pointerEvents="none" style={styles.successConfetti}>
-                <Confetti
-                  autoplay
-                  count={90}
-                  fadeOutOnEnd
-                  colors={[colors.enchantedGreen, colors.starYellow, colors.primary]}
-                  containerStyle={StyleSheet.absoluteFill}
-                />
-              </View>
+              {Platform.OS !== 'web' && (
+                <View pointerEvents="none" style={styles.successConfetti}>
+                  <Confetti
+                    autoplay
+                    count={90}
+                    fadeOutOnEnd
+                    colors={[colors.enchantedGreen, colors.starYellow, colors.primary]}
+                    containerStyle={StyleSheet.absoluteFill}
+                  />
+                </View>
+              )}
               <MerlinAvatar size={64} state="success" />
-              <AnimatedGlow preset={successGlowPreset} activeState="default">
-                <LinearGradient
-                  colors={[colors.enchantedGreen, colors.success]}
-                  style={styles.successIconBg}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <CheckCircle size={56} color="#fff" />
-                </LinearGradient>
-              </AnimatedGlow>
+              <LinearGradient
+                colors={[colors.enchantedGreen, colors.success]}
+                style={styles.successIconBg}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <CheckCircle size={56} color="#fff" />
+              </LinearGradient>
               <Text style={styles.successTitle}>Level Complete!</Text>
               <Text style={styles.successSpell}>
                 The spell was: {currentLevel?.spell}
@@ -768,6 +732,9 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
     marginTop: 16,
+    ...(Platform.OS !== 'web'
+      ? { shadowColor: colors.enchantedGreen, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.75, shadowRadius: 18 }
+      : { boxShadow: `0 0 28px ${colors.enchantedGreen}` }),
   },
   successTitle: {
     fontSize: 24,
