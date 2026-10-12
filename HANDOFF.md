@@ -1,4 +1,34 @@
-# Handoff — Wizard Breaker Game session (2026-09-22)
+# Handoff — Wizard Breaker Game
+
+## Latest session (2026-10-11): Phases 2–3 shipped — commit `eb2b85a`, pushed to `origin/main`
+
+All redesign screens are built. `bun x tsc --noEmit`, `bun run lint`, `bun run test` (41/41) clean. **Not yet visually verified** against the 5 mockups (Playwright is in `package.json` but Chromium isn't installed; machine is low-RAM).
+
+What landed:
+- **New components** (`expo/components/`): `QuestTimelineCard`, `QuestSummaryCard`, `ScreenHeader`, `StatRow`, `ExampleCard`, `QuickReplyChips`, `LessonRow`, `LearningPathHero`, `DailyStreakCalendar`. `ChatBubble` gained optional `example` / `turnPrompt` props (backward-compatible with `game.tsx`). The plan's `ProgressRing` was skipped — nothing needed it.
+- **Quests tab** (`app/(tabs)/adventures.tsx`): All/Story/Practice chips; Story = the 12 Classic levels as timeline cards, Practice = the Adventures.
+- **Home** (`app/(tabs)/index.tsx`): redesigned; daily challenge uses `startLevel('classic', level)`.
+- **Learn tab** (`learn.tsx`): `LearningPathHero` + `LessonRow` list (locked/current/completed via `isLessonUnlocked` + `progress`), then "Explore more topics" which is the old article content, kept intact.
+- **Lesson screen** (`app/lesson/[id].tsx`, registered in `app/_layout.tsx`): chat-style "Wizard · AI tutor". Fully scripted — no LLM. Quick replies `hint` / `another-example` / `red-flags` are help replies that do NOT advance the step; any other reply calls `completeStep` and advances; the last step calls `completeLesson`. Free text gets a cycling `GENERIC_NUDGE_RESPONSES` line.
+- **Daily tab** (`daily.tsx`): "Start Daily Challenge" now actually works (`startLevel` + `router.push('/game')`; it was a dead button). Added `DailyStreakCalendar` and a "How it works" card. "View Achievements" (pointed at a nonexistent tab) became a "Past challenges" "coming soon" alert.
+- **Bug fix**: `LessonContext.completeLesson` now no-ops for an already-completed lesson (replaying used to re-award XP every time).
+- The commit also swept in already-present uncommitted work: web-compat edits to `game.tsx`/`victory.tsx` (removed `react-native-animated-glow` dep, confetti native-only, web `boxShadow` glow), `playwright` in `package.json`, `darkMode: 'class'` in `tailwind.config.js`, `leaderboard`/`playground` tweaks.
+
+Gotchas:
+- Typed routes: `expo/.expo/types/router.d.ts` is generated + gitignored and was stale, which made `router.push({pathname:'/lesson/[id]'})` fail `tsc`. It was moved to `router.d.ts.stale`; `expo start` regenerates it. CI typechecks without it, so CI was never affected.
+- Untracked scratch files `expo/_inspect.mjs`, `_playtest*.mjs`, `_shot.mjs` are deliberately NOT committed — Playwright scratch scripts; delete or reuse.
+- GitHub says the repo moved to `https://github.com/Deegan4/wizard-breaker-game.git`; the old remote URL still redirects. Consider `git remote set-url origin`.
+- `CLAUDE.md` / `AGENTS.md` "Routing & screens" sections don't mention `app/lesson/[id].tsx` yet or the `(tabs)` redesign; update them.
+
+### Next steps
+1. Visually verify Quests, Home, Learn, lesson chat and Daily against the 5 mockups (install Chromium for Playwright, or run the web preview) and fix any layout drift.
+2. Phase 4 verification from `C:\Users\deega\.claude\plans\jaunty-bouncing-creek.md`, including a manual lesson run-through (complete one lesson, confirm XP awards once, next lesson unlocks, replay doesn't re-award).
+3. Update `CLAUDE.md`/`AGENTS.md` routing docs.
+4. Optional: real "Past challenges" replay; the pending `winget upgrade Anthropic.ClaudeCode` needs all Claude Code sessions closed first.
+
+---
+
+## Earlier session (2026-09-22): Phases 0–1
 
 Branch: `main` (direct commits, no PR — different from the prior session's `claude/next-steps-byvc1c`, which is unrelated pre-existing work still sitting on that remote branch, untouched this session).
 
@@ -37,6 +67,6 @@ This session ran on the user's own Windows desktop (via `/remote-control`), not 
 - **No Playwright/Chromium preinstalled**, so the run-skill's headless visual verification hasn't been exercised this session (Phase 0/1 had no UI changes, so it wasn't needed yet). **Phase 3 will need it** — either install Playwright + a browser locally first, or find another way to visually compare the rebuilt screens against the 5 reference mockups.
 - **`git push` needs interactive GitHub auth** (Credential Manager device-code/browser flow) — fails outright from a backgrounded/non-interactive shell. Has to be run where the user can complete the browser prompt themselves.
 
-## Suggested next steps
+## Suggested next steps (superseded)
 
-Continue with **Phase 2/3** from the plan: build the new shared components (quest timeline card, lesson row, streak calendar, example card, quick-reply chips) and rebuild the screens one at a time — Quests tab first, per the plan's stated order, each as its own reviewable checkpoint. Before starting Phase 3's UI work, sort out local visual verification (Playwright install) since that's the only way to actually confirm a rebuilt screen matches its reference mockup.
+Phase 2/3 were completed in the latest session above; see its "Next steps".
