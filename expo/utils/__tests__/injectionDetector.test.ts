@@ -370,3 +370,13 @@ describe('injectionDetector - near-miss feedback', () => {
     expect(result.blockedTechnique).toBe('direct request');
   });
 });
+
+describe('STARTER_PROMPTS', () => {
+  const { STARTER_PROMPTS } = jest.requireActual('@/constants/levels') as typeof import('@/constants/levels');
+
+  it.each(STARTER_PROMPTS)('"%s" does not beat any Classic level past 1', (prompt) => {
+    for (let level = 2; level <= 12; level++) {
+      expect(detectInjection(prompt, level, 0).isSuccessful).toBe(false);
+    }
+  });
+});

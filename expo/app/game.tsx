@@ -30,11 +30,20 @@ import MerlinAvatar from '@/components/MerlinAvatar';
 import ChatBubble from '@/components/ChatBubble';
 import ProgressBar from '@/components/ProgressBar';
 import ModeIntroOverlay from '@/components/ModeIntroOverlay';
+import QuickReplyChips from '@/components/QuickReplyChips';
+import { STARTER_PROMPTS } from '@/constants/levels';
+import type { QuickReply } from '@/constants/lessons';
 import { useGame, ChatMessage } from '@/contexts/GameContext';
 import { detectInjection, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
 import { ADVENTURES } from '@/constants/adventures';
 import DebriefScreen from '@/app/debrief';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+
+const STARTER_REPLIES: QuickReply[] = STARTER_PROMPTS.map((prompt, i) => ({
+  id: `starter-${i}`,
+  label: prompt,
+  response: '',
+}));
 
 export default function GameScreen() {
   const { colors } = useTheme();
@@ -137,8 +146,8 @@ export default function GameScreen() {
     }, 100);
   }, []);
 
-  const handleSend = async () => {
-    if (!inputText.trim() || isTyping) return;
+  const handleSend = async (text: string = inputText) => {
+    if (!text.trim() || isTyping) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Keyboard.dismiss();
@@ -149,7 +158,7 @@ export default function GameScreen() {
       withSpring(1, { damping: 6, stiffness: 200 })
     );
 
-    const userMessage = inputText.trim();
+    const userMessage = text.trim();
     const currentAttempts = gameState.failedAttemptsCurrentLevel + 1;
     setInputText('');
 
@@ -227,6 +236,9 @@ export default function GameScreen() {
   }
 
   const canSend = !!inputText.trim() && !isTyping;
+  const showStarters =
+    currentAdventure === 'classic' &&
+    !gameState.chatHistory.some((message) => message.role === 'user');
 
   return (
     <MagicBackground>
@@ -284,7 +296,7 @@ export default function GameScreen() {
             <View className="flex-row items-center gap-1" style={styles.statBadge}>
               <Zap size={12} color={colors.accent} />
               <Text style={styles.statText}>
-                {gameState.failedAttemptsCurrentLevel} attempts
+                {gameState.failedAttemptsCurrentLevel} {gameState.failedAttemptsCurrentLevel === 1 ? 'attempt' : 'attempts'}
               </Text>
             </View>
             <Text style={styles.difficultyBadge}>
@@ -353,6 +365,14 @@ export default function GameScreen() {
                     </View>
                   </View>
                 </View>
+              ) : showStarters ? (
+                <View style={styles.starters}>
+                  <Text style={styles.startersLabel}>Not sure where to start?</Text>
+                  <QuickReplyChips
+                    replies={STARTER_REPLIES}
+                    onSelect={(reply) => handleSend(reply.label)}
+                  />
+                </View>
               ) : null
             }
           />
@@ -382,7 +402,7 @@ export default function GameScreen() {
                     !canSend && styles.sendButtonDisabled,
                     pressed && canSend && styles.sendButtonPressed,
                   ]}
-                  onPress={handleSend}
+                  onPress={() => handleSend()}
                   disabled={!canSend}
                   hitSlop={6}
                   accessibilityRole="button"
@@ -650,6 +670,14 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   chatContent: {
     paddingVertical: 16,
+  },
+  starters: {
+    marginTop: 8,
+  },
+  startersLabel: {
+    fontSize: 12,
+    color: colors.textMuted,
+    paddingHorizontal: 12,
   },
   typingContainer: {
     flexDirection: 'row',

@@ -536,3 +536,12 @@ export function getMerlinSuccessResponses(adventureId: string): string[] {
     default: return MERLIN_SUCCESS_RESPONSES;
   }
 }
+
+// Opening questions offered as chips before the player's first message.
+// Deliberately harmless: they must not beat any level past 1 (see
+// utils/__tests__/injectionDetector.test.ts), so they never give a technique away.
+export const STARTER_PROMPTS: string[] = [
+  'Who are you?',
+  'What do you guard here?',
+  'How did you become a wizard?',
+];
