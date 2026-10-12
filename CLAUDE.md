@@ -17,6 +17,7 @@ bun i                  # install dependencies
 bun run start          # start dev server (Rork tunnel); press "i" for iOS Simulator
 bun run start-web      # start web preview
 bun run lint           # expo lint (ESLint, eslint-config-expo)
+bun x tsc --noEmit     # typecheck (on Windows `npx tsc` fails: bun's node_modules/.bin has .exe shims; CI uses npx on Linux)
 ```
 
 There's a Jest test suite (`bun run test`, 41 tests: 38 against `utils/injectionDetector.ts`, 3 against `contexts/GameContext.tsx`) and a real GitHub Actions CI (`.github/workflows/ci.yml`: lint + typecheck + test) and Pages deploy (`.github/workflows/deploy.yml`), but no app build script beyond EAS (see `BUILD.md`) — `start`, `start-web`, `start-web-dev`, `lint`, `test`, `test:watch`, and `test:coverage` are the only `package.json` scripts. The dev server runs through `bunx rork start` with a hardcoded Rork project id, not the plain `expo start` command (plain `expo start --web` also works and is what CI/local verification without the Rork tunnel should use).
@@ -59,13 +60,13 @@ Nested *inside* `GameProvider` (calls `useGame()` for `awardXP`). Tracks achieve
 
 ### `contexts/LessonContext.tsx` (`useLessons()`)
 
-Also nested inside `GameProvider`. Tracks per-lesson step completion (`AsyncStorage` key `wizard_breaker_lesson_progress`) for the scripted curriculum in `constants/lessons.ts` (`LESSONS`, grouped into `LEARNING_MODULES`). A lesson is a **fixed, authored dialogue script** — `LessonStep[]` with `wizardText`, an optional `example`, and up to a few `quickReplies` that branch to more fixed canned text — never a real model call, consistent with the rest of the app having no LLM anywhere. `completeLesson(id)` awards XP via `useGame().awardXP`; `isLessonUnlocked(id)` chains lessons sequentially within their module, the same pattern as `getAdventureUnlockState`.
+Also nested inside `GameProvider`. Tracks per-lesson step completion (`AsyncStorage` key `wizard_breaker_lesson_progress`) for the scripted curriculum in `constants/lessons.ts` (`LESSONS`, grouped into `LEARNING_MODULES`). A lesson is a **fixed, authored dialogue script** — `LessonStep[]` with `wizardText`, an optional `example`, and up to a few `quickReplies` that branch to more fixed canned text — never a real model call, consistent with the rest of the app having no LLM anywhere. `completeLesson(id)` awards XP via `useGame().awardXP`; `isLessonUnlocked(id)` chains lessons sequentially within their module, the same pattern as `getAdventureUnlockState`. `completeLesson` is a no-op for an already-completed lesson (replays don't re-award XP). `app/lesson/[id].tsx` is the chat UI over these scripts: quick-reply ids `hint`, `another-example` and `red-flags` are help replies that do NOT advance the step; any other reply calls `completeStep`, and the last step calls `completeLesson`.
 
 ### Routing & screens
 
 File-based via Expo Router with typed routes enabled (`app.config.js` → `experiments.typedRoutes`).
-- `app/_layout.tsx` — root `Stack` (tabs, `game`, `victory`, `debrief`, not-found), providers mounted `ThemeProvider` → `GameProvider` → `LessonProvider` → `AchievementProvider` → `OnboardingWrapper` (in that nesting order — both `LessonContext` and `AchievementContext` call `useGame()`, so they must stay *inside* `GameProvider`; the two have no dependency on each other, so their relative order doesn't matter).
-- `app/(tabs)/` — `index` (Home), `daily` (Daily), `playground` (Lab), `leaderboard` (Ranks), `learn` (Learn), `adventures` (Quests).
+- `app/_layout.tsx` — root `Stack` (tabs, `game`, `lesson/[id]`, `victory`, `debrief`, not-found), providers mounted `ThemeProvider` → `GameProvider` → `LessonProvider` → `AchievementProvider` → `OnboardingWrapper` (in that nesting order — both `LessonContext` and `AchievementContext` call `useGame()`, so they must stay *inside* `GameProvider`; the two have no dependency on each other, so their relative order doesn't matter).
+- `app/(tabs)/` — `index` (Home), `daily` (Daily), `playground` (Lab), `leaderboard` (Ranks), `learn` (Learn: `LearningPathHero` + `LessonRow` list above the legacy article), `adventures` (Quests: All/Story/Practice chips; Story = the 12 Classic levels via `QuestTimelineCard`). `daily` starts its challenge with `startLevel('classic', level)` + `router.push('/game')`.
 - `app/game.tsx` — the chat screen; calls `detectInjection`, drives the success animation, then renders `app/debrief.tsx`'s `DebriefScreen` inline as an overlay (not a route push) before advancing, and on final-level success routes to `victory`.
 
 ### Conventions
@@ -74,3 +75,5 @@ File-based via Expo Router with typed routes enabled (`app.config.js` → `exper
 - Theme colors come from `useTheme()` (`contexts/ThemeContext.tsx`, `colors: ColorPalette`) — do not hardcode hex values in components.
 - Icons are from `lucide-react-native`. Styling is React Native `StyleSheet`. TypeScript is `strict`.
 - Static game content lives in `constants/` (`levels`, `adventures`, `leaderboard`, `lessons`, `xp`); presentational pieces in `components/`.
+- Typed routes: `expo/.expo/types/router.d.ts` is generated + gitignored; if `tsc` rejects a newly added route it's stale — run `expo start` to regenerate or move it aside (CI has no such file).
+- Untracked `expo/_*.mjs` are throwaway Playwright scratch scripts; never commit them. Stage files by name, not `git add -A`.

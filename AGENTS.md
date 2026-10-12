@@ -45,7 +45,7 @@ Each level `checkLevelN` first rejects prompts matching **all lower-level attack
 
 | File | Purpose |
 |------|---------|
-| `app/_layout.tsx` | Root Stack: tabs, `game`, `victory`, not-found |
+| `app/_layout.tsx` | Root Stack: tabs, `game`, `lesson/[id]`, `victory`, not-found |
 | `app/(tabs)/_layout.tsx` | Tab bar config (Home, Daily, Lab, Ranks, Learn, Quests) |
 | `app/game.tsx` | Chat screen, calls `detectInjection`, success animation |
 | `app/victory.tsx` | Win screen with stats, share, replay |
@@ -62,7 +62,7 @@ Each level `checkLevelN` first rejects prompts matching **all lower-level attack
 
 ```bash
 bun run lint       # must pass (0 errors)
-npx tsc --noEmit   # type check (run from expo/)
+npx tsc --noEmit   # type check (run from expo/; on Windows use `bun x tsc --noEmit`)
 bun run test       # 41 tests must pass
 ```
 
