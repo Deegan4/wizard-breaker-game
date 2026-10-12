@@ -34,7 +34,9 @@ import QuickReplyChips from '@/components/QuickReplyChips';
 import { getStarterPrompts } from '@/constants/levels';
 import type { QuickReply } from '@/constants/lessons';
 import { useGame, ChatMessage } from '@/contexts/GameContext';
-import { detectInjection, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
+import { detectInjection, findBlockedTechnique, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
+import DefensePanel from '@/components/DefensePanel';
+import { useWideLayout } from '@/hooks/useWideLayout';
 import { ADVENTURES } from '@/constants/adventures';
 import DebriefScreen from '@/app/debrief';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
@@ -56,6 +58,8 @@ export default function GameScreen() {
 
   const [inputText, setInputText] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
+  const [blockedTechnique, setBlockedTechnique] = useState<string | undefined>();
+  const isWide = useWideLayout();
   const [isTyping, setIsTyping] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showShield, setShowShield] = useState(false);
@@ -95,6 +99,7 @@ export default function GameScreen() {
       addMessage({ role: 'merlin', content: greeting });
     }
     setShowModeIntro(gameState.currentLevel === 1 && gameState.chatHistory.length === 0);
+    setBlockedTechnique(undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.currentLevel, currentAdventure]);
 
@@ -181,6 +186,11 @@ export default function GameScreen() {
     );
 
     incrementAttempts(result.isSuccessful);
+    setBlockedTechnique(
+      !result.isSuccessful && currentAdventure === 'classic'
+        ? findBlockedTechnique(userMessage, gameState.currentLevel)
+        : undefined
+    );
     addMessage({ role: 'merlin', content: result.response });
     scrollToBottom();
 
@@ -289,6 +299,8 @@ export default function GameScreen() {
           </Pressable>
         </View>
 
+        <View style={isWide ? styles.wideBody : styles.flex}>
+        <View style={styles.flex}>
         <View className="px-4 py-3" style={styles.progressContainer}>
           <ProgressBar
             current={gameState.levelsCompleted}
@@ -329,11 +341,11 @@ export default function GameScreen() {
             keyExtractor={(message) => message.id}
             className="flex-1"
             style={styles.chatContainer}
-            contentContainerStyle={styles.chatContent}
+            contentContainerStyle={[styles.chatContent, isWide && styles.wideColumn]}
             showsVerticalScrollIndicator={false}
             onContentSizeChange={scrollToBottom}
             ListHeaderComponent={
-              currentLevel ? (
+              currentLevel && !isWide ? (
                 <View style={styles.missionCard}>
                   <View style={styles.missionHeader}>
                     <Target size={14} color={colors.primaryLight} />
@@ -382,7 +394,7 @@ export default function GameScreen() {
 
           <View className="px-4 pt-3" style={[styles.inputContainer, { paddingBottom: insets.bottom + 10 }]}>
             <ReanimatedAnimated.View
-              style={[styles.composer, inputFocused && styles.composerFocused, inputGlowAnimatedStyle]}
+              style={[styles.composer, inputFocused && styles.composerFocused, isWide && styles.wideColumn, inputGlowAnimatedStyle]}
             >
               <TextInput
                 style={styles.input}
@@ -423,6 +435,19 @@ export default function GameScreen() {
             </ReanimatedAnimated.View>
           </View>
         </KeyboardAvoidingView>
+        </View>
+        {isWide && (
+          <DefensePanel
+            level={gameState.currentLevel}
+            isClassic={currentAdventure === 'classic'}
+            difficulty={currentLevel?.difficulty}
+            defenseDescription={currentLevel?.defenseDescription}
+            attempts={gameState.failedAttemptsCurrentLevel}
+            blockedTechnique={blockedTechnique}
+            onOpenHint={handleOpenHint}
+          />
+        )}
+        </View>
 
         {showSuccess && (
           <Animated.View
@@ -670,6 +695,15 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   chatContainer: {
     flex: 1,
+  },
+  wideBody: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  wideColumn: {
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
   },
   chatContent: {
     paddingVertical: 16,

@@ -18,6 +18,7 @@ import ScreenHeader from '@/components/ScreenHeader';
 import { LEVELS } from '@/constants/levels';
 import { detectInjection, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { CONTENT_MAX_WIDTH } from '@/hooks/useWideLayout';
 
 const EXAMPLE_PROMPTS = [
   { 
@@ -419,6 +420,9 @@ export default function PlaygroundScreen() {
 const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: 'center',
     paddingHorizontal: 20,
   },
   selectorCard: {

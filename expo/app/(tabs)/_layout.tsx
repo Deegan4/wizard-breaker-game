@@ -5,6 +5,8 @@ import { Platform, StyleSheet } from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useWideLayout } from "@/hooks/useWideLayout";
+import SidebarNav from "@/components/SidebarNav";
 
 const BAR_HEIGHT = 64;
 const BAR_RADIUS = 32;
@@ -13,6 +15,23 @@ const BAR_SIDE_MARGIN = 16;
 export default function TabLayout() {
   const { colors, theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const isWide = useWideLayout();
+
+  if (isWide) {
+    return (
+      <Tabs
+        tabBar={(props) => <SidebarNav {...props} />}
+        screenOptions={{ headerShown: false, tabBarPosition: 'left' }}
+      >
+        <Tabs.Screen name="index" options={{ title: "Home" }} />
+        <Tabs.Screen name="daily" options={{ title: "Daily" }} />
+        <Tabs.Screen name="playground" options={{ title: "Lab" }} />
+        <Tabs.Screen name="leaderboard" options={{ title: "Ranks" }} />
+        <Tabs.Screen name="learn" options={{ title: "Learn" }} />
+        <Tabs.Screen name="adventures" options={{ title: "Quests" }} />
+      </Tabs>
+    );
+  }
 
   return (
     <Tabs

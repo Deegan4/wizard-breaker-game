@@ -21,6 +21,7 @@ import { useGame } from '@/contexts/GameContext';
 import { useAchievements } from '@/contexts/AchievementContext';
 import { LEVELS } from '@/constants/levels';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { CONTENT_MAX_WIDTH } from '@/hooks/useWideLayout';
 
 export default function DailyScreen() {
   const { colors } = useTheme();
@@ -300,6 +301,9 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: 'center',
     paddingHorizontal: 20,
   },
   loadingContainer: {

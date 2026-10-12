@@ -8,6 +8,7 @@ import MagicBackground from '@/components/MagicBackground';
 import ScreenHeader from '@/components/ScreenHeader';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { CONTENT_MAX_WIDTH } from '@/hooks/useWideLayout';
 import { LEVELS } from '@/constants/levels';
 
 // Podium renders 2nd, 1st, 3rd left-to-right so the winner sits in the middle.
@@ -176,6 +177,9 @@ export default function LeaderboardScreen() {
 const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: 'center',
     paddingHorizontal: 20,
   },
   podiumContainer: {
