@@ -1,4 +1,3 @@
-import { useReduceMotion } from '@/hooks/useReduceMotion';
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
@@ -11,7 +10,6 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import {
@@ -29,6 +27,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ProfileSheet from '@/components/ProfileSheet';
 import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
 import ProgressBar from '@/components/ProgressBar';
@@ -40,6 +39,7 @@ import { LEARNING_MODULES } from '@/constants/lessons';
 import { DAILY_CHALLENGE_XP_REWARD } from '@/constants/xp';
 import { LEVELS } from '@/constants/levels';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 const { width } = Dimensions.get('window');
 
@@ -60,6 +60,7 @@ export default function HomeScreen() {
   }, [checkDailyChallenge]);
 
   const reduceMotion = useReduceMotion();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     if (reduceMotion) return;
@@ -196,7 +197,7 @@ export default function HomeScreen() {
                 </Text>
                 <Pressable
                   style={styles.avatar}
-                  onPress={() => Alert.alert('Coming Soon', 'Profiles are on the way!')}
+                  onPress={() => setProfileOpen(true)}
                   accessibilityRole="button"
                   accessibilityLabel="Profile"
                   hitSlop={8}
@@ -253,7 +254,7 @@ export default function HomeScreen() {
                   </View>
                   <Text style={styles.dailyCardTitle}>{challengeLevel.name}</Text>
                   <View style={styles.dailyCardFooter}>
-                    <Text style={styles.dailyCardDescription} numberOfLines={2}>
+                    <Text style={styles.dailyCardDescription} numberOfLines={3}>
                       {challengeLevel.description}
                     </Text>
                     <Pressable
@@ -335,6 +336,7 @@ export default function HomeScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+      <ProfileSheet visible={profileOpen} onClose={() => setProfileOpen(false)} />
     </MagicBackground>
   );
 }
@@ -492,18 +494,16 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     marginBottom: 10,
   },
   dailyCardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
   dailyCardDescription: {
-    flex: 1,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 14,
+    lineHeight: 20,
     color: colors.textSecondary,
   },
   dailyButton: {
     minHeight: 44,
+    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,

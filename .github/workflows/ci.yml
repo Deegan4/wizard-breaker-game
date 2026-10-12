@@ -44,3 +44,25 @@ jobs:
         with:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
+
+  web-smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./expo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Build web export
+        run: npx expo export --platform web
+      - name: Serve export and run smoke test
+        run: |
+          npx serve -s dist -l 4173 &
+          npx wait-on http://localhost:4173
+          BASE_URL=http://localhost:4173 node e2e/smoke.mjs

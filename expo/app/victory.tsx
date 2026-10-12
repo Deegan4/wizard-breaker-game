@@ -10,6 +10,7 @@ import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 import { Fonts } from '@/constants/fonts';
+import { LEVELS } from '@/constants/levels';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 export default function VictoryScreen() {
@@ -94,7 +95,7 @@ export default function VictoryScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       await Share.share({
-        message: `🧙‍♂️ I defeated Merlin in Wizard Breaker! Completed all 8 levels in ${gameState.totalAttempts} attempts. Can you beat my score? ✨`,
+        message: `🧙‍♂️ I defeated Merlin in Wizard Breaker! Completed all ${LEVELS.length} levels in ${gameState.totalAttempts} attempts. Can you beat my score? ✨`,
       });
     } catch (error) {
       console.log('Share error:', error);
@@ -197,7 +198,7 @@ export default function VictoryScreen() {
           <Text style={styles.statsTitle}>Your Achievement</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>8/8</Text>
+              <Text style={styles.statValue}>{LEVELS.length}/{LEVELS.length}</Text>
               <Text style={styles.statLabel}>Levels</Text>
             </View>
             <View style={styles.statDivider} />

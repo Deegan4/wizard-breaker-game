@@ -13,6 +13,7 @@ import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 import { Fonts } from '@/constants/fonts';
+import { getTotalLevelsForAdventure } from '@/utils/injectionDetector';
 
 interface DebriefScreenProps {
   onContinue: () => void;
@@ -264,7 +265,7 @@ export default function DebriefScreen({
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{gameState.levelsCompleted + 1}/12</Text>
+              <Text style={styles.statValue}>{gameState.levelsCompleted + 1}/{getTotalLevelsForAdventure(adventure)}</Text>
               <Text style={styles.statLabel}>Levels Completed</Text>
             </View>
           </View>

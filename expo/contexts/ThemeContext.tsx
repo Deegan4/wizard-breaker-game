@@ -153,7 +153,7 @@ const lightColors: ColorPalette = {
     xl: '0 20px 25px rgba(0, 0, 0, 0.15)',
   },
 
-  overlay: 'rgba(248, 250, 252, 0.95)',
+  overlay: 'rgba(248, 250, 252, 0.98)',
 };
 
 const THEME_STORAGE_KEY = 'wizard_breaker_theme_mode';

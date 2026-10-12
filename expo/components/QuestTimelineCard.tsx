@@ -61,6 +61,8 @@ export default function QuestTimelineCard({
 
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={`Level ${level.id}, ${level.name}, ${isLocked ? 'locked' : isCompleted ? 'completed' : isCurrent ? 'current' : 'available'}`}
+          accessibilityState={{ disabled: isLocked }}
           onPress={handlePress}
           style={({ pressed }) => [
             styles.card,
@@ -107,7 +109,7 @@ export default function QuestTimelineCard({
           {isLocked && (
             <View style={styles.statusPill}>
               <Lock size={12} color={colors.textMuted} />
-              <Text style={styles.statusPillText}>Locked</Text>
+              <Text style={styles.statusPillText}>Beat level {level.id - 1} to unlock</Text>
             </View>
           )}
         </Pressable>
@@ -185,7 +187,7 @@ const createStyles = (colors: ColorPalette) =>
       borderWidth: 2,
     },
     cardLocked: {
-      opacity: 0.55,
+      opacity: 0.85,
     },
     cardPressed: {
       transform: [{ scale: 0.98 }],
@@ -204,7 +206,7 @@ const createStyles = (colors: ColorPalette) =>
       fontWeight: '700' as const,
     },
     textLocked: {
-      color: colors.textMuted,
+      color: colors.textSecondary,
     },
     xpBadge: {
       backgroundColor: colors.starYellow + '25',

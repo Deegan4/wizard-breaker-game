@@ -1,4 +1,3 @@
-import { useReduceMotion } from '@/hooks/useReduceMotion';
 import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Circle, Path, G, Polygon } from 'react-native-svg';
@@ -12,6 +11,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 export type MerlinAvatarState = 'idle' | 'thinking' | 'success';
 

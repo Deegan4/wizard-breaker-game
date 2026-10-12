@@ -10,6 +10,8 @@ interface DetectionResult {
   isSuccessful: boolean;
   response: string;
   revealedSpell?: string;
+  /** Classic only: the already-warded technique that blocked this attempt, if any. */
+  blockedTechnique?: string;
 }
 
 export const directAskPatterns = [
@@ -406,6 +408,33 @@ export function checkLevel12(prompt: string): boolean {
   return hasLevel12Trigger || isCreative;
 }
 
+/**
+ * Classic defense layers in the order they are introduced. `wardedFrom` is the first
+ * level whose checker rejects the category (mirrors the cumulative checks above).
+ */
+export const CLASSIC_DEFENSE_LAYERS: { technique: string; wardedFrom: number; patterns: RegExp[] }[] = [
+  { technique: 'direct request', wardedFrom: 2, patterns: directAskPatterns },
+  { technique: 'ignore-your-instructions', wardedFrom: 3, patterns: ignoreInstructionPatterns },
+  { technique: 'roleplay', wardedFrom: 4, patterns: roleplayPatterns },
+  { technique: 'encoding', wardedFrom: 5, patterns: encodingPatterns },
+  { technique: 'hypothetical', wardedFrom: 6, patterns: hypotheticalPatterns },
+  { technique: 'emotional manipulation', wardedFrom: 7, patterns: manipulationPatterns },
+  { technique: 'fill-in-the-blank', wardedFrom: 7, patterns: completionPatterns },
+  { technique: 'output-format', wardedFrom: 8, patterns: outputPatterns },
+  { technique: 'step-by-step reasoning', wardedFrom: 9, patterns: chainOfThoughtPatterns },
+  { technique: 'persona switch', wardedFrom: 10, patterns: personaPatterns },
+  { technique: 'self-reflection', wardedFrom: 11, patterns: recursivePatterns },
+  { technique: 'rule-rewriting', wardedFrom: 12, patterns: constitutionalPatterns },
+];
+
+/** Returns the first already-warded technique a Classic prompt uses at this level, if any. */
+export function findBlockedTechnique(prompt: string, level: number): string | undefined {
+  const layer = CLASSIC_DEFENSE_LAYERS.find(
+    l => l.wardedFrom <= level && l.patterns.some(p => p.test(prompt))
+  );
+  return layer?.technique;
+}
+
 function getClassicChecker(level: number): ((p: string) => boolean) | null {
   const checkers = [
     checkLevel1,
@@ -738,16 +767,24 @@ export function detectInjection(
     };
   }
 
+  const blockedTechnique =
+    !adventureChecker && classicChecker ? findBlockedTechnique(normalizedPrompt, level) : undefined;
+  const nearMiss = blockedTechnique
+    ? `\n\n🛡️ *Merlin spotted a ${blockedTechnique} attempt. He has warded against that since an earlier level, so try a technique he hasn't seen yet.*`
+    : '';
+
   if (failedAttempts > 0 && failedAttempts % 5 === 0) {
     return {
       isSuccessful: false,
-      response: `${getRandomResponse(getMerlinFailureResponses(adventureId))}\n\n💡 *Hint: ${currentLevel.hint}*`,
+      response: `${getRandomResponse(getMerlinFailureResponses(adventureId))}${nearMiss}\n\n💡 *Hint: ${currentLevel.hint}*`,
+      blockedTechnique,
     };
   }
 
   return {
     isSuccessful: false,
-    response: getRandomResponse(getMerlinFailureResponses(adventureId)),
+    response: `${getRandomResponse(getMerlinFailureResponses(adventureId))}${nearMiss}`,
+    blockedTechnique,
   };
 }
 

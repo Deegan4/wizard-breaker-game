@@ -186,7 +186,7 @@ export default function DailyScreen() {
           ]}
         >
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{challengeLevel?.spell}</Text>
+            <Text style={styles.statValue}>{isCompleted ? challengeLevel?.spell : '? ? ?'}</Text>
             <Text style={styles.statLabel}>Today&apos;s Spell</Text>
           </View>
           <View style={styles.statDivider} />
@@ -217,7 +217,7 @@ export default function DailyScreen() {
               <View style={styles.rewardIcon}>
                 <Star size={20} color={colors.starYellow} fill={colors.starYellow} />
               </View>
-              <Text style={styles.rewardText}>Discover Spell: <Text style={styles.rewardHighlight}>{challengeLevel?.spell}</Text></Text>
+              <Text style={styles.rewardText}>{isCompleted ? 'Spell discovered: ' : 'Discover the secret spell'}{isCompleted && <Text style={styles.rewardHighlight}>{challengeLevel?.spell}</Text>}</Text>
             </View>
             <View style={styles.rewardItem}>
               <View style={styles.rewardIcon}>
@@ -326,7 +326,7 @@ export default function DailyScreen() {
               <Text style={styles.quickStatLabel}>Play Time</Text>
             </View>
             <View style={styles.quickStat}>
-              <Text style={styles.quickStatValue}>{gameState.levelsCompleted}/12</Text>
+              <Text style={styles.quickStatValue}>{gameState.currentAdventure === 'classic' ? gameState.levelsCompleted : gameState.adventureProgress.classic?.levelsCompleted ?? 0}/{LEVELS.length}</Text>
               <Text style={styles.quickStatLabel}>Levels Done</Text>
             </View>
             <View style={styles.quickStat}>

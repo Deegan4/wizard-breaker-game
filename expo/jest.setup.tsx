@@ -74,11 +74,20 @@ jest.mock('@nkzw/create-context-hook', () => {
   return { __esModule: true, default: createContextHook };
 });
 
+// In-memory async store so providers' load/save effects (`.then`/`.catch`) behave like the real module.
+const mockAsyncStore = new Map<string, string>();
 jest.mock('@react-native-async-storage/async-storage', () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
+  getItem: jest.fn((key: string) => Promise.resolve(mockAsyncStore.get(key) ?? null)),
+  setItem: jest.fn((key: string, value: string) => {
+    mockAsyncStore.set(key, value);
+    return Promise.resolve();
+  }),
+  removeItem: jest.fn((key: string) => {
+    mockAsyncStore.delete(key);
+    return Promise.resolve();
+  }),
 }));
+beforeEach(() => mockAsyncStore.clear());
 
 declare const global: typeof globalThis & { __DEV__: boolean };
 global.__DEV__ = true;

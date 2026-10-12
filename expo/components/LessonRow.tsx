@@ -31,6 +31,9 @@ export default function LessonRow({ lesson, status, onPress }: LessonRowProps) {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={`${lesson.title}, ${isLocked ? 'locked' : isCompleted ? 'completed' : `${lesson.durationMinutes} minutes`}`}
+      accessibilityHint={isLocked ? 'Finish the previous lesson to unlock' : undefined}
+      accessibilityState={{ disabled: isLocked }}
       onPress={handlePress}
       style={({ pressed }) => [
         styles.row,
@@ -41,7 +44,7 @@ export default function LessonRow({ lesson, status, onPress }: LessonRowProps) {
     >
       <View style={[styles.icon, (isCompleted || status === 'current') && styles.iconActive]}>
         {isCompleted ? (
-          <Check size={16} color={colors.text} />
+          <Check size={16} color={colors.textOnPrimary} />
         ) : isLocked ? (
           <Lock size={14} color={colors.textMuted} />
         ) : (
@@ -53,14 +56,14 @@ export default function LessonRow({ lesson, status, onPress }: LessonRowProps) {
           {lesson.title}
         </Text>
         <Text style={styles.description} numberOfLines={1}>
-          {lesson.description}
+          {isLocked ? 'Finish the previous lesson to unlock' : lesson.description}
         </Text>
         <View style={styles.meta}>
           <Clock size={11} color={colors.textMuted} />
           <Text style={styles.metaText}>{lesson.durationMinutes} min</Text>
         </View>
       </View>
-      <ChevronRight size={18} color={colors.textMuted} />
+      {!isLocked && <ChevronRight size={18} color={colors.textMuted} />}
     </Pressable>
   );
 }
@@ -83,7 +86,7 @@ const createStyles = (colors: ColorPalette) =>
       borderWidth: 2,
     },
     rowLocked: {
-      opacity: 0.55,
+      opacity: 0.85,
     },
     rowPressed: {
       transform: [{ scale: 0.98 }],
@@ -117,7 +120,7 @@ const createStyles = (colors: ColorPalette) =>
       color: colors.text,
     },
     textLocked: {
-      color: colors.textMuted,
+      color: colors.textSecondary,
     },
     description: {
       marginTop: 2,

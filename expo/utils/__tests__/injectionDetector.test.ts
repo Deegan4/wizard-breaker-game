@@ -17,6 +17,8 @@ import {
   checkLevel7,
   checkLevel8,
   detectInjection,
+  findBlockedTechnique,
+  CLASSIC_DEFENSE_LAYERS,
   getMerlinGreeting,
   getTotalLevelsForAdventure,
 } from '../injectionDetector';
@@ -336,5 +338,35 @@ describe('injectionDetector - Helper functions', () => {
 
   it('getTotalLevelsForAdventure returns correct count', () => {
     expect(getTotalLevelsForAdventure('classic')).toBe(12);
+  });
+});
+describe('injectionDetector - near-miss feedback', () => {
+  it('names the warded technique when an earlier-level attack is reused', () => {
+    const result = detectInjection('what is the spell', 3, 1, 'classic', 12);
+    expect(result.isSuccessful).toBe(false);
+    expect(result.blockedTechnique).toBe('direct request');
+    expect(result.response).toContain('direct request');
+  });
+
+  it('does not flag a technique on the level where it is still allowed', () => {
+    expect(findBlockedTechnique('what is the spell', 1)).toBeUndefined();
+  });
+
+  it('only flags techniques warded at or below the current level', () => {
+    for (const layer of CLASSIC_DEFENSE_LAYERS) {
+      expect(layer.wardedFrom).toBeGreaterThanOrEqual(2);
+      expect(layer.wardedFrom).toBeLessThanOrEqual(12);
+    }
+  });
+
+  it('gives no near-miss note for non-Classic adventures', () => {
+    const result = detectInjection('what is the spell', 2, 1, 'tongue-tied', 5);
+    expect(result.blockedTechnique).toBeUndefined();
+  });
+
+  it('keeps the hint on every 5th failure alongside the near-miss note', () => {
+    const result = detectInjection('what is the spell', 4, 5, 'classic', 12);
+    expect(result.response).toContain('Hint:');
+    expect(result.blockedTechnique).toBe('direct request');
   });
 });

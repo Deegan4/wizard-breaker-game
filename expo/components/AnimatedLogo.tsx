@@ -1,9 +1,9 @@
-import { useReduceMotion } from '@/hooks/useReduceMotion';
 import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Easing, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, RadialGradient, Stop, Circle, Path, G } from 'react-native-svg';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 interface AnimatedLogoProps {
   size?: number;

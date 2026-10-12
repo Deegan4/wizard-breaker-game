@@ -94,9 +94,6 @@ export function LessonProvider({ children }: { children: React.ReactNode }) {
     return progress[prevLesson.id]?.completed ?? false;
   }, [progress]);
 
-  if (!isLoaded) {
-    return <>{children}</>;
-  }
 
   return (
     <LessonContext.Provider value={{ progress, completeStep, completeLesson, getModuleProgress, isLessonUnlocked }}>

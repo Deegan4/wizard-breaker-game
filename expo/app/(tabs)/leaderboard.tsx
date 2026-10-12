@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Trophy, Medal, Award, Crown, Target, Share2 } from 'lucide-react-native';
+import { Trophy, Medal, Award, Crown, Target, Share2, ArrowLeft } from 'lucide-react-native';
+import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import MagicBackground from '@/components/MagicBackground';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { LEVELS } from '@/constants/levels';
 
 export default function LeaderboardScreen() {
   const { colors } = useTheme();
@@ -43,7 +45,7 @@ export default function LeaderboardScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       await Share.share({
-        message: `I've completed ${gameState.levelsCompleted}/8 levels in Wizard Breaker! Can you beat Merlin the wizard? 🧙‍♂️✨`,
+        message: `I've completed ${gameState.levelsCompleted}/${LEVELS.length} levels in Wizard Breaker! Can you beat Merlin the wizard? 🧙‍♂️✨`,
       });
     } catch (error) {
       console.log('Share error:', error);
@@ -61,10 +63,19 @@ export default function LeaderboardScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        <Pressable
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
+          style={styles.backButton}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Back"
+        >
+          <ArrowLeft size={22} color={colors.textSecondary} />
+        </Pressable>
         <View style={styles.header}>
           <Trophy size={32} color={colors.starYellow} />
-          <Text style={styles.title}>Leaderboard</Text>
-          <Text style={styles.subtitle}>Top Wizard Breakers</Text>
+          <Text style={styles.title} accessibilityRole="header">Leaderboard</Text>
+          <Text style={styles.subtitle}>Practice rankings, saved on this device</Text>
         </View>
 
         {topThree.length > 0 && (
@@ -85,7 +96,7 @@ export default function LeaderboardScreen() {
                   {topThree[1].username}
                 </Text>
                 <Text style={styles.podiumScore}>
-                  {topThree[1].levelsCompleted}/8
+                  {topThree[1].levelsCompleted}/{LEVELS.length}
                 </Text>
                 <View style={[styles.podiumBar, { height: 80, backgroundColor: '#C0C0C030' }]} />
               </View>
@@ -107,7 +118,7 @@ export default function LeaderboardScreen() {
                   {topThree[0].username}
                 </Text>
                 <Text style={[styles.podiumScore, styles.firstPlaceScore]}>
-                  {topThree[0].levelsCompleted}/8
+                  {topThree[0].levelsCompleted}/{LEVELS.length}
                 </Text>
                 <View style={[styles.podiumBar, { height: 100, backgroundColor: '#FFD70030' }]} />
               </View>
@@ -129,7 +140,7 @@ export default function LeaderboardScreen() {
                   {topThree[2].username}
                 </Text>
                 <Text style={styles.podiumScore}>
-                  {topThree[2].levelsCompleted}/8
+                  {topThree[2].levelsCompleted}/{LEVELS.length}
                 </Text>
                 <View style={[styles.podiumBar, { height: 60, backgroundColor: '#CD7F3230' }]} />
               </View>
@@ -175,7 +186,7 @@ export default function LeaderboardScreen() {
               
               <View style={styles.scoreContainer}>
                 <Text style={styles.score}>{entry.levelsCompleted}</Text>
-                <Text style={styles.scoreLabel}>/8</Text>
+                <Text style={styles.scoreLabel}>/{LEVELS.length}</Text>
               </View>
             </View>
           ))}
@@ -201,6 +212,12 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   header: {
     alignItems: 'center',

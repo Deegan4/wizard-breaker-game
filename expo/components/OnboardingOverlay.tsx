@@ -219,7 +219,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
           {
             opacity: cardAnim.interpolate({
               inputRange: [0, 1],
-              outputRange: [0, 0.8],
+              outputRange: [0, 1],
             }),
           },
         ]}
@@ -305,7 +305,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
           style={[
             styles.card,
             {
-              backgroundColor: step.background,
+              backgroundColor: colors.surface,
               borderColor: step.borderColor,
               opacity: cardAnim,
               transform: [
@@ -319,6 +319,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
             },
           ]}
         >
+          <View pointerEvents="none" style={[styles.cardTint, { backgroundColor: step.background }]} />
           <View style={styles.cardIconContainer}>
             <View style={[
               styles.cardIconBg,
@@ -330,7 +331,7 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
 
           <Text style={[
             styles.cardTitle,
-            { color: step.iconColor },
+            { color: colors.text },
           ]}>
             {step.title}
           </Text>
@@ -374,25 +375,8 @@ export default function OnboardingOverlay({ visible, onComplete }: OnboardingOve
             </Text>
           </Pressable>
 
-          <View style={styles.dotContainer}>
-            {ONBOARDING_STEPS.map((_, index) => (
-              <Animated.View
-                key={index}
-                style={[
-                  styles.dot,
-                  index === currentStep ? styles.dotActive : styles.dotInactive,
-                  {
-                    backgroundColor: index === currentStep ? step.iconColor : colors.borderLight,
-                    transform: [
-                      {
-                        scale: index === currentStep ? 1.3 : 1,
-                      },
-                    ],
-                  },
-                ]}
-              />
-            ))}
-          </View>
+          {/* Progress is shown by the bar above; a spacer keeps Back/Next at the edges. */}
+          <View style={styles.dotContainer} />
 
           {currentStep === ONBOARDING_STEPS.length - 1 ? (
             <Pressable
@@ -497,6 +481,10 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     shadowRadius: 16,
     elevation: 8,
   },
+  cardTint: {
+    ...StyleSheet.absoluteFill,
+    borderRadius: 18,
+  },
   cardIconContainer: {
     alignItems: 'center',
     marginBottom: 16,
@@ -555,13 +543,6 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  dotActive: {},
-  dotInactive: {},
   navButtonPrimary: {
     borderRadius: 12,
     overflow: 'hidden',

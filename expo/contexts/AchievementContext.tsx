@@ -234,7 +234,7 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
     // Generate new daily challenge - use a specific level for today
     const dayOfYear = Math.floor((Date.now() - new Date(today + 'T00:00:00').getTime()) / (1000 * 60 * 60 * 24)) + 
       new Date(today).getDate();
-    const level = ((dayOfYear - 1) % 12) + 1; // Cycle through 12 levels
+    const level = ((dayOfYear - 1) % LEVELS.length) + 1; // Cycle through the Classic levels
     const seed = new Date(today).getDate();
 
     const newChallenge: DailyChallenge = {
@@ -333,9 +333,6 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
     });
   }, [stats.completedDates]);
 
-  if (!isLoaded) {
-    return <>{children}</>;
-  }
 
   return (
     <AchievementContext.Provider value={{

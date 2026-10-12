@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, User } from 'lucide-react-native';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import ProfileSheet from '@/components/ProfileSheet';
 
 interface ScreenHeaderProps {
   title: string;
@@ -12,6 +13,7 @@ interface ScreenHeaderProps {
 export default function ScreenHeader({ title, subtitle }: ScreenHeaderProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -31,13 +33,14 @@ export default function ScreenHeader({ title, subtitle }: ScreenHeaderProps) {
       </View>
       <Pressable
         style={styles.avatar}
-        onPress={() => Alert.alert('Coming Soon', 'Profiles are on the way!')}
+        onPress={() => setProfileOpen(true)}
         accessibilityRole="button"
         accessibilityLabel="Profile"
         hitSlop={8}
       >
         <User size={18} color={colors.textMuted} />
       </Pressable>
+      <ProfileSheet visible={profileOpen} onClose={() => setProfileOpen(false)} />
     </View>
   );
 }

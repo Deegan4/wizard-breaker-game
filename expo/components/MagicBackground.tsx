@@ -1,8 +1,8 @@
-import { useReduceMotion } from '@/hooks/useReduceMotion';
 import React, { useEffect, useRef, useMemo } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { useReduceMotion } from '@/hooks/useReduceMotion';
 
 const { width, height } = Dimensions.get('window');
 

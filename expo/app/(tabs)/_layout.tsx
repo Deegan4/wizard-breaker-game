@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Home, Trophy, BookOpen, Compass, Calendar, Terminal } from "lucide-react-native";
+import { Home, BookOpen, Compass, Calendar, Terminal } from "lucide-react-native";
 import React from "react";
 import { Platform, StyleSheet } from "react-native";
 import { BlurView } from "expo-blur";
@@ -86,7 +86,8 @@ export default function TabLayout() {
         name="leaderboard"
         options={{
           title: "Ranks",
-          tabBarIcon: ({ color, size }) => <Trophy color={color} size={size} />,
+          // Reached from Home ("View details" / Explore); kept out of the bar to stay at 5 tabs.
+          href: null,
         }}
       />
       <Tabs.Screen
