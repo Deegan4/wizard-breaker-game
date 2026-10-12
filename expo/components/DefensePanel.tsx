@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Shield, ShieldAlert, Lock, Target, ScrollText, Zap } from 'lucide-react-native';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 import { CLASSIC_DEFENSE_LAYERS } from '@/utils/injectionDetector';
+import BreachMeter from '@/components/BreachMeter';
 
 interface DefensePanelProps {
   level: number;
@@ -10,6 +11,8 @@ interface DefensePanelProps {
   difficulty?: string;
   defenseDescription?: string;
   attempts: number;
+  breachScore?: number;
+  bestBreachScore?: number;
   /** Technique (from findBlockedTechnique) that blocked the player's latest attempt, if any. */
   blockedTechnique?: string;
   onOpenHint: () => void;
@@ -28,6 +31,8 @@ export default function DefensePanel({
   difficulty,
   defenseDescription,
   attempts,
+  breachScore,
+  bestBreachScore,
   blockedTechnique,
   onOpenHint,
 }: DefensePanelProps) {
@@ -46,6 +51,8 @@ export default function DefensePanel({
         <Text style={styles.missionText}>Get Merlin to reveal the secret spell.</Text>
         {!!defenseDescription && <Text style={styles.missionSub}>{defenseDescription}</Text>}
       </View>
+
+      {isClassic && <BreachMeter score={breachScore} best={bestBreachScore} />}
 
       {isClassic && (
         <View style={styles.card}>

@@ -36,6 +36,8 @@ import type { QuickReply } from '@/constants/lessons';
 import { useGame, ChatMessage } from '@/contexts/GameContext';
 import { detectInjection, findBlockedTechnique, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
 import DefensePanel from '@/components/DefensePanel';
+import BreachMeter from '@/components/BreachMeter';
+import { scoreBreach } from '@/utils/breachScore';
 import { useWideLayout } from '@/hooks/useWideLayout';
 import { ADVENTURES } from '@/constants/adventures';
 import DebriefScreen from '@/app/debrief';
@@ -59,6 +61,8 @@ export default function GameScreen() {
   const [inputText, setInputText] = useState('');
   const [inputFocused, setInputFocused] = useState(false);
   const [blockedTechnique, setBlockedTechnique] = useState<string | undefined>();
+  const [breach, setBreach] = useState<{ last?: number; best?: number }>({});
+  const isClassic = currentAdventure === 'classic';
   const isWide = useWideLayout();
   const [isTyping, setIsTyping] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -100,6 +104,7 @@ export default function GameScreen() {
     }
     setShowModeIntro(gameState.currentLevel === 1 && gameState.chatHistory.length === 0);
     setBlockedTechnique(undefined);
+    setBreach({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.currentLevel, currentAdventure]);
 
@@ -186,8 +191,12 @@ export default function GameScreen() {
     );
 
     incrementAttempts(result.isSuccessful);
+    if (isClassic) {
+      const score = scoreBreach(userMessage, gameState.currentLevel, result.isSuccessful);
+      setBreach((prev) => ({ last: score, best: Math.max(prev.best ?? 0, score) }));
+    }
     setBlockedTechnique(
-      !result.isSuccessful && currentAdventure === 'classic'
+      !result.isSuccessful && isClassic
         ? findBlockedTechnique(userMessage, gameState.currentLevel)
         : undefined
     );
@@ -314,6 +323,7 @@ export default function GameScreen() {
                 {gameState.failedAttemptsCurrentLevel} {gameState.failedAttemptsCurrentLevel === 1 ? 'attempt' : 'attempts'}
               </Text>
             </View>
+            {isClassic && !isWide && <BreachMeter compact score={breach.last} best={breach.best} />}
             <Text style={styles.difficultyBadge}>
               {currentLevel?.difficulty}
             </Text>
@@ -439,7 +449,9 @@ export default function GameScreen() {
         {isWide && (
           <DefensePanel
             level={gameState.currentLevel}
-            isClassic={currentAdventure === 'classic'}
+            isClassic={isClassic}
+            breachScore={breach.last}
+            bestBreachScore={breach.best}
             difficulty={currentLevel?.difficulty}
             defenseDescription={currentLevel?.defenseDescription}
             attempts={gameState.failedAttemptsCurrentLevel}
