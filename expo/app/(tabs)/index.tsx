@@ -14,7 +14,6 @@ import {
 import { router } from 'expo-router';
 import {
   Wand2,
-  Sparkles,
   ChevronRight,
   ArrowRight,
   BookOpen,
@@ -22,12 +21,11 @@ import {
   Flame,
   Trophy,
   GraduationCap,
-  User,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import ProfileSheet from '@/components/ProfileSheet';
+import ScreenHeader from '@/components/ScreenHeader';
 import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
 import ProgressBar from '@/components/ProgressBar';
@@ -60,7 +58,6 @@ export default function HomeScreen() {
   }, [checkDailyChallenge]);
 
   const reduceMotion = useReduceMotion();
-  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     if (reduceMotion) return;
@@ -180,31 +177,10 @@ export default function HomeScreen() {
             </View>
           ) : (
             <>
-              <View style={styles.header}>
-                <View style={styles.headerLeft}>
-                  <LinearGradient
-                    colors={[colors.primaryLight, colors.primary, colors.primaryDark]}
-                    style={styles.orb}
-                    start={{ x: 0.2, y: 0.2 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <Sparkles size={16} color={colors.textOnPrimary} />
-                  </LinearGradient>
-                  <Text style={styles.brandTitle}>WIZARD BREAKER</Text>
-                </View>
-                <Text style={styles.headerPrompt} numberOfLines={1}>
-                  Ready for a challenge?
-                </Text>
-                <Pressable
-                  style={styles.avatar}
-                  onPress={() => setProfileOpen(true)}
-                  accessibilityRole="button"
-                  accessibilityLabel="Profile"
-                  hitSlop={8}
-                >
-                  <User size={18} color={colors.textMuted} />
-                </Pressable>
-              </View>
+              <ScreenHeader
+                title="Wizard Breaker"
+                subtitle={gameState.username ? `Welcome back, ${gameState.username}` : 'Ready for a challenge?'}
+              />
 
               {currentLevel && (
                 <View style={styles.nextQuestCard}>
@@ -336,7 +312,6 @@ export default function HomeScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
-      <ProfileSheet visible={profileOpen} onClose={() => setProfileOpen(false)} />
     </MagicBackground>
   );
 }
@@ -348,46 +323,6 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  orb: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandTitle: {
-    fontSize: 16,
-    fontWeight: '800' as const,
-    color: colors.text,
-    letterSpacing: 0.5,
-  },
-  headerPrompt: {
-    flex: 1,
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'right',
-    marginHorizontal: 10,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   pillLabel: {
     flexDirection: 'row',

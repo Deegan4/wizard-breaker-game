@@ -43,6 +43,12 @@ export interface ColorPalette {
   mysticBlue: string;
   enchantedGreen: string;
 
+  medal: {
+    gold: string;
+    silver: string;
+    bronze: string;
+  };
+
   gradient: {
     primary: readonly [string, string, string];
     magic: readonly [string, string, string];
@@ -91,6 +97,12 @@ const darkColors: ColorPalette = {
   mysticBlue: '#3B82F6',
   enchantedGreen: '#22C55E',
 
+  medal: {
+    gold: '#FFD700',
+    silver: '#C0C0C0',
+    bronze: '#CD7F32',
+  },
+
   gradient: {
     primary: ['#4C1D95', '#7C3AED', '#8B5CF6'] as const,
     magic: ['#0A0618', '#1E1040', '#2D1B69'] as const,
@@ -138,6 +150,12 @@ const lightColors: ColorPalette = {
   magicPurple: '#8B5CF6',
   mysticBlue: '#3B82F6',
   enchantedGreen: '#10B981',
+
+  medal: {
+    gold: '#F59E0B',
+    silver: '#94A3B8',
+    bronze: '#B45309',
+  },
 
   gradient: {
     primary: ['#EDE9FE', '#DDD6FE', '#C4B5FD'] as const,

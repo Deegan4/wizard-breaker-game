@@ -1,13 +1,18 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Trophy, Medal, Award, Crown, Target, Share2, ArrowLeft } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { Medal, Award, Crown, Share2 } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import MagicBackground from '@/components/MagicBackground';
+import ScreenHeader from '@/components/ScreenHeader';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 import { LEVELS } from '@/constants/levels';
+
+// Podium renders 2nd, 1st, 3rd left-to-right so the winner sits in the middle.
+const PODIUM_ORDER = [1, 0, 2];
+const PODIUM_HEIGHTS = [104, 76, 56];
 
 export default function LeaderboardScreen() {
   const { colors } = useTheme();
@@ -18,26 +23,26 @@ export default function LeaderboardScreen() {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Crown size={24} color="#FFD700" />;
+        return <Crown size={22} color={colors.medal.gold} />;
       case 2:
-        return <Medal size={24} color="#C0C0C0" />;
+        return <Medal size={22} color={colors.medal.silver} />;
       case 3:
-        return <Award size={24} color="#CD7F32" />;
+        return <Award size={22} color={colors.medal.bronze} />;
       default:
-        return <Target size={20} color={colors.textMuted} />;
+        return <Text style={styles.rankNumber}>{rank}</Text>;
     }
   };
 
   const getRankColor = (rank: number): string => {
     switch (rank) {
       case 1:
-        return '#FFD700';
+        return colors.medal.gold;
       case 2:
-        return '#C0C0C0';
+        return colors.medal.silver;
       case 3:
-        return '#CD7F32';
+        return colors.medal.bronze;
       default:
-        return colors.textMuted;
+        return colors.border;
     }
   };
 
@@ -63,88 +68,48 @@ export default function LeaderboardScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Pressable
-          onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
-          style={styles.backButton}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel="Back"
-        >
-          <ArrowLeft size={22} color={colors.textSecondary} />
-        </Pressable>
-        <View style={styles.header}>
-          <Trophy size={32} color={colors.starYellow} />
-          <Text style={styles.title} accessibilityRole="header">Leaderboard</Text>
-          <Text style={styles.subtitle}>Practice rankings, saved on this device</Text>
-        </View>
+        <ScreenHeader title="Ranks" subtitle="Practice rankings, saved on this device" />
 
         {topThree.length > 0 && (
           <View style={styles.podiumContainer}>
-            {topThree.length > 1 && (
-              <View style={[styles.podiumItem, styles.secondPlace]}>
-                <View style={styles.podiumAvatarContainer}>
-                  <View style={[styles.podiumAvatar, { borderColor: '#C0C0C0' }]}>
-                    <Text style={styles.podiumAvatarText}>
-                      {topThree[1].username.charAt(0).toUpperCase()}
+            {PODIUM_ORDER.filter((i) => i < topThree.length).map((i) => {
+              const entry = topThree[i];
+              const rank = i + 1;
+              const medal = getRankColor(rank);
+              const isFirst = rank === 1;
+              return (
+                <View key={entry.id} style={styles.podiumItem}>
+                  {isFirst && <Crown size={26} color={medal} style={styles.crown} />}
+                  <View
+                    style={[
+                      styles.podiumAvatar,
+                      isFirst && styles.firstPlaceAvatar,
+                      { borderColor: medal },
+                    ]}
+                  >
+                    <Text style={[styles.podiumAvatarText, isFirst && styles.firstPlaceText]}>
+                      {entry.username.charAt(0).toUpperCase()}
                     </Text>
                   </View>
-                  <View style={styles.rankBadge}>
-                    <Text style={styles.rankBadgeText}>2</Text>
-                  </View>
+                  <Text
+                    style={[styles.podiumName, entry.isCurrentUser && styles.currentUserText]}
+                    numberOfLines={1}
+                  >
+                    {entry.isCurrentUser ? 'You' : entry.username}
+                  </Text>
+                  <Text style={styles.podiumScore}>
+                    {entry.levelsCompleted}
+                    <Text style={styles.podiumScoreTotal}>/{LEVELS.length}</Text>
+                  </Text>
+                  <LinearGradient
+                    colors={[medal + '55', medal + '10']}
+                    style={[styles.podiumBar, { height: PODIUM_HEIGHTS[i], borderColor: medal + '66' }]}
+                  >
+                    <Text style={[styles.podiumRank, { color: medal }]}>{rank}</Text>
+                  </LinearGradient>
                 </View>
-                <Text style={styles.podiumName} numberOfLines={1}>
-                  {topThree[1].username}
-                </Text>
-                <Text style={styles.podiumScore}>
-                  {topThree[1].levelsCompleted}/{LEVELS.length}
-                </Text>
-                <View style={[styles.podiumBar, { height: 80, backgroundColor: '#C0C0C030' }]} />
-              </View>
-            )}
-            
-            {topThree.length > 0 && (
-              <View style={[styles.podiumItem, styles.firstPlace]}>
-                <View style={styles.crownContainer}>
-                  <Crown size={28} color="#FFD700" />
-                </View>
-                <View style={styles.podiumAvatarContainer}>
-                  <View style={[styles.podiumAvatar, styles.firstPlaceAvatar, { borderColor: '#FFD700' }]}>
-                    <Text style={[styles.podiumAvatarText, styles.firstPlaceText]}>
-                      {topThree[0].username.charAt(0).toUpperCase()}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={[styles.podiumName, styles.firstPlaceName]} numberOfLines={1}>
-                  {topThree[0].username}
-                </Text>
-                <Text style={[styles.podiumScore, styles.firstPlaceScore]}>
-                  {topThree[0].levelsCompleted}/{LEVELS.length}
-                </Text>
-                <View style={[styles.podiumBar, { height: 100, backgroundColor: '#FFD70030' }]} />
-              </View>
-            )}
-            
-            {topThree.length > 2 && (
-              <View style={[styles.podiumItem, styles.thirdPlace]}>
-                <View style={styles.podiumAvatarContainer}>
-                  <View style={[styles.podiumAvatar, { borderColor: '#CD7F32' }]}>
-                    <Text style={styles.podiumAvatarText}>
-                      {topThree[2].username.charAt(0).toUpperCase()}
-                    </Text>
-                  </View>
-                  <View style={[styles.rankBadge, { backgroundColor: '#CD7F32' }]}>
-                    <Text style={styles.rankBadgeText}>3</Text>
-                  </View>
-                </View>
-                <Text style={styles.podiumName} numberOfLines={1}>
-                  {topThree[2].username}
-                </Text>
-                <Text style={styles.podiumScore}>
-                  {topThree[2].levelsCompleted}/{LEVELS.length}
-                </Text>
-                <View style={[styles.podiumBar, { height: 60, backgroundColor: '#CD7F3230' }]} />
-              </View>
-            )}
+              );
+            })}
           </View>
         )}
 
@@ -176,7 +141,7 @@ export default function LeaderboardScreen() {
                     styles.username,
                     entry.isCurrentUser && styles.currentUserText
                   ]}>
-                    {entry.username} {entry.isCurrentUser && '(You)'}
+                    {entry.username}{entry.isCurrentUser ? ' (You)' : ''}
                   </Text>
                   <Text style={styles.attempts}>
                     {entry.totalAttempts} attempts
@@ -200,7 +165,7 @@ export default function LeaderboardScreen() {
           ]}
           onPress={handleShare}
         >
-          <Share2 size={20} color={colors.text} />
+          <Share2 size={20} color={colors.textOnPrimary} />
           <Text style={styles.shareButtonText}>Share Your Progress</Text>
         </Pressable>
       </ScrollView>
@@ -213,67 +178,34 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 20,
   },
-  backButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700' as const,
-    color: colors.text,
-    marginTop: 12,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 4,
-  },
   podiumContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'flex-end',
-    marginBottom: 32,
-    paddingHorizontal: 10,
+    gap: 10,
+    marginTop: 8,
+    marginBottom: 28,
   },
   podiumItem: {
     alignItems: 'center',
     flex: 1,
   },
-  firstPlace: {
-    marginHorizontal: 8,
-  },
-  secondPlace: {
-    marginBottom: 20,
-  },
-  thirdPlace: {
-    marginBottom: 20,
-  },
-  crownContainer: {
-    marginBottom: 8,
-  },
-  podiumAvatarContainer: {
-    position: 'relative',
+  crown: {
+    marginBottom: 6,
   },
   podiumAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
   },
   firstPlaceAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: 4,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
   },
   podiumAvatarText: {
     fontSize: 18,
@@ -281,53 +213,45 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.text,
   },
   firstPlaceText: {
-    fontSize: 24,
-  },
-  rankBadge: {
-    position: 'absolute',
-    bottom: -4,
-    right: -4,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: '#C0C0C0',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: colors.background,
-  },
-  rankBadgeText: {
-    fontSize: 12,
-    fontWeight: '700' as const,
-    color: colors.background,
+    fontSize: 26,
   },
   podiumName: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600' as const,
     color: colors.text,
     marginTop: 8,
-    maxWidth: 80,
+    alignSelf: 'stretch',
     textAlign: 'center',
-  },
-  firstPlaceName: {
-    fontSize: 16,
-    maxWidth: 100,
   },
   podiumScore: {
     fontSize: 18,
-    fontWeight: '700' as const,
-    color: colors.textSecondary,
-    marginTop: 4,
+    fontWeight: '800' as const,
+    color: colors.text,
+    marginTop: 2,
   },
-  firstPlaceScore: {
-    fontSize: 22,
-    color: colors.starYellow,
+  podiumScoreTotal: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: colors.textMuted,
   },
   podiumBar: {
     width: '100%',
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    marginTop: 12,
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    marginTop: 10,
+    alignItems: 'center',
+    paddingTop: 10,
+  },
+  podiumRank: {
+    fontSize: 28,
+    fontWeight: '900' as const,
+  },
+  rankNumber: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+    color: colors.textMuted,
   },
   listContainer: {
     backgroundColor: colors.surface,
