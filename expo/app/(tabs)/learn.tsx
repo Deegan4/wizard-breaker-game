@@ -15,6 +15,7 @@ import ScreenHeader from '@/components/ScreenHeader';
 import LearningPathHero from '@/components/LearningPathHero';
 import LessonRow, { type LessonStatus } from '@/components/LessonRow';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { CONTENT_MAX_WIDTH } from '@/hooks/useWideLayout';
 import { useLessons } from '@/contexts/LessonContext';
 import { LEARNING_MODULES, getLessonsForModule, type Lesson } from '@/constants/lessons';
 
@@ -320,6 +321,9 @@ export default function LearnScreen() {
 const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: 'center',
     paddingHorizontal: 20,
   },
   lessonList: {

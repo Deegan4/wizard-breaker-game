@@ -12,7 +12,7 @@ import {
   Keyboard,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
-import { Send, ArrowLeft, RefreshCw, Zap, CheckCircle, Shield, ScrollText } from 'lucide-react-native';
+import { Send, ArrowLeft, RefreshCw, Zap, CheckCircle, Shield, ScrollText, Target } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -30,8 +30,15 @@ import MerlinAvatar from '@/components/MerlinAvatar';
 import ChatBubble from '@/components/ChatBubble';
 import ProgressBar from '@/components/ProgressBar';
 import ModeIntroOverlay from '@/components/ModeIntroOverlay';
+import QuickReplyChips from '@/components/QuickReplyChips';
+import { getStarterPrompts } from '@/constants/levels';
+import type { QuickReply } from '@/constants/lessons';
 import { useGame, ChatMessage } from '@/contexts/GameContext';
-import { detectInjection, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
+import { detectInjection, findBlockedTechnique, getMerlinGreeting, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
+import DefensePanel from '@/components/DefensePanel';
+import BreachMeter from '@/components/BreachMeter';
+import { scoreBreach } from '@/utils/breachScore';
+import { useWideLayout } from '@/hooks/useWideLayout';
 import { ADVENTURES } from '@/constants/adventures';
 import DebriefScreen from '@/app/debrief';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
@@ -52,6 +59,11 @@ export default function GameScreen() {
   } = useGame();
 
   const [inputText, setInputText] = useState('');
+  const [inputFocused, setInputFocused] = useState(false);
+  const [blockedTechnique, setBlockedTechnique] = useState<string | undefined>();
+  const [breach, setBreach] = useState<{ last?: number; best?: number }>({});
+  const isClassic = currentAdventure === 'classic';
+  const isWide = useWideLayout();
   const [isTyping, setIsTyping] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showShield, setShowShield] = useState(false);
@@ -74,6 +86,15 @@ export default function GameScreen() {
     [currentAdventure]
   );
   const hintSnapPoints = useMemo(() => ['40%'], []);
+  const starterReplies = useMemo<QuickReply[]>(
+    () =>
+      getStarterPrompts(gameState.currentLevel).map((prompt, i) => ({
+        id: `starter-${i}`,
+        label: prompt,
+        response: '',
+      })),
+    [gameState.currentLevel]
+  );
 
   useEffect(() => {
     const isFreshStart = gameState.chatHistory.length === 0 && currentLevel;
@@ -82,6 +103,8 @@ export default function GameScreen() {
       addMessage({ role: 'merlin', content: greeting });
     }
     setShowModeIntro(gameState.currentLevel === 1 && gameState.chatHistory.length === 0);
+    setBlockedTechnique(undefined);
+    setBreach({});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.currentLevel, currentAdventure]);
 
@@ -136,8 +159,8 @@ export default function GameScreen() {
     }, 100);
   }, []);
 
-  const handleSend = async () => {
-    if (!inputText.trim() || isTyping) return;
+  const handleSend = async (text: string = inputText) => {
+    if (!text.trim() || isTyping) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Keyboard.dismiss();
@@ -148,7 +171,7 @@ export default function GameScreen() {
       withSpring(1, { damping: 6, stiffness: 200 })
     );
 
-    const userMessage = inputText.trim();
+    const userMessage = text.trim();
     const currentAttempts = gameState.failedAttemptsCurrentLevel + 1;
     setInputText('');
 
@@ -168,6 +191,15 @@ export default function GameScreen() {
     );
 
     incrementAttempts(result.isSuccessful);
+    if (isClassic) {
+      const score = scoreBreach(userMessage, gameState.currentLevel, result.isSuccessful);
+      setBreach((prev) => ({ last: score, best: Math.max(prev.best ?? 0, score) }));
+    }
+    setBlockedTechnique(
+      !result.isSuccessful && isClassic
+        ? findBlockedTechnique(userMessage, gameState.currentLevel)
+        : undefined
+    );
     addMessage({ role: 'merlin', content: result.response });
     scrollToBottom();
 
@@ -200,11 +232,13 @@ export default function GameScreen() {
   };
 
   const handleInputFocus = () => {
+    setInputFocused(true);
     inputGlow.value = withTiming(1, { duration: 200 });
     scrollToBottom();
   };
 
   const handleInputBlur = () => {
+    setInputFocused(false);
     inputGlow.value = withTiming(0, { duration: 200 });
   };
 
@@ -224,6 +258,9 @@ export default function GameScreen() {
   }
 
   const canSend = !!inputText.trim() && !isTyping;
+  const showStarters =
+    currentAdventure === 'classic' &&
+    !gameState.chatHistory.some((message) => message.role === 'user');
 
   return (
     <MagicBackground>
@@ -271,6 +308,8 @@ export default function GameScreen() {
           </Pressable>
         </View>
 
+        <View style={isWide ? styles.wideBody : styles.flex}>
+        <View style={styles.flex}>
         <View className="px-4 py-3" style={styles.progressContainer}>
           <ProgressBar
             current={gameState.levelsCompleted}
@@ -281,9 +320,10 @@ export default function GameScreen() {
             <View className="flex-row items-center gap-1" style={styles.statBadge}>
               <Zap size={12} color={colors.accent} />
               <Text style={styles.statText}>
-                {gameState.failedAttemptsCurrentLevel} attempts
+                {gameState.failedAttemptsCurrentLevel} {gameState.failedAttemptsCurrentLevel === 1 ? 'attempt' : 'attempts'}
               </Text>
             </View>
+            {isClassic && !isWide && <BreachMeter compact score={breach.last} best={breach.best} />}
             <Text style={styles.difficultyBadge}>
               {currentLevel?.difficulty}
             </Text>
@@ -311,9 +351,26 @@ export default function GameScreen() {
             keyExtractor={(message) => message.id}
             className="flex-1"
             style={styles.chatContainer}
-            contentContainerStyle={styles.chatContent}
+            contentContainerStyle={[styles.chatContent, isWide && styles.wideColumn]}
             showsVerticalScrollIndicator={false}
             onContentSizeChange={scrollToBottom}
+            ListHeaderComponent={
+              currentLevel && !isWide ? (
+                <View style={styles.missionCard}>
+                  <View style={styles.missionHeader}>
+                    <Target size={14} color={colors.primaryLight} />
+                    <Text style={styles.missionLabel}>Your mission</Text>
+                  </View>
+                  <Text style={styles.missionText}>
+                    Get Merlin to reveal the secret spell.
+                  </Text>
+                  <View style={styles.missionDefense}>
+                    <Shield size={12} color={colors.textMuted} />
+                    <Text style={styles.missionDefenseText}>{currentLevel.defenseDescription}</Text>
+                  </View>
+                </View>
+              ) : null
+            }
             renderItem={({ item, index }) => (
               <ChatBubble
                 message={item.content}
@@ -325,9 +382,6 @@ export default function GameScreen() {
             ListFooterComponent={
               isTyping ? (
                 <View style={styles.typingContainer}>
-                  <View style={styles.typingAvatarContainer}>
-                    <MerlinAvatar size={36} state="thinking" />
-                  </View>
                   <View style={styles.typingBubble}>
                     <View style={styles.typingDots}>
                       <TypingDot delay={0} color={colors.textMuted} />
@@ -336,26 +390,36 @@ export default function GameScreen() {
                     </View>
                   </View>
                 </View>
+              ) : showStarters ? (
+                <View style={styles.starters}>
+                  <Text style={styles.startersLabel}>Not sure where to start?</Text>
+                  <QuickReplyChips
+                    replies={starterReplies}
+                    onSelect={(reply) => handleSend(reply.label)}
+                  />
+                </View>
               ) : null
             }
           />
 
           <View className="px-4 pt-3" style={[styles.inputContainer, { paddingBottom: insets.bottom + 10 }]}>
-            <View className="flex-row items-end gap-2" style={styles.inputWrapper}>
-              <ReanimatedAnimated.View style={[styles.inputGlowRing, inputGlowAnimatedStyle]}>
-                <TextInput
-                  style={styles.input}
-                  value={inputText}
-                  onChangeText={setInputText}
-                  placeholder="Try to trick Merlin..."
-                  placeholderTextColor={colors.textMuted}
-                  multiline
-                  maxLength={500}
-                  editable={!isTyping}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                />
-              </ReanimatedAnimated.View>
+            <ReanimatedAnimated.View
+              style={[styles.composer, inputFocused && styles.composerFocused, isWide && styles.wideColumn, inputGlowAnimatedStyle]}
+            >
+              <TextInput
+                style={styles.input}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder="Try to trick Merlin..."
+                placeholderTextColor={colors.textMuted}
+                multiline
+                numberOfLines={1}
+                maxLength={500}
+                editable={!isTyping}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                accessibilityLabel="Message to Merlin"
+              />
               <ReanimatedAnimated.View style={sendButtonAnimatedStyle}>
                 <Pressable
                   style={({ pressed }) => [
@@ -363,7 +427,7 @@ export default function GameScreen() {
                     !canSend && styles.sendButtonDisabled,
                     pressed && canSend && styles.sendButtonPressed,
                   ]}
-                  onPress={handleSend}
+                  onPress={() => handleSend()}
                   disabled={!canSend}
                   hitSlop={6}
                   accessibilityRole="button"
@@ -371,16 +435,31 @@ export default function GameScreen() {
                   accessibilityState={{ disabled: !canSend }}
                 >
                   <LinearGradient
-                    colors={canSend ? [colors.primary, colors.primaryDark] : [colors.surfaceElevated, colors.surfaceElevated]}
+                    colors={canSend ? [colors.primary, colors.primaryDark] : [colors.backgroundTertiary, colors.backgroundTertiary]}
                     style={styles.sendButtonGradient}
                   >
-                    <Send size={20} color={canSend ? colors.textOnPrimary : colors.textMuted} />
+                    <Send size={18} color={canSend ? colors.textOnPrimary : colors.textMuted} />
                   </LinearGradient>
                 </Pressable>
               </ReanimatedAnimated.View>
-            </View>
+            </ReanimatedAnimated.View>
           </View>
         </KeyboardAvoidingView>
+        </View>
+        {isWide && (
+          <DefensePanel
+            level={gameState.currentLevel}
+            isClassic={isClassic}
+            breachScore={breach.last}
+            bestBreachScore={breach.best}
+            difficulty={currentLevel?.difficulty}
+            defenseDescription={currentLevel?.defenseDescription}
+            attempts={gameState.failedAttemptsCurrentLevel}
+            blockedTechnique={blockedTechnique}
+            onOpenHint={handleOpenHint}
+          />
+        )}
+        </View>
 
         {showSuccess && (
           <Animated.View
@@ -537,10 +616,8 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    backgroundColor: 'rgba(10, 6, 24, 0.85)',
+    paddingBottom: 4,
+    backgroundColor: colors.overlay,
   },
   backButton: {
     width: 44,
@@ -578,10 +655,11 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   progressContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
-    backgroundColor: 'rgba(10, 6, 24, 0.85)',
+    backgroundColor: colors.overlay,
   },
   statsRow: {
     flexDirection: 'row',
@@ -630,17 +708,31 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   chatContainer: {
     flex: 1,
   },
+  wideBody: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  wideColumn: {
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
+  },
   chatContent: {
     paddingVertical: 16,
+  },
+  starters: {
+    marginTop: 8,
+  },
+  startersLabel: {
+    fontSize: 12,
+    color: colors.textMuted,
+    paddingHorizontal: 12,
   },
   typingContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 12,
     marginTop: 6,
-  },
-  typingAvatarContainer: {
-    marginRight: 8,
   },
   typingBubble: {
     backgroundColor: colors.surfaceElevated,
@@ -668,39 +760,41 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     borderTopColor: colors.borderLight,
     backgroundColor: colors.backgroundSecondary,
   },
-  inputWrapper: {
+  composer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     gap: 8,
-  },
-  inputGlowRing: {
-    flex: 1,
+    backgroundColor: colors.surfaceElevated,
     borderRadius: 26,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    paddingLeft: 18,
+    paddingRight: 5,
+    paddingVertical: 5,
     ...(Platform.OS !== 'web'
       ? { shadowColor: colors.primary, shadowOffset: { width: 0, height: 0 }, shadowRadius: 10 }
       : {}),
   },
+  composerFocused: {
+    borderColor: colors.primary,
+  },
   input: {
     flex: 1,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    paddingRight: 16,
+    alignSelf: 'center',
+    paddingVertical: 10,
     fontSize: 16,
     color: colors.text,
     maxHeight: 120,
-    borderWidth: 2,
-    borderColor: colors.primary,
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as object) : {}),
   },
   sendButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     overflow: 'hidden',
   },
   sendButtonDisabled: {
-    opacity: 0.5,
+    opacity: 0.7,
   },
   sendButtonPressed: {
     opacity: 0.9,
@@ -709,6 +803,46 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  missionCard: {
+    marginHorizontal: 12,
+    marginBottom: 12,
+    padding: 14,
+    borderRadius: 16,
+    backgroundColor: colors.primary + '14',
+    borderWidth: 1,
+    borderColor: colors.primary + '40',
+    borderStyle: 'dashed',
+  },
+  missionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  missionLabel: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: colors.primaryLight,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  missionText: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    color: colors.text,
+  },
+  missionDefense: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 8,
+  },
+  missionDefenseText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textSecondary,
   },
   successOverlay: {
     ...StyleSheet.absoluteFill,

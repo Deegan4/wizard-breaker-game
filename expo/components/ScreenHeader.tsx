@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, User } from 'lucide-react-native';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 import ProfileSheet from '@/components/ProfileSheet';
+import { useWideLayout } from '@/hooks/useWideLayout';
 
 interface ScreenHeaderProps {
   title: string;
@@ -14,10 +15,13 @@ export default function ScreenHeader({ title, subtitle }: ScreenHeaderProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [profileOpen, setProfileOpen] = useState(false);
+  // On desktop the sidebar already carries the brand orb.
+  const isWide = useWideLayout();
 
   return (
     <View style={styles.container}>
       <View style={styles.left}>
+        {!isWide && (
         <LinearGradient
           colors={[colors.primaryLight, colors.primary, colors.primaryDark]}
           style={styles.orb}
@@ -26,6 +30,7 @@ export default function ScreenHeader({ title, subtitle }: ScreenHeaderProps) {
         >
           <Sparkles size={16} color={colors.textOnPrimary} />
         </LinearGradient>
+        )}
         <View>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>{subtitle}</Text>

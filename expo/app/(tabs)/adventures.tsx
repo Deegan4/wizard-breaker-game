@@ -12,6 +12,7 @@ import { LEVELS } from '@/constants/levels';
 import { ADVENTURES } from '@/constants/adventures';
 import { useGame } from '@/contexts/GameContext';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { CONTENT_MAX_WIDTH } from '@/hooks/useWideLayout';
 
 const PRACTICE_ADVENTURES = ADVENTURES.filter(a => a.id !== 'classic');
 
@@ -132,6 +133,9 @@ const createStyles = (colors: ColorPalette) =>
   StyleSheet.create({
     scrollContent: {
       flexGrow: 1,
+      width: '100%',
+      maxWidth: CONTENT_MAX_WIDTH,
+      alignSelf: 'center',
       paddingHorizontal: 16,
     },
     filterRow: {

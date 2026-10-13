@@ -38,6 +38,7 @@ When changing difficulty or adding a level, you must keep three things in sync:
 - the pattern arrays (`directAskPatterns`, `roleplayPatterns`, etc.) and `successTriggers[N]`,
 - the corresponding `checkLevelN` function and the `levelCheckers` map in `detectInjection`,
 - the matching entry in `LEVELS` (`constants/levels.ts`), whose array index (`level - 1`) must line up with the checker keys.
+- the level's `STARTER_PROMPTS` chips (`constants/levels.ts`): tests require the first chip to beat the previous level and every chip to fail on its own level.
 
 Failure replies, success replies, and a hint (shown every 5th failed attempt) are also pulled from `constants/levels.ts`.
 

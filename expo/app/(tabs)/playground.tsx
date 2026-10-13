@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Pressable, Alert, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  Terminal,
   Zap,
   CheckCircle,
   XCircle,
@@ -15,8 +14,11 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import MagicBackground from '@/components/MagicBackground';
+import ScreenHeader from '@/components/ScreenHeader';
+import { LEVELS } from '@/constants/levels';
 import { detectInjection, getTotalLevelsForAdventure } from '@/utils/injectionDetector';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { CONTENT_MAX_WIDTH } from '@/hooks/useWideLayout';
 
 const EXAMPLE_PROMPTS = [
   { 
@@ -176,39 +178,47 @@ export default function PlaygroundScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Terminal size={28} color={colors.primary} />
-            <View>
-              <Text style={styles.headerTitle}>Playground</Text>
-              <Text style={styles.headerSubtitle}>Test Your Prompts</Text>
-            </View>
-          </View>
-        </View>
+        <ScreenHeader title="Lab" subtitle="Test prompts against any level" />
 
-        {/* Level & Adventure Selector */}
+        {/* Level Selector */}
         <View style={styles.selectorCard}>
-          <View style={styles.selectorRow}>
-            <View style={styles.selectorItem}>
-              <Text style={styles.selectorLabel}>Adventure</Text>
-              <Pressable accessibilityRole="button" style={styles.selectorButton} onPress={() => Alert.alert('Select Adventure', 'Coming soon')}>
-                <View style={styles.selectorButtonContent}>
-                  <Text style={styles.selectorButtonText}>{selectedAdventure === 'classic' ? 'Classic (12 Levels)' : selectedAdventure}</Text>
-                  <ChevronDown size={16} color={colors.textMuted} />
-                </View>
-              </Pressable>
-            </View>
-            <View style={styles.selectorItem}>
-              <Text style={styles.selectorLabel}>Level</Text>
-              <Pressable accessibilityRole="button" style={styles.selectorButton} onPress={() => Alert.alert('Select Level', `Choose 1-${totalLevels}`)}>
-                <View style={styles.selectorButtonContent}>
-                  <Text style={styles.selectorButtonText}>Level {selectedLevel}</Text>
-                  <ChevronDown size={16} color={colors.textMuted} />
-                </View>
-              </Pressable>
-            </View>
+          <View style={styles.selectorHeader}>
+            <Text style={styles.selectorLabel}>Target level</Text>
+            <Text style={styles.selectorLevelName} numberOfLines={1}>
+              {LEVELS[selectedLevel - 1]?.name}
+            </Text>
           </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.levelChips}
+          >
+            {Array.from({ length: totalLevels }, (_, i) => i + 1).map((level) => {
+              const active = level === selectedLevel;
+              return (
+                <Pressable
+                  key={level}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Level ${level}`}
+                  accessibilityState={{ selected: active }}
+                  style={({ pressed }) => [
+                    styles.levelChip,
+                    active && styles.levelChipActive,
+                    pressed && styles.buttonPressed,
+                  ]}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setSelectedLevel(level);
+                    setResult(null);
+                  }}
+                >
+                  <Text style={[styles.levelChipText, active && styles.levelChipTextActive]}>
+                    {level}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
 
         {/* Input Area */}
@@ -410,43 +420,26 @@ export default function PlaygroundScreen() {
 const createStyles = (colors: ColorPalette) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: 'center',
     paddingHorizontal: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '800' as const,
-    color: colors.text,
-    letterSpacing: -1,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
   },
   selectorCard: {
     backgroundColor: colors.surface,
     borderRadius: 16,
-    padding: 16,
+    paddingVertical: 16,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
-  selectorRow: {
+  selectorHeader: {
     flexDirection: 'row',
+    alignItems: 'baseline',
     justifyContent: 'space-between',
     gap: 12,
-  },
-  selectorItem: {
-    flex: 1,
+    paddingHorizontal: 16,
+    marginBottom: 12,
   },
   selectorLabel: {
     fontSize: 11,
@@ -454,28 +447,38 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 1,
-    marginBottom: 6,
   },
-  selectorButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.backgroundSecondary,
+  selectorLevelName: {
+    flexShrink: 1,
+    fontSize: 14,
+    fontWeight: '700' as const,
+    color: colors.text,
+  },
+  levelChips: {
+    gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 10,
+  },
+  levelChip: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.backgroundSecondary,
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
-  selectorButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  levelChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primaryLight,
   },
-  selectorButtonText: {
-    color: colors.text,
+  levelChipText: {
     fontSize: 15,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
+    color: colors.textSecondary,
+  },
+  levelChipTextActive: {
+    color: colors.textOnPrimary,
   },
   inputCard: {
     backgroundColor: colors.surface,
@@ -690,10 +693,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     gap: 8,
   },
   exampleItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
+    gap: 8,
     padding: 12,
     backgroundColor: colors.backgroundSecondary,
     borderRadius: 10,
@@ -708,7 +708,6 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     backgroundColor: colors.primary + '10',
   },
   exampleInfo: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -739,9 +738,9 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   examplePrompt: {
     fontSize: 12,
+    lineHeight: 18,
     color: colors.textSecondary,
-    maxWidth: '60%',
-    fontFamily: 'monospace',
+    fontFamily: Platform.select({ ios: 'Menlo', default: 'monospace' }),
   },
   examplePromptActive: {
     color: colors.primary,

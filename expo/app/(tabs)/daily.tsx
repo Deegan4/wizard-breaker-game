@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Animated } from '
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import {
-  Calendar,
   Trophy,
   Flame,
   Sparkles,
@@ -16,11 +15,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import MagicBackground from '@/components/MagicBackground';
 import MerlinAvatar from '@/components/MerlinAvatar';
 import DailyStreakCalendar from '@/components/DailyStreakCalendar';
+import ScreenHeader from '@/components/ScreenHeader';
 import { DAILY_CHALLENGE_XP_REWARD } from '@/constants/xp';
 import { useGame } from '@/contexts/GameContext';
 import { useAchievements } from '@/contexts/AchievementContext';
 import { LEVELS } from '@/constants/levels';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
+import { CONTENT_MAX_WIDTH } from '@/hooks/useWideLayout';
 
 export default function DailyScreen() {
   const { colors } = useTheme();
@@ -106,37 +107,14 @@ export default function DailyScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <Animated.View
-          style={[
-            styles.header,
-            {
-              opacity: animValues.header,
-              transform: [{ translateY: (1 - animValues.header) * 30 }],
-            },
-          ]}
-        >
-          <View style={styles.headerTop}>
-            <View style={styles.dateBadge}>
-              <Calendar size={18} color={colors.primary} />
-              <Text style={styles.dateText}>
-                {new Date(dailyChallenge.date).toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  month: 'short', 
-                  day: 'numeric' 
-                })}
-              </Text>
-            </View>
-            <View style={styles.streakBadge}>
-              <Flame size={16} color={colors.accent} />
-              <Text style={styles.streakText}>{stats.dailyStreak} Day Streak</Text>
-            </View>
-          </View>
-          <Text style={styles.dailyTitle}>Daily Challenge</Text>
-          <Text style={styles.dailySubtitle}>
-            {isCompleted ? 'Completed! Return tomorrow for a new challenge.' : 'Test your skills against a unique daily level'}
-          </Text>
-        </Animated.View>
+        <ScreenHeader
+          title="Daily"
+          subtitle={new Date(dailyChallenge.date).toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+          })}
+        />
 
         {/* Main Challenge Card */}
         <Animated.View
@@ -152,8 +130,11 @@ export default function DailyScreen() {
             <View style={styles.levelBadge}>
               <Text style={styles.levelBadgeText}>Level {dailyChallenge.level}</Text>
             </View>
-            <Text style={styles.difficultyBadge}>{challengeLevel?.difficulty}</Text>
+            <View style={styles.xpBadge}>
+              <Text style={styles.xpBadgeText}>+{DAILY_CHALLENGE_XP_REWARD} XP</Text>
+            </View>
           </View>
+          <Text style={styles.difficultyText}>{challengeLevel?.difficulty}</Text>
           <Text style={styles.challengeName}>{challengeLevel?.name}</Text>
           <Text style={styles.challengeDescription}>{challengeLevel?.description}</Text>
           
@@ -173,33 +154,70 @@ export default function DailyScreen() {
           )}
         </Animated.View>
 
-        <DailyStreakCalendar />
-
-        {/* Stats Row */}
+        {/* Play Button */}
         <Animated.View
           style={[
-            styles.statsRow,
+            styles.buttonContainer,
             {
-              opacity: animValues.stats,
-              transform: [{ translateY: (1 - animValues.stats) * 20 }],
+              opacity: animValues.button,
+              transform: [{ translateY: (1 - animValues.button) * 30 }],
             },
           ]}
         >
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{isCompleted ? challengeLevel?.spell : '? ? ?'}</Text>
-            <Text style={styles.statLabel}>Today&apos;s Spell</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{unlockedCount}/{totalAchievements}</Text>
-            <Text style={styles.statLabel}>Achievements</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.dailyStreak}</Text>
-            <Text style={styles.statLabel}>Day Streak</Text>
-          </View>
+          {!isCompleted ? (
+            <Pressable
+              accessibilityRole="button"
+              style={({ pressed }) => [
+                styles.playButton,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={handlePlayDaily}
+            >
+              <LinearGradient
+                colors={[colors.primary, colors.primaryDark]}
+                style={styles.playButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Target size={22} color={colors.textOnPrimary} />
+                <Text style={styles.playButtonText}>Start Daily Challenge</Text>
+              </LinearGradient>
+            </Pressable>
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              style={({ pressed }) => [
+                styles.playButtonCompleted,
+                pressed && styles.buttonPressed,
+              ]}
+              onPress={() => Alert.alert('Come Back Tomorrow', 'A new daily challenge awaits!')}
+            >
+              <LinearGradient
+                colors={colors.gradient.success}
+                style={styles.playButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Sparkles size={22} color={colors.textOnPrimary} />
+                <Text style={styles.playButtonText}>Completed! Come Back Tomorrow</Text>
+              </LinearGradient>
+            </Pressable>
+          )}
+
+          <Pressable
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handlePastChallenges}
+          >
+            <History size={20} color={colors.textSecondary} />
+            <Text style={styles.secondaryButtonText}>Past challenges</Text>
+          </Pressable>
         </Animated.View>
+
+        <DailyStreakCalendar />
 
         {/* Rewards Preview */}
         <Animated.View
@@ -250,69 +268,6 @@ export default function DailyScreen() {
           ))}
         </View>
 
-        {/* Play Button */}
-        <Animated.View
-          style={[
-            styles.buttonContainer,
-            {
-              opacity: animValues.button,
-              transform: [{ translateY: (1 - animValues.button) * 30 }],
-            },
-          ]}
-        >
-          {!isCompleted ? (
-            <Pressable
-              accessibilityRole="button"
-              style={({ pressed }) => [
-                styles.playButton,
-                pressed && styles.buttonPressed,
-              ]}
-              onPress={handlePlayDaily}
-            >
-              <LinearGradient
-                colors={[colors.primary, colors.primaryDark]}
-                style={styles.playButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Target size={24} color={colors.text} />
-                <Text style={styles.playButtonText}>Start Daily Challenge</Text>
-              </LinearGradient>
-            </Pressable>
-          ) : (
-            <Pressable
-              accessibilityRole="button"
-              style={({ pressed }) => [
-                styles.playButtonCompleted,
-                pressed && styles.buttonPressed,
-              ]}
-              onPress={() => Alert.alert('Come Back Tomorrow', 'A new daily challenge awaits!')}
-            >
-              <LinearGradient
-                colors={[colors.enchantedGreen, '#16A34A']}
-                style={styles.playButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Sparkles size={24} color={colors.text} />
-                <Text style={styles.playButtonText}>Completed! Come Back Tomorrow</Text>
-              </LinearGradient>
-            </Pressable>
-          )}
-
-          <Pressable
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              pressed && styles.buttonPressed,
-            ]}
-            onPress={handlePastChallenges}
-          >
-            <History size={20} color={colors.textSecondary} />
-            <Text style={styles.secondaryButtonText}>Past challenges</Text>
-          </Pressable>
-        </Animated.View>
-
         {/* Quick Stats */}
         <View style={styles.quickStats}>
           <Text style={styles.quickStatsTitle}>Your Progress</Text>
@@ -346,6 +301,9 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    width: '100%',
+    maxWidth: CONTENT_MAX_WIDTH,
+    alignSelf: 'center',
     paddingHorizontal: 20,
   },
   loadingContainer: {
@@ -362,62 +320,6 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.danger,
     textAlign: 'center',
     marginTop: 50,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 16,
-  },
-  dateBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  dateText: {
-    color: colors.text,
-    fontSize: 13,
-    fontWeight: '600' as const,
-  },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.accent + '20',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: colors.accent + '40',
-  },
-  streakText: {
-    color: colors.accent,
-    fontSize: 13,
-    fontWeight: '700' as const,
-  },
-  dailyTitle: {
-    fontSize: 28,
-    fontWeight: '800' as const,
-    color: colors.text,
-    textAlign: 'center',
-    letterSpacing: -1,
-  },
-  dailySubtitle: {
-    fontSize: 15,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 8,
-    paddingHorizontal: 20,
   },
   challengeCard: {
     backgroundColor: colors.surface,
@@ -444,14 +346,26 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     fontSize: 13,
     fontWeight: '700' as const,
   },
-  difficultyBadge: {
+  xpBadge: {
+    backgroundColor: colors.starYellow + '1F',
+    borderWidth: 1,
+    borderColor: colors.starYellow + '40',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  xpBadgeText: {
+    color: colors.starYellow,
+    fontSize: 12,
+    fontWeight: '800' as const,
+  },
+  difficultyText: {
     color: colors.accent,
     fontSize: 12,
     fontWeight: '700' as const,
-    backgroundColor: colors.accent + '15',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
   },
   challengeName: {
     color: colors.text,
@@ -502,34 +416,6 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.enchantedGreen,
     fontSize: 12,
     opacity: 0.8,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '700' as const,
-  },
-  statLabel: {
-    color: colors.textMuted,
-    fontSize: 11,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: colors.borderLight,
   },
   rewardsCard: {
     backgroundColor: colors.surface,
