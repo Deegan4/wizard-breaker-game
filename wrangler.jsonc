@@ -1,0 +1,15 @@
+// Cloudflare Workers static-assets deploy for the Expo web build.
+// Workers Builds (connected to this repo) runs, from the repo root:
+//   build command:  cd expo && bun install --frozen-lockfile && bun run build:web
+//   deploy command: npx wrangler deploy
+// Workers Builds ignores wrangler's own `build` setting, so the build command
+// lives in the dashboard (Settings > Builds), not here.
+{
+  "name": "wizard-breaker-game",
+  "compatibility_date": "2026-10-13",
+  "assets": {
+    "directory": "./expo/dist",
+    // Serve index.html for unknown paths so expo-router deep links like /game work.
+    "not_found_handling": "single-page-application"
+  }
+}

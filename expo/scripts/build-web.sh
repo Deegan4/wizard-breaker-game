@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Production web build: `expo export` at the domain root, then patch
-# dist/index.html for hosting. Used by Cloudflare Pages' Git integration
-# (build command `bun install --frozen-lockfile && bun run build:web`, root
-# directory `expo`, output `dist`, env BUN_VERSION + SKIP_DEPENDENCY_INSTALL=1).
+# dist/index.html for hosting. Cloudflare Workers Builds runs this via
+# `cd expo && bun install --frozen-lockfile && bun run build:web`, then deploys
+# expo/dist with `npx wrangler deploy` (see wrangler.jsonc at the repo root).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
