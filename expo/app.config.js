@@ -1,6 +1,6 @@
-// Dynamic config so the GitHub Pages subpath base URL only applies during
-// that one deploy step (GH_PAGES_BASE_PATH set in .github/workflows/deploy.yml),
-// never in local dev or the Rork tunnel preview, both of which serve at "/".
+// Optional subpath base URL for hosting under a path (e.g. the old GitHub
+// Pages deploy used GH_PAGES_BASE_PATH=/wizard-breaker-game). The Cloudflare
+// Pages deploy, local dev and the Rork preview all serve at "/", so it's unset.
 const basePath = process.env.GH_PAGES_BASE_PATH ?? '';
 
 module.exports = {

@@ -1,80 +1,62 @@
 // Service Worker for Wizard Breaker Game - Offline Support
-const CACHE_NAME = 'wizard-breaker-v1';
-const STATIC_ASSETS = [
-  '/wizard-breaker-game/',
-  '/wizard-breaker-game/index.html',
-  '/wizard-breaker-game/manifest.json',
-  '/wizard-breaker-game/favicon.ico',
-];
+//
+// Pages are network-first so a new deploy shows up on the next load; the
+// cached copy is only an offline fallback. Hashed JS/CSS bundles never change
+// under the same URL, so those are cache-first. Paths are relative to the
+// worker's scope, so it works at a domain root or under a subpath.
+const CACHE_NAME = 'wizard-breaker-v2';
+const SCOPE = new URL(self.registration.scope).pathname;
+const INDEX = SCOPE + 'index.html';
 
-// Install event - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll([SCOPE, INDEX, SCOPE + 'manifest.json']))
   );
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Drop caches from older versions (v1 served stale pages cache-first).
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
-    })
+    caches
+      .keys()
+      .then((names) => Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))))
   );
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
+function cachePut(request, response) {
+  if (response.ok) {
+    const copy = response.clone();
+    caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+  }
+  return response;
+}
 
-  // Skip cross-origin requests
-  const url = new URL(event.request.url);
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET') return;
+  const url = new URL(request.url);
   if (url.origin !== location.origin) return;
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Return cached response and update cache in background
-        event.waitUntil(
-          fetch(event.request).then((networkResponse) => {
-            if (networkResponse.ok) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse.clone());
-              });
-            }
-          }).catch(() => {
-            // Network failed, cached response already returned
-          })
-        );
-        return cachedResponse;
-      }
+  // Page loads: network first, fall back to the cached app shell when offline.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => cachePut(INDEX, response))
+        .catch(() => caches.match(INDEX))
+    );
+    return;
+  }
 
-      // Not in cache, fetch from network
-      return fetch(event.request).then((networkResponse) => {
-        if (networkResponse.ok) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return networkResponse;
-      }).catch(() => {
-        // Offline fallback for HTML pages
-        if (event.request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('/wizard-breaker-game/index.html');
-        }
-        // For other resources, return a generic offline response
-        return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
-      });
-    })
+  // Everything else: cache first, then network.
+  event.respondWith(
+    caches.match(request).then(
+      (cached) =>
+        cached ||
+        fetch(request)
+          .then((response) => cachePut(request, response))
+          .catch(() => new Response('Offline', { status: 503, statusText: 'Service Unavailable' }))
+    )
   );
 });
