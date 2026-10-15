@@ -7,6 +7,7 @@
     "start-web": "bunx rork start -p 9mdvv5f0yhq2u7uc3iofz --web --tunnel",
     "start-web-dev": "DEBUG=expo* bunx rork start -p 9mdvv5f0yhq2u7uc3iofz --web --tunnel",
     "build": "expo export --platform web",
+    "build:web": "bash scripts/build-web.sh",
     "lint": "expo lint",
     "test": "jest",
     "test:watch": "jest --watch",
