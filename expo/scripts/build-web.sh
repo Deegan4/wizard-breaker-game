@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Production web build: `expo export` at the domain root, then patch
-# dist/index.html for hosting. Cloudflare Workers Builds runs this via
-# `cd expo && bun install --frozen-lockfile && bun run build:web`, then deploys
-# expo/dist with `npx wrangler deploy` (see wrangler.jsonc at the repo root).
+# dist/index.html for hosting. Run by `npx wrangler deploy` (Cloudflare
+# Workers Builds) through the `build` step in wrangler.jsonc at the repo root,
+# which then uploads expo/dist.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
