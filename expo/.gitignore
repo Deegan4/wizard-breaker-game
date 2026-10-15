@@ -46,3 +46,6 @@ coverage/
 # backup/alternate lockfiles
 *.bak
 package-lock.json
+
+# Cloudflare wrangler local state
+.wrangler/
