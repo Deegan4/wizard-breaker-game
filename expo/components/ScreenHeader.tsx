@@ -31,9 +31,9 @@ export default function ScreenHeader({ title, subtitle }: ScreenHeaderProps) {
           <Sparkles size={16} color={colors.textOnPrimary} />
         </LinearGradient>
         )}
-        <View>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
+        <View style={styles.titleBlock}>
+          <Text style={styles.title} numberOfLines={1}>{title}</Text>
+          <Text style={styles.subtitle} numberOfLines={2}>{subtitle}</Text>
         </View>
       </View>
       <Pressable
@@ -70,6 +70,10 @@ const createStyles = (colors: ColorPalette) =>
       borderRadius: 22,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    titleBlock: {
+      flex: 1,
+      minWidth: 0,
     },
     title: {
       fontSize: 22,

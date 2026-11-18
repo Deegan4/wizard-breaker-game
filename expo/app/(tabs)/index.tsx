@@ -7,7 +7,6 @@ import {
   Pressable,
   TextInput,
   Animated,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -39,8 +38,6 @@ import { LEVELS } from '@/constants/levels';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 import { CONTENT_MAX_WIDTH, useWideLayout } from '@/hooks/useWideLayout';
 import { useReduceMotion } from '@/hooks/useReduceMotion';
-
-const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const { colors } = useTheme();
@@ -445,6 +442,8 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     marginBottom: 10,
   },
   dailyCardFooter: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
     gap: 14,
   },
   dailyCardDescription: {
@@ -537,8 +536,11 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     opacity: 0.9,
   },
   usernameContainer: {
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    alignItems: 'stretch',
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 40,
   },
@@ -557,7 +559,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     marginBottom: 32,
   },
   usernameInput: {
-    width: width - 80,
+    width: '100%',
     backgroundColor: colors.surface,
     borderRadius: 12,
     paddingHorizontal: 20,
@@ -569,7 +571,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     textAlign: 'center',
   },
   submitButton: {
-    width: width - 80,
+    width: '100%',
     marginTop: 24,
     borderRadius: 12,
     overflow: 'hidden',
