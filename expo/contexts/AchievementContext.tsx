@@ -94,6 +94,56 @@ const ACHIEVEMENTS: Achievement[] = [
 const DAILY_CHALLENGE_STORAGE = 'wizard_breaker_daily_challenge';
 const ACHIEVEMENTS_STORAGE = 'wizard_breaker_achievements';
 const STATS_STORAGE = 'wizard_breaker_stats';
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+export interface PastDailyChallenge {
+  date: string;
+  level: number;
+}
+
+/**
+ * Classic level (1 through LEVELS.length) assigned to a daily-challenge date.
+ *
+ * Pass `now` to match the clock `checkDailyChallenge` uses while generating
+ * that date. Omit it to score the date at local noon — the level players
+ * received for most of that day, when the elapsed-day term is still 0.
+ */
+export function dailyLevelForDate(isoDate: string, now?: number): number {
+  const at = now ?? new Date(`${isoDate}T12:00:00`).getTime();
+  const dayOfYear =
+    Math.floor((at - new Date(`${isoDate}T00:00:00`).getTime()) / MS_PER_DAY) +
+    new Date(isoDate).getDate();
+  const index = dayOfYear - 1;
+  const wrapped = ((index % LEVELS.length) + LEVELS.length) % LEVELS.length;
+  return wrapped + 1;
+}
+
+/** Completed daily dates, newest first, each mapped back to its Classic level. */
+export function pastDailyChallenges(
+  completedDates: readonly string[] | null | undefined,
+  todayChallenge?: { date: string; level: number } | null,
+): PastDailyChallenge[] {
+  if (!completedDates?.length) return [];
+
+  const seen = new Set<string>();
+  const dates: string[] = [];
+  for (const date of completedDates) {
+    if (!ISO_DATE.test(date) || seen.has(date)) continue;
+    seen.add(date);
+    dates.push(date);
+  }
+  dates.sort((a, b) => b.localeCompare(a));
+
+  return dates.map((date) => {
+    const storedLevel = todayChallenge?.date === date ? todayChallenge.level : undefined;
+    const level =
+      storedLevel != null && storedLevel >= 1 && storedLevel <= LEVELS.length
+        ? storedLevel
+        : dailyLevelForDate(date);
+    return { date, level };
+  });
+}
 
 interface GameStats {
   totalPlayTime: number;
@@ -231,10 +281,9 @@ export function AchievementProvider({ children }: { children: React.ReactNode })
       return dailyChallenge;
     }
 
-    // Generate new daily challenge - use a specific level for today
-    const dayOfYear = Math.floor((Date.now() - new Date(today + 'T00:00:00').getTime()) / (1000 * 60 * 60 * 24)) + 
-      new Date(today).getDate();
-    const level = ((dayOfYear - 1) % LEVELS.length) + 1; // Cycle through the Classic levels
+    // Same assignment past-challenge replay uses, so a replay opens the level
+    // that was actually served for this date.
+    const level = dailyLevelForDate(today, Date.now());
     const seed = new Date(today).getDate();
 
     const newChallenge: DailyChallenge = {
