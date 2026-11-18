@@ -9,6 +9,9 @@ import {
   Target,
   Star,
   History,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,10 +21,23 @@ import DailyStreakCalendar from '@/components/DailyStreakCalendar';
 import ScreenHeader from '@/components/ScreenHeader';
 import { DAILY_CHALLENGE_XP_REWARD } from '@/constants/xp';
 import { useGame } from '@/contexts/GameContext';
-import { useAchievements } from '@/contexts/AchievementContext';
+import { pastDailyChallenges, useAchievements } from '@/contexts/AchievementContext';
 import { LEVELS } from '@/constants/levels';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
 import { CONTENT_MAX_WIDTH } from '@/hooks/useWideLayout';
+
+function formatPastChallengeDate(isoDate: string): string {
+  const today = new Date().toISOString().split('T')[0];
+  if (isoDate === today) return 'Today';
+  const parsed = new Date(`${isoDate}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) return isoDate;
+  return parsed.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
 
 export default function DailyScreen() {
   const { colors } = useTheme();
@@ -31,6 +47,11 @@ export default function DailyScreen() {
   const { dailyChallenge, checkDailyChallenge, stats, achievements } = useAchievements();
   
   const [isLoading, setIsLoading] = useState(true);
+  const [pastOpen, setPastOpen] = useState(false);
+  const pastChallenges = useMemo(
+    () => pastDailyChallenges(stats.completedDates, dailyChallenge),
+    [stats.completedDates, dailyChallenge],
+  );
   const [animValues, setAnimValues] = useState({
     header: 0,
     card: 0,
@@ -67,7 +88,13 @@ export default function DailyScreen() {
   };
 
   const handlePastChallenges = () => {
-    Alert.alert('Past challenges', 'Replaying earlier daily challenges is coming soon.');
+    setPastOpen((open) => !open);
+  };
+
+  const handleReplayPast = (level: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    startLevel('classic', level);
+    router.push('/game');
   };
 
   if (isLoading) {
@@ -206,6 +233,7 @@ export default function DailyScreen() {
 
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ expanded: pastOpen }}
             style={({ pressed }) => [
               styles.secondaryButton,
               pressed && styles.buttonPressed,
@@ -213,8 +241,63 @@ export default function DailyScreen() {
             onPress={handlePastChallenges}
           >
             <History size={20} color={colors.textSecondary} />
-            <Text style={styles.secondaryButtonText}>Past challenges</Text>
+            <Text style={styles.secondaryButtonText}>
+              Past challenges{pastChallenges.length > 0 ? ` (${pastChallenges.length})` : ''}
+            </Text>
+            {pastOpen ? (
+              <ChevronUp size={18} color={colors.textSecondary} />
+            ) : (
+              <ChevronDown size={18} color={colors.textSecondary} />
+            )}
           </Pressable>
+
+          {pastOpen && (
+            <View style={styles.pastPanel}>
+              {pastChallenges.length === 0 ? (
+                <View style={styles.pastEmpty}>
+                  <History size={28} color={colors.textMuted} />
+                  <Text style={styles.pastEmptyTitle}>No past challenges yet</Text>
+                  <Text style={styles.pastEmptyText}>
+                    Complete a daily challenge and it will be saved here for you to play again.
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <Text style={styles.pastNote}>
+                    These are challenges you already finished. Replay opens that Classic level on the daily path, so your main quest progress stays the same.
+                  </Text>
+                  {pastChallenges.map((item) => {
+                    const levelInfo = LEVELS[item.level - 1];
+                    const dateLabel = formatPastChallengeDate(item.date);
+                    return (
+                      <Pressable
+                        key={item.date}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Replay ${levelInfo?.name ?? 'challenge'} from ${dateLabel}`}
+                        style={({ pressed }) => [
+                          styles.pastRow,
+                          pressed && styles.buttonPressed,
+                        ]}
+                        onPress={() => handleReplayPast(item.level)}
+                      >
+                        <View style={styles.pastRowText}>
+                          <Text style={styles.pastRowDate}>{dateLabel}</Text>
+                          <Text style={styles.pastRowMeta} numberOfLines={1}>
+                            Level {item.level}
+                            {levelInfo?.name ? ` · ${levelInfo.name}` : ''}
+                          </Text>
+                        </View>
+                        <View style={styles.pastReplay}>
+                          <RotateCcw size={16} color={colors.primary} />
+                          <Text style={styles.pastReplayText}>Replay</Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </>
+              )}
+            </View>
+          )}
         </Animated.View>
 
         <DailyStreakCalendar />
@@ -533,6 +616,73 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.text,
     fontSize: 15,
     fontWeight: '600' as const,
+  },
+  pastPanel: {
+    gap: 10,
+  },
+  pastEmpty: {
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    paddingVertical: 22,
+    paddingHorizontal: 16,
+  },
+  pastEmptyTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '700' as const,
+    textAlign: 'center',
+  },
+  pastEmptyText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: 'center',
+  },
+  pastNote: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  pastRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  pastRowText: {
+    flex: 1,
+    gap: 2,
+  },
+  pastRowDate: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '700' as const,
+  },
+  pastRowMeta: {
+    color: colors.textSecondary,
+    fontSize: 12,
+  },
+  pastReplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.primary + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  pastReplayText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: '700' as const,
   },
   buttonPressed: {
     transform: [{ scale: 0.98 }],

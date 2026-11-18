@@ -36,4 +36,35 @@ describe('useGame().getLevelStatus', () => {
     expect(result.current.getLevelStatus(3)).toBe('locked');
     expect(result.current.gameState.xpTotal).toBeGreaterThan(0);
   });
+
+  it('replays a daily level without advancing Classic progress or XP', async () => {
+    const { result } = await renderHook(() => useGame(), { wrapper });
+
+    await act(() => {
+      result.current.completeLevel();
+    });
+
+    const levelsCompleted = result.current.gameState.levelsCompleted;
+    const xpTotal = result.current.gameState.xpTotal;
+    const currentLevel = result.current.gameState.currentLevel;
+    expect(levelsCompleted).toBe(1);
+
+    await act(() => {
+      result.current.startLevel('classic', 6);
+    });
+    expect(result.current.gameState.dailyChallengeActive).toBe(true);
+    expect(result.current.gameState.currentLevel).toBe(6);
+    expect(result.current.gameState.levelsCompleted).toBe(levelsCompleted);
+    expect(result.current.gameState.xpTotal).toBe(xpTotal);
+
+    await act(() => {
+      result.current.completeLevel();
+    });
+
+    expect(result.current.gameState.dailyChallengeActive).toBe(false);
+    expect(result.current.gameState.levelsCompleted).toBe(levelsCompleted);
+    expect(result.current.gameState.xpTotal).toBe(xpTotal);
+    expect(result.current.gameState.currentLevel).toBe(currentLevel);
+    expect(result.current.gameState.currentAdventure).toBe('classic');
+  });
 });
