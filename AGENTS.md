@@ -31,6 +31,16 @@ Each level `checkLevelN` first rejects prompts matching **all lower-level attack
 2. `checkLevelN` function + entry in `levelCheckers` map in `detectInjection`
 3. `LEVELS[level - 1]` entry in `constants/levels.ts`
 
+### Routing & screens
+
+- `app/_layout.tsx` — root `Stack`: `(tabs)`, `game`, `lesson/[id]`, `victory`, not-found.
+- `app/lesson/[id].tsx` — scripted lesson chat (no LLM). Help quick replies `hint`, `another-example`, and `red-flags` do not advance the step. Any other reply calls `completeStep`; the last step calls `completeLesson`.
+- `app/(tabs)/` — Home (`index`), Daily (`daily`), Lab (`playground`), Ranks (`leaderboard`), Learn (`learn`), Quests (`adventures`).
+- Quests (`adventures.tsx`): All / Story / Practice chips. Story is the 12 Classic levels. Practice is the adventures.
+- Learn (`learn.tsx`): `LearningPathHero` + `LessonRow`, then the older article.
+- Daily (`daily.tsx`) starts a challenge with `startLevel('classic', level)` and `router.push('/game')`.
+- `app/game.tsx` — calls `detectInjection`, then renders `DebriefScreen` from `app/debrief.tsx` inline (not a route push) before advancing. The final level routes to `victory`.
+
 ## Conventions
 
 - **Path alias**: `@/*` → `expo/` root (e.g. `@/constants/levels`)
@@ -47,6 +57,7 @@ Each level `checkLevelN` first rejects prompts matching **all lower-level attack
 |------|---------|
 | `app/_layout.tsx` | Root Stack: tabs, `game`, `lesson/[id]`, `victory`, not-found |
 | `app/(tabs)/_layout.tsx` | Tab bar config (Home, Daily, Lab, Ranks, Learn, Quests) |
+| `app/lesson/[id].tsx` | Scripted lesson chat (no LLM); help replies do not advance the step |
 | `app/game.tsx` | Chat screen, calls `detectInjection`, success animation |
 | `app/victory.tsx` | Win screen with stats, share, replay |
 | `contexts/GameContext.tsx` | Global state, `useGame()` hook (XP, level/adventure lock state) |
