@@ -42,6 +42,7 @@ const PHASE_LABELS: Record<LessonPhase, string> = {
 
 const HELP_REPLY_IDS = new Set(['hint', 'another-example', 'red-flags']);
 const REPLY_DELAY_MS = 450;
+const LESSON_COLUMN_MAX_WIDTH = 640;
 
 export default function LessonScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -153,7 +154,7 @@ export default function LessonScreen() {
   return (
     <MagicBackground>
       <KeyboardAvoidingView
-        style={styles.flex}
+        style={styles.screen}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -200,7 +201,7 @@ export default function LessonScreen() {
         <ScrollView
           ref={scrollRef}
           style={styles.flex}
-          contentContainerStyle={styles.messages}
+          contentContainerStyle={[styles.messages, finished && { paddingBottom: insets.bottom + 24 }]}
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
           keyboardShouldPersistTaps="handled"
         >
@@ -212,6 +213,7 @@ export default function LessonScreen() {
               isNew={i === messages.length - 1}
               example={m.example}
               turnPrompt={m.turnPrompt}
+              senderName="Wizard"
             />
           ))}
 
@@ -238,7 +240,7 @@ export default function LessonScreen() {
           <QuickReplyChips replies={step.quickReplies} onSelect={handleReply} />
         )}
 
-        <View style={[styles.inputBar, { paddingBottom: insets.bottom + 10 }]}>
+        {!finished && <View style={[styles.inputBar, { paddingBottom: insets.bottom + 10 }]}>
           <TextInput
             style={styles.input}
             value={draft}
@@ -260,7 +262,7 @@ export default function LessonScreen() {
           >
             <Send size={18} color={colors.textOnPrimary} />
           </Pressable>
-        </View>
+        </View>}
       </KeyboardAvoidingView>
     </MagicBackground>
   );
@@ -270,6 +272,12 @@ const createStyles = (colors: ColorPalette) =>
   StyleSheet.create({
     flex: {
       flex: 1,
+    },
+    screen: {
+      flex: 1,
+      width: '100%',
+      maxWidth: LESSON_COLUMN_MAX_WIDTH,
+      alignSelf: 'center',
     },
     header: {
       paddingHorizontal: 16,

@@ -10,9 +10,10 @@ interface ChatBubbleProps {
   timestamp?: string;
   example?: string;
   turnPrompt?: string;
+  senderName?: string;
 }
 
-export default function ChatBubble({ message, isUser, isNew = false, timestamp, example, turnPrompt }: ChatBubbleProps) {
+export default function ChatBubble({ message, isUser, isNew = false, timestamp, example, turnPrompt, senderName = 'Merlin' }: ChatBubbleProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const fadeAnim = useRef(new Animated.Value(isNew ? 0 : 1)).current;
@@ -75,7 +76,7 @@ export default function ChatBubble({ message, isUser, isNew = false, timestamp, 
       ]}
     >
       <View style={[styles.bubbleWrapper, isUser ? styles.userWrapper : styles.merlinWrapper]}>
-        {!isUser && <Text style={styles.senderName}>Merlin</Text>}
+        {!isUser && <Text style={styles.senderName}>{senderName}</Text>}
         <View style={[styles.bubble, isUser ? styles.userBubble : styles.merlinBubble]}>
           <Text style={[styles.message, isUser ? styles.userText : styles.merlinText]}>
             {formatMessage(message)}
@@ -113,7 +114,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   senderName: {
     fontSize: 11,
     fontWeight: '700' as const,
-    color: colors.primaryLight,
+      color: colors.primary,
     letterSpacing: 0.5,
     marginLeft: 12,
     marginBottom: 4,

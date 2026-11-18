@@ -146,10 +146,12 @@ export default function DailyScreen() {
           {isCompleted && (
             <View style={styles.completedBanner}>
               <Sparkles size={20} color={colors.enchantedGreen} />
-              <Text style={styles.completedText}>Challenge Completed!</Text>
-              <Text style={styles.completedSubtext}>
-                {dailyChallenge.attempts} attempt{dailyChallenge.attempts !== 1 ? 's' : ''} • {dailyChallenge.completedAt ? new Date(dailyChallenge.completedAt).toLocaleTimeString() : ''}
-              </Text>
+              <View style={styles.completedCopy}>
+                <Text style={styles.completedText}>Challenge Completed!</Text>
+                <Text style={styles.completedSubtext}>
+                  {dailyChallenge.attempts} attempt{dailyChallenge.attempts !== 1 ? 's' : ''} • {dailyChallenge.completedAt ? new Date(dailyChallenge.completedAt).toLocaleTimeString() : ''}
+                </Text>
+              </View>
             </View>
           )}
         </Animated.View>
@@ -192,15 +194,10 @@ export default function DailyScreen() {
               ]}
               onPress={() => Alert.alert('Come Back Tomorrow', 'A new daily challenge awaits!')}
             >
-              <LinearGradient
-                colors={colors.gradient.success}
-                style={styles.playButtonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
+              <View style={[styles.playButtonGradient, styles.playButtonCompletedFill]}>
                 <Sparkles size={22} color={colors.textOnPrimary} />
                 <Text style={styles.playButtonText}>Completed! Come Back Tomorrow</Text>
-              </LinearGradient>
+              </View>
             </Pressable>
           )}
 
@@ -398,7 +395,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
   },
   completedBanner: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 8,
     backgroundColor: colors.enchantedGreen + '20',
     padding: 12,
@@ -406,6 +403,10 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     marginTop: 12,
     borderWidth: 1,
     borderColor: colors.enchantedGreen + '40',
+  },
+  completedCopy: {
+    flex: 1,
+    minWidth: 0,
   },
   completedText: {
     color: colors.enchantedGreen,
@@ -416,6 +417,7 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     color: colors.enchantedGreen,
     fontSize: 12,
     opacity: 0.8,
+    marginTop: 2,
   },
   rewardsCard: {
     backgroundColor: colors.surface,
@@ -511,9 +513,16 @@ const createStyles = (colors: ColorPalette) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 18,
+    paddingHorizontal: 16,
     gap: 10,
   },
+  playButtonCompletedFill: {
+    width: '100%',
+    backgroundColor: colors.success,
+  },
   playButtonText: {
+    flexShrink: 1,
+    textAlign: 'center',
     color: colors.textOnPrimary,
     fontSize: 18,
     fontWeight: '700' as const,

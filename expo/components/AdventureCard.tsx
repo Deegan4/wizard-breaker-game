@@ -6,16 +6,12 @@ import {
   Pressable,
   Image,
   Animated,
-  Dimensions,
 } from 'react-native';
 import { ArrowRight, Lock, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Adventure } from '@/constants/adventures';
 import { useTheme, ColorPalette } from '@/contexts/ThemeContext';
-
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 2;
 
 interface AdventureCardProps {
   adventure: Adventure;
@@ -155,7 +151,7 @@ export default function AdventureCard({ adventure, onPress, index }: AdventureCa
 
 const createStyles = (colors: ColorPalette) => StyleSheet.create({
   container: {
-    width: CARD_WIDTH,
+    width: '48%',
     marginBottom: 16,
   },
   card: {

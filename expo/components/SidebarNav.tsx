@@ -218,6 +218,7 @@ const createStyles = (colors: ColorPalette) =>
     },
     playTextWrap: {
       flex: 1,
+      minWidth: 0,
     },
     playLabel: {
       fontSize: 11,

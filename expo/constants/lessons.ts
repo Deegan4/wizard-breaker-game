@@ -54,6 +54,7 @@ export const LEARNING_MODULES: LearningModule[] = [
 ];
 
 const commonQuickReplies = (hint: string, anotherExample: string, redFlags: string): QuickReply[] => [
+  { id: 'got-the-idea', label: 'I see it', response: "Good. Let's try that on an example." },
   { id: 'hint', label: 'Show me a hint', response: hint },
   { id: 'another-example', label: 'Give me another example', response: anotherExample },
   { id: 'red-flags', label: 'What should I look for?', response: redFlags },
