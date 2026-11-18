@@ -67,7 +67,8 @@ Also nested inside `GameProvider`. Tracks per-lesson step completion (`AsyncStor
 
 File-based via Expo Router with typed routes enabled (`app.config.js` → `experiments.typedRoutes`).
 - `app/_layout.tsx` — root `Stack` (tabs, `game`, `lesson/[id]`, `victory`, `debrief`, not-found), providers mounted `ThemeProvider` → `GameProvider` → `LessonProvider` → `AchievementProvider` → `OnboardingWrapper` (in that nesting order — both `LessonContext` and `AchievementContext` call `useGame()`, so they must stay *inside* `GameProvider`; the two have no dependency on each other, so their relative order doesn't matter).
-- `app/(tabs)/` — `index` (Home), `daily` (Daily), `playground` (Lab), `leaderboard` (Ranks), `learn` (Learn: `LearningPathHero` + `LessonRow` list above the legacy article), `adventures` (Quests: All/Story/Practice chips; Story = the 12 Classic levels via `QuestTimelineCard`). `daily` starts its challenge with `startLevel('classic', level)` + `router.push('/game')`.
+- `app/lesson/[id].tsx` — scripted lesson chat (no LLM). Help quick replies `hint`, `another-example`, and `red-flags` do not advance the step. Any other reply calls `completeStep`; the last step calls `completeLesson`.
+- `app/(tabs)/` — `index` (Home), `daily` (Daily), `playground` (Lab), `leaderboard` (Ranks), `learn` (Learn: `LearningPathHero` + `LessonRow`, then the older article), `adventures` (Quests: All/Story/Practice chips. Story is the 12 Classic levels via `QuestTimelineCard`. Practice is the adventures). `daily` starts its challenge with `startLevel('classic', level)` + `router.push('/game')`.
 - `app/game.tsx` — the chat screen; calls `detectInjection`, drives the success animation, then renders `app/debrief.tsx`'s `DebriefScreen` inline as an overlay (not a route push) before advancing, and on final-level success routes to `victory`.
 
 ### Conventions
